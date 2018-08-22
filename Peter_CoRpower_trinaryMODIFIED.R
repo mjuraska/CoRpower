@@ -363,7 +363,9 @@ computepower <- function(numAtRiskTauCases, numAtRiskTauCasesPhase2, numAtRiskTa
   # Power calculations repeated for M simulations
   
   powerstrinary <- matrix(0, nrow=nrow(esvect), ncol=ncol(esvect))
+  rownames(powerstrinary) <- paste0(rep("rho"), seq(1,nrow(powerstrinary)))
   powerscont <- matrix(0, nrow=length(rhos), ncol=o)
+  rownames(powerscont) <- paste0(rep("rho"), seq(1,nrow(powerscont)))
   
       # powerstrinaryrho1 <- rep(0,length(esvect1))
       # powerstrinaryrho2 <- rep(0,length(esvect1))
@@ -469,9 +471,10 @@ computepower <- function(numAtRiskTauCases, numAtRiskTauCasesPhase2, numAtRiskTa
         return(Svalues)
       }
       
+      SpecSens <- cbind(Spec,Sens,FP1,FN1,FP2,FN2)
+      
       if ((P0+P2)==1) { # binary case only
-        
-        SpecSens <- cbind(Spec,Sens,FP1,FN1,FP2,FN2)
+
         S <- t(apply(SpecSens, 1, function(x) biomarkerGroups(x, binary=TRUE))) # each row is a set of Sens, Spec, etc. parameters
         
             # Srho1 <- cbind(rmultinom(N0,1,adjustprob(c(Spec1,1-FP11-Spec1,FP11))),
@@ -480,7 +483,7 @@ computepower <- function(numAtRiskTauCases, numAtRiskTauCasesPhase2, numAtRiskTa
             # 
         
       } else { # trichotomous
-        SpecSens <- cbind(Spec,Sens,FP1,FN1,FP2,FN2)
+        
         S <- t(apply(SpecSens, 1, function(x) biomarkerGroups(x, binary=FALSE))) # each row is a set of Sens, Spec, etc. parameters
         
             # Srho1 <- cbind(rmultinom(N0,1,adjustprob(c(Spec1,1-FP11-Spec1,FP11))),
@@ -681,12 +684,12 @@ computepower <- function(numAtRiskTauCases, numAtRiskTauCasesPhase2, numAtRiskTa
       # powerscontrho3 <- powerscontrho3/M
       # powerscontrho4 <- powerscontrho4/M
   
-  anstrin <- cbind(powerstrinaryrho1,powerstrinaryrho2,powerstrinaryrho3,powerstrinaryrho4)
-  anscont <- cbind(powerscontrho1,powerscontrho2,powerscontrho3,powerscontrho4)
+      # anstrin <- cbind(powerstrinaryrho1,powerstrinaryrho2,powerstrinaryrho3,powerstrinaryrho4)
+      # anscont <- cbind(powerscontrho1,powerscontrho2,powerscontrho3,powerscontrho4)
   if (o > 0)
-    ans <- list(RRlat2,anstrin,exp(truebetas),anscont)
+    ans <- list(RRlat2,t(powerstrinary),exp(truebetas),t(powerscont))
   else
-    ans <- list(RRlat2,anstrin)
+    ans <- list(RRlat2,t(powerstrinary))
   write(N,file="sampsizeALL.dat")
   write(nCases,file="numbeventsALL.dat")
   write(nPhase2,file="numbeventsPhase2.dat")
@@ -695,12 +698,12 @@ computepower <- function(numAtRiskTauCases, numAtRiskTauCasesPhase2, numAtRiskTa
   write(rhos,file="rhos.dat",ncolumns=1,append=FALSE)
   write(RRlat2,file="RRlat2.dat",ncolumns=1,append=FALSE)
   write(RRlat0,file="RRlat0.dat",ncolumns=1,append=FALSE)
-  write(t(anstrin),file=paste("powerstrinary",P2,P0,controlCaseRatio,".dat",sep=""),ncolumns=4,append=FALSE)
+  write(powerstrinary,file=paste("powerstrinary",P2,P0,controlCaseRatio,".dat",sep=""),ncolumns=4,append=FALSE)
   # RRs the relative risks that are the effect sizes RR_c that
   # need to be on the x-axis of powerplots
   if(o>1){
     write(exp(truebetas),file="RRs.dat",ncolumns=1,append=FALSE)
-    write(t(anscont),file=paste("powerscont",controlCaseRatio,".dat",sep=""),ncolumns=4,append=FALSE)
+    write(powerscont,file=paste("powerscont",controlCaseRatio,".dat",sep=""),ncolumns=4,append=FALSE)
     write(PlatVElowest,file="PlatVElowest.dat")
     write(VElowestvect,file="VElowestvect.dat",ncolumns=1,append=FALSE)
     write(truebetas,file="truebetas.dat")
@@ -715,8 +718,7 @@ computepower <- function(numAtRiskTauCases, numAtRiskTauCasesPhase2, numAtRiskTa
   # write out alpha intercept as logit(Y=1|s=0) for trinary/binary case
   write(c(t(logit(risk1_0))), file="trinaryalpha.dat",ncolumns=1,append=FALSE)
   # write out beta coefficient as the log odds ratio: logit(Y=1|S=2)-logit(Y=1|s=0) for trinary/binary case
-  write(c(logit(risk1hi1)-logit(risk1lo1),logit(risk1hi2)-logit(risk1lo2),logit(risk1hi3)-logit(risk1lo3),logit(risk1hi4)-logit(risk1lo4)),
-        file="trinarybeta.dat",ncolumns=1,append=FALSE)
+  write(c(t(logit(risk1_2)-logit(risk1_0))), file="trinarybeta.dat",ncolumns=1,append=FALSE)
   
   return(ans)
   
@@ -858,11 +860,11 @@ computepower.n <- function(numAtRiskTauCasesVect, numAtRiskTauCasesPhase2Vect, n
   probX0_cond_S2 <- FP1*Plat0/P2
   probX1_cond_S2 <- FP2*Plat1/P2
   probX2_cond_S2 <- Sens*Plat2/P2
-  risk1_2 <- (probX0_cond_S2 %o% RRlat0point + probX1_cond_S2 %o% RRlat1point + probX2_cond_S2 %o% RRlat2point)*risk0 # use outer product to get matrix with nrow=length(rho), ncol=length(RRlat0)
+  risk1_2 <- (probX0_cond_S2 * RRlat0point + probX1_cond_S2 * RRlat1point + probX2_cond_S2 * RRlat2point)*risk0 #vector with length=length(rhos)
   probX0_cond_S0 <- Spec*Plat0/P0
   probX1_cond_S0 <- FN2*Plat1/P0
   probX2_cond_S0 <- FN1*Plat2/P0
-  risk1_0 <- (probX0_cond_S0 %o% RRlat0point + probX1_cond_S0 %o% RRlat1point + probX2_cond_S0 %o% RRlat2point)*risk0
+  risk1_0 <- (probX0_cond_S0 * RRlat0point + probX1_cond_S0 * RRlat1point + probX2_cond_S0 * RRlat2point)*risk0
   risk1_1 <- (risk1 - risk1_0*P0 - risk1_2*P2)/P1
   
   # Note: For the binary biomarker special case, the risk1medx are NA
@@ -894,13 +896,15 @@ computepower.n <- function(numAtRiskTauCasesVect, numAtRiskTauCasesPhase2Vect, n
         piece2 <- (1-risk1latnu)^(x/nus[1]) + piece1
         piece3 <- dnorm(x/(sqrt(rho*sigma2obs)))
         kernel <- (piece1/piece2)*piece3
-        return(kernel) }
+        return(kernel) 
+      }
       
       # nus[1] corresponds to rho=1
       logitterm <- integrate(g,lower=nus[1],upper=6)$value
       
       ans <- 1-VEoverall - (PlatVElowest*risk1latnu + logitterm)/risk0
-      return(ans) }
+      return(ans) 
+    }
     
     alphalat <- uniroot(f,lower=-10,upper=10)$root
     
@@ -912,17 +916,12 @@ computepower.n <- function(numAtRiskTauCasesVect, numAtRiskTauCasesPhase2Vect, n
   risk1cont <- function(x,alphalat,betalat) {
     linpart <- alphalat + betalat*x
     ans <- exp(linpart)/(1+exp(linpart))
-    return(ans) }
+    return(ans) 
+  }
   ###################################################
   
-  powerstrinaryrho1 <- rep(0,length(NVect))
-  powerstrinaryrho2 <- rep(0,length(NVect))
-  powerstrinaryrho3 <- rep(0,length(NVect))
-  powerstrinaryrho4 <- rep(0,length(NVect))
-  powerscontrho1  <- rep(0,length(NVect))
-  powerscontrho2  <- rep(0,length(NVect))
-  powerscontrho3  <- rep(0,length(NVect))
-  powerscontrho4  <- rep(0,length(NVect))
+  powerstrinary <- matrix(0, nrow=length(rhos), ncol=length(NVect))
+  powerscont <- matrix(0, nrow=length(rhos), ncol=length(NVect))
   
   for (i in 1:M) {
     
@@ -938,9 +937,9 @@ computepower.n <- function(numAtRiskTauCasesVect, numAtRiskTauCasesPhase2Vect, n
       rrlat1 <- risk1lat_1/(risk1lat_0+risk1lat_1+risk1lat_2)
       rrlat2 <- risk1lat_2/(risk1lat_0+risk1lat_1+risk1lat_2)
       denominat <- Plat0*rrlat0 + Plat1*rrlat1 + Plat2*rrlat2
-      Plo <- (Plat0*rrlat0)/denominat
-      Pmed <- (Plat1*rrlat1)/denominat
-      Phi <- 1 - Plo - Pmed
+      P0case <- (Plat0*rrlat0)/denominat
+      P1case <- (Plat1*rrlat1)/denominat
+      P2case <- 1 - P0case - P1case
       
       # Deal with rare crashes of rmultinom due to numerical problems where the
       # program treats probability 0 as a small negative number:
@@ -965,11 +964,13 @@ computepower.n <- function(numAtRiskTauCasesVect, numAtRiskTauCasesPhase2Vect, n
         if (prob[3]==pmax) { prob[3] <- prob[3] - 0.00001 }
         
         prob[prob < 0] <- 0
-        return(prob) }
+        return(prob) 
+      }
       
-      inds <- rmultinom(nCases,1,adjustprob(c(Plo,Pmed,Phi)))
+      inds <- rmultinom(nCases,1,adjustprob(c(P0case,P1case,P2case)))
       #inds <- rmultinom(nCases,1,c(Plat0*risk1lat_0/(Plat0*risk1lat_0+Plat1*risk1lat_1+Plat2*risk1lat_2),Plat1*risk1lat_1/(Plat0*risk1lat_0+Plat1*risk1lat_1+Plat2*risk1lat_2),Plat2*risk1lat_2/(Plat0*risk1lat_0+Plat1*risk1lat_1+Plat2*risk1lat_2)))
-      # Number of cases in the lo, med, hi groups
+      
+      # Number of cases in the lo, med, hi latent groups
       nCases0 <- length(inds[1,][inds[1,]==1])
       nCases2 <- length(inds[3,][inds[3,]==1])
       nCases1 <- nCases - nCases0 - nCases2
@@ -980,13 +981,19 @@ computepower.n <- function(numAtRiskTauCasesVect, numAtRiskTauCasesPhase2Vect, n
       cat(paste("1 nCases1 = ",nCases1),"\n")
       # Address rounding that could make N1 negative in the dichotomous marker case
       # Keep N fixed at a constant
-      if (N1==-1) {N0 <- N0 + 1}
-      if (N1==-1) {N1 <- 0 }
-      # Also keep  nCases fixed at a constant
-      if (nCases1==-1) {nCases0 <- nCases0 - 1 }
-      if (nCases1==-1) {nCases1 <- 0 }
-      if (nCases1==1 & N1==0) { nCases0 <- nCases0 + 1 }
-      if (nCases1==1 & N1==0) { nCases1 <- 0 }
+      if (N1==-1) {
+        N0 <- N0 + 1
+        N1 <- 0 
+      }
+      # Also keep nCases fixed at a constant
+      if (nCases1==-1) {
+        nCases0 <- nCases0 - 1 
+        nCases1 <- 0 
+      }
+      if (nCases1==1 & N1==0) { 
+        nCases0 <- nCases0 + 1 
+        nCases1 <- 0 
+      }
       cat(paste("2 N1 = ",N1),"\n")
       cat(paste("2 nCases1 = ",nCases1),"\n")
       Y <- c(rep(1,nCases0),rep(0,N0-nCases0),rep(1,nCases1),rep(0,N1-nCases1),rep(1,nCases2),rep(0,N - N0 - N1 - nCases2))
@@ -994,48 +1001,40 @@ computepower.n <- function(numAtRiskTauCasesVect, numAtRiskTauCasesPhase2Vect, n
       # Simulate the trinary surrogate with 0,1,2 = lo,med,hi
       # Formulas (12) and (13) in the manuscript:
       
-      # binary case only
-      if ((P0+P2)==1) {
-        
-        Srho1 <- cbind(rmultinom(N0,1,adjustprob(c(Spec1,1-FP11-Spec1,FP11))),
-                       rmultinom(N2,1,adjustprob(c(FN11,1-FN11-Sens1,Sens1))))
-        Srho1 <- ifelse(Srho1[1,]==1,0,ifelse(Srho1[2,]==1,1,2))
-        
-        Srho2 <- cbind(rmultinom(N0,1,adjustprob(c(Spec2,1-FP12-Spec2,FP12))),
-                       rmultinom(N2,1,adjustprob(c(FN12,1-FN12-Sens2,Sens2))))
-        Srho2 <- ifelse(Srho2[1,]==1,0,ifelse(Srho2[2,]==1,1,2))
-        
-        Srho3 <- cbind(rmultinom(N0,1,adjustprob(c(Spec3,1-FP13-Spec3,FP13))),
-                       rmultinom(N2,1,adjustprob(c(FN13,1-FN13-Sens3,Sens3))))
-        Srho3 <- ifelse(Srho3[1,]==1,0,ifelse(Srho3[2,]==1,1,2))
-        
-        Srho4 <- cbind(rmultinom(N0,1,adjustprob(c(Spec4,1-FP14-Spec4,FP14))),
-                       rmultinom(N2,1,adjustprob(c(FN14,1-FN14-Sens4,Sens4))))
-        Srho4 <- ifelse(Srho4[1,]==1,0,ifelse(Srho4[2,]==1,1,2))
+      # Given specifications for Spec, FP1, Sens, and FN1 and a logical value indicating if the 
+      # biomarker is binary or not, the function returns a vector composed of biomarker levels (S=0,1,2)
+      biomarkerGroups <- function(SpecSens, binary){
+        Spec <- SpecSens[1]
+        Sens <- SpecSens[2]
+        FP1 <- SpecSens[3]
+        FN1 <- SpecSens[4]
+        FP2 <- SpecSens[5]
+        FN2 <- SpecSens[6]
+        if(binary==TRUE){
+          Svalues <- cbind(rmultinom(N0,1,adjustprob(c(Spec,1-FP1-Spec,FP1))),
+                           rmultinom(N2,1,adjustprob(c(FN1,1-FN1-Sens,Sens))))
+        } else{
+          Svalues <- cbind(rmultinom(N0,1,adjustprob(c(Spec,1-FP1-Spec,FP1))),
+                           rmultinom(N1,1,adjustprob(c(FN2,1-FP2-FN2,FP2))),
+                           rmultinom(N2,1,adjustprob(c(FN1,1-FN1-Sens,Sens))))
+        }
+        rownames(Svalues) <- c("S=0","S=1","S=2")
+        Svalues <- ifelse(Svalues[1,]==1,0,ifelse(Svalues[2,]==1,1,2))
+        return(Svalues)
       }
       
-      # trichotomous
-      else {
-        Srho1 <- cbind(rmultinom(N0,1,adjustprob(c(Spec1,1-FP11-Spec1,FP11))),
-                       rmultinom(N1,1,adjustprob(c(FN21,1-FP21-FN21,FP21))),
-                       rmultinom(N2,1,adjustprob(c(FN11,1-FN11-Sens1,Sens1))))
-        Srho1 <- ifelse(Srho1[1,]==1,0,ifelse(Srho1[2,]==1,1,2))
+      SpecSens <- cbind(Spec,Sens,FP1,FN1,FP2,FN2)
+      
+      if ((P0+P2)==1) { # binary case only
         
-        Srho2 <- cbind(rmultinom(N0,1,adjustprob(c(Spec2,1-FP12-Spec2,FP12))),
-                       rmultinom(N1,1,adjustprob(c(FN22,1-FP22-FN22,FP22))),
-                       rmultinom(N2,1,adjustprob(c(FN12,1-FN12-Sens2,Sens2))))
-        Srho2 <- ifelse(Srho2[1,]==1,0,ifelse(Srho2[2,]==1,1,2))
+        S <- t(apply(SpecSens, 1, function(x) biomarkerGroups(x, binary=TRUE))) # each row is a set of Sens, Spec, etc. parameters
+      
+      } else { # trichotomous
         
-        Srho3 <- cbind(rmultinom(N0,1,adjustprob(c(Spec3,1-FP13-Spec3,FP13))),
-                       rmultinom(N1,1,adjustprob(c(FN23,1-FP23-FN23,FP23))),
-                       rmultinom(N2,1,adjustprob(c(FN13,1-FN13-Sens3,Sens3))))
-        Srho3 <- ifelse(Srho3[1,]==1,0,ifelse(Srho3[2,]==1,1,2))
-        
-        Srho4 <- cbind(rmultinom(N0,1,adjustprob(c(Spec4,1-FP14-Spec4,FP14))),
-                       rmultinom(N1,1,adjustprob(c(FN24,1-FP24-FN24,FP24))),
-                       rmultinom(N2,1,adjustprob(c(FN14,1-FN14-Sens4,Sens4))))
-        Srho4 <- ifelse(Srho4[1,]==1,0,ifelse(Srho4[2,]==1,1,2))
+        S <- t(apply(SpecSens, 1, function(x) biomarkerGroups(x, binary=FALSE))) # each row is a set of Sens, Spec, etc. parameters
+      
       }
+      
       # Now keep the S's in nPhase2 of the cases (deleting the rest) and in controlCaseRatio*nPhase2 controls
       casesinds <- c(1:N)[Y==1]
       keepcasesinds <- sample(casesinds,nPhase2,replace=FALSE)
@@ -1045,90 +1044,41 @@ computepower.n <- function(numAtRiskTauCasesVect, numAtRiskTauCasesPhase2Vect, n
       
       # Those with data:
       Ycc <- Y[keepinds]
-      Sccrho1 <- Srho1[keepinds]
-      Sccrho2 <- Srho2[keepinds]
-      Sccrho3 <- Srho3[keepinds]
-      Sccrho4 <- Srho4[keepinds]
+      Scc <- t(apply(S,1,function(x) x[keepinds])) #nrow=length(rhos)
       
       ##############################################################
       # Now analyze with osDesign
       # (first check if there are 'zeros', in which case Fisher's exact test for the lo vs. hi categories is used. Otherwise,
       # osDesign logistic regression is used as an ordered score test
       
-      lodim <- dim(table(Ycc,Sccrho1))[2]<2
-      zerosflag <-  lodim
-      if (dim(table(Ycc,Sccrho1))[2]==3) {
-        zerosflag <- table(Ycc,Sccrho1)[1,1]==0 | table(Ycc,Sccrho1)[1,2]==0 | table(Ycc,Sccrho1)[1,3]==0 | table(Ycc,Sccrho1)[2,1]==0 | table(Ycc,Sccrho1)[2,2]==0 | table(Ycc,Sccrho1)[2,3]==0 }
-      
-      if (zerosflag) {
-        if (lodim) { pval <- 1}
-        if (!lodim) {
-          pval <- fisher.test(table(Ycc,Sccrho1)[,c(1,dim(table(Ycc,Sccrho1))[2])])$p.value }
-        if (pval <= alpha & length(Ycc[Sccrho1==2&Ycc==1])/length(Sccrho1[Sccrho1==2]) < length(Ycc[Sccrho1==0&Ycc==1])/length(Sccrho1[Sccrho1==0])) {
-          powerstrinaryrho1[j] <- powerstrinaryrho1[j] + 1}}
-      
-      if (!zerosflag) {
-        fit <- tps(Ycc~Sccrho1,nn0=length(Y[Y==0]),nn1=length(Y[Y==1]),group=rep(1,length(Ycc)))
-        pval <- round(min(2*(1-pnorm(abs(fit$coef[2]/sqrt(fit$covm[2,2])))),1.0),4)
-        if (pval <= alpha & fit$coef[2] < 0) { powerstrinaryrho1[j] <- powerstrinaryrho1[j] + 1}}
-      
-      
-      lodim <- dim(table(Ycc,Sccrho2))[2]<2
-      zerosflag <-  lodim
-      if (dim(table(Ycc,Sccrho2))[2]==3) {
-        zerosflag <- table(Ycc,Sccrho2)[1,1]==0 | table(Ycc,Sccrho2)[1,2]==0 | table(Ycc,Sccrho2)[1,3]==0 | table(Ycc,Sccrho2)[2,1]==0 | table(Ycc,Sccrho2)[2,2]==0 | table(Ycc,Sccrho2)[2,3]==0 }
-      
-      if (zerosflag) {
-        if (lodim) { pval <- 1}
-        if (!lodim) {
-          pval <- fisher.test(table(Ycc,Sccrho2)[,c(1,dim(table(Ycc,Sccrho2))[2])])$p.value }
-        if (pval <= alpha & length(Ycc[Sccrho2==2&Ycc==1])/length(Sccrho2[Sccrho2==2]) < length(Ycc[Sccrho2==0&Ycc==1])/length(Sccrho2[Sccrho2==0])) {
-          powerstrinaryrho2[j] <- powerstrinaryrho2[j] + 1}}
-      
-      if (!zerosflag) {
-        fit <- tps(Ycc~Sccrho2,nn0=length(Y[Y==0]),nn1=length(Y[Y==1]),group=rep(1,length(Ycc)))
-        pval <- round(min(2*(1-pnorm(abs(fit$coef[2]/sqrt(fit$covm[2,2])))),1.0),4)
-        if (pval <= alpha & fit$coef[2] < 0) { powerstrinaryrho2[j] <- powerstrinaryrho2[j] + 1}}
-      
-      
-      lodim <- dim(table(Ycc,Sccrho3))[2]<2
-      zerosflag <-  lodim
-      if (dim(table(Ycc,Sccrho3))[2]==3) {
-        zerosflag <- table(Ycc,Sccrho3)[1,1]==0 | table(Ycc,Sccrho3)[1,2]==0 | table(Ycc,Sccrho3)[1,3]==0 | table(Ycc,Sccrho3)[2,1]==0 | table(Ycc,Sccrho3)[2,2]==0 | table(Ycc,Sccrho3)[2,3]==0 }
-      
-      if (zerosflag) {
-        if (lodim) { pval <- 1}
-        if (!lodim) {
-          pval <- fisher.test(table(Ycc,Sccrho3)[,c(1,dim(table(Ycc,Sccrho3))[2])])$p.value }
-        if (pval <= alpha & length(Ycc[Sccrho3==2&Ycc==1])/length(Sccrho3[Sccrho3==2]) < length(Ycc[Sccrho3==0&Ycc==1])/length(Sccrho3[Sccrho3==0])) {
-          powerstrinaryrho3[j] <- powerstrinaryrho3[j] + 1}}
-      
-      if (!zerosflag) {
-        fit <- tps(Ycc~Sccrho3,nn0=length(Y[Y==0]),nn1=length(Y[Y==1]),group=rep(1,length(Ycc)))
-        pval <- round(min(2*(1-pnorm(abs(fit$coef[2]/sqrt(fit$covm[2,2])))),1.0),4)
-        if (pval <= alpha & fit$coef[2] < 0) { powerstrinaryrho3[j] <- powerstrinaryrho3[j] + 1}}
-      
-      
-      lodim <- dim(table(Ycc,Sccrho4))[2]<2
-      zerosflag <-  lodim
-      if (dim(table(Ycc,Sccrho4))[2]==3) {
-        zerosflag <- table(Ycc,Sccrho4)[1,1]==0 | table(Ycc,Sccrho4)[1,2]==0 | table(Ycc,Sccrho4)[1,3]==0 | table(Ycc,Sccrho4)[2,1]==0 | table(Ycc,Sccrho4)[2,2]==0 | table(Ycc,Sccrho4)[2,3]==0 }
-      
-      if (zerosflag) {
-        if (lodim) { pval <- 1}
-        if (!lodim) {
-          pval <- fisher.test(table(Ycc,Sccrho4)[,c(1,dim(table(Ycc,Sccrho4))[2])])$p.value }
-        if (pval <= alpha & length(Ycc[Sccrho4==2&Ycc==1])/length(Sccrho4[Sccrho4==2]) < length(Ycc[Sccrho4==0&Ycc==1])/length(Sccrho4[Sccrho4==0])) {
-          powerstrinaryrho4[j] <- powerstrinaryrho4[j] + 1}}
-      
-      if (!zerosflag) {
-        fit <- tps(Ycc~Sccrho4,nn0=length(Y[Y==0]),nn1=length(Y[Y==1]),group=rep(1,length(Ycc)))
-        pval <- round(min(2*(1-pnorm(abs(fit$coef[2]/sqrt(fit$covm[2,2])))),1.0),4)
-        if (pval <= alpha & fit$coef[2] < 0) { powerstrinaryrho4[j] <- powerstrinaryrho4[j] + 1}}
+      for(k in 1:nrow(Scc)){
+        lodim <- dim(table(Ycc,Scc[k,]))[2]<2 #*# check there are at least two biomarker categories (columns)
+        zerosflag <-  lodim
+        if (dim(table(Ycc,Scc[k,]))[2]==3) { #*# check if any categories have zero entries
+          zerosflag <- table(Ycc,Scc[k,])[1,1]==0 | table(Ycc,Scc[k,])[1,2]==0 | table(Ycc,Scc[k,])[1,3]==0 | table(Ycc,Scc[k,])[2,1]==0 | table(Ycc,Scc[k,])[2,2]==0 | table(Ycc,Scc[k,])[2,3]==0 
+        }
+        
+        if (zerosflag) {
+          if (lodim) { pval <- 1}
+          if (!lodim) { #*# there are zeros, so Fisher's exact test is used
+            pval <- fisher.test(table(Ycc,Scc[k,])[,c(1,dim(table(Ycc,Scc[k,]))[2])])$p.value 
+          }
+          if (pval <= alpha & length(Ycc[Scc[k,]==2&Ycc==1])/length(Scc[k,][Scc[k,]==2]) < length(Ycc[Scc[k,]==0&Ycc==1])/length(Scc[k,][Scc[k,]==0])) {
+            powerstrinary[k,j] <- powerstrinary[k,j] + 1
+          }
+        }
+        
+        if (!zerosflag) {
+          fit <- tps(Ycc~Scc[k,],nn0=length(Y[Y==0]),nn1=length(Y[Y==1]),group=rep(1,length(Ycc)))
+          pval <- round(min(2*(1-pnorm(abs(fit$coef[2]/sqrt(fit$covm[2,2])))),1.0),4)
+          if (pval <= alpha & fit$coef[2] < 0) { powerstrinary[k,j] <- powerstrinary[k,j] + 1}
+        }
+      }
       
     }
     
     # Continuous biomarker
+    
     if (!is.null(VElowest)){
       # Simulate the infection indicators of all vaccine recipients, from a logistic regression model
       # using the function risk1cont() above
@@ -1151,116 +1101,37 @@ computepower.n <- function(numAtRiskTauCasesVect, numAtRiskTauCasesPhase2Vect, n
         # with mean zero and standard deviation sqrt(sigma2tr)
         #
         # rhos[1]:
-        f <- function(x) {
-          ans <- risk1cont(x,alphalat,beta)*dnorm(x/sqrt(sigma2trrho1))
-          return(ans)
+        for(k in 1:length(nus)){
+          f <- function(x) {
+            ans <- risk1cont(x,alphalat,beta)*dnorm(x/sqrt(sigma2tr[k]))
+            return(ans)
+          }
+          denomdensityXcases <- integrate(f,lower=nus[k],upper=5)$value
+          denomdensityXcases <- denomdensityXcases + PlatVElowest*(1-VElowestvect[j])*risk0
+          
+          numerdensXcases <- function(x) {
+            num <- risk1cont(x,alphalat,beta)*dnorm(x/sqrt(sigma2tr[k]))
+            num[x <= nus[k]] <- PlatVElowest*(1-VElowestvect[j])*risk0
+            return(num)
+          }
+          numerdensXcontrols <- function(x) {
+            num <- (1-risk1cont(x,alphalat,beta))*dnorm(x/sqrt(sigma2tr[k]))
+            num[x <= nus[k]] <- PlatVElowest*(1-(1-VElowestvect[j])*risk0)
+            return(num)
+          }
+          
+          Xpoints <- seq(-3.5,3.5,len=25000)
+          probscases <-    numerdensXcases(Xpoints)/denomdensityXcases
+          probscontrols <- numerdensXcontrols(Xpoints)/(1-denomdensityXcases)
+          
+          Xcases <-    sample(Xpoints,size=nCases,prob=probscases,replace=TRUE)
+          Xcontrols <- sample(Xpoints,size=N-nCases,prob=probscontrols,replace=TRUE)
+          X <- c(Xcases,Xcontrols)
         }
-        denomdensityXcases <- integrate(f,lower=nus[1],upper=5)$value
-        denomdensityXcases <- denomdensityXcases + PlatVElowest*(1-VElowest)*risk0
-        
-        numerdensXcases <- function(x) {
-          num <- risk1cont(x,alphalat,beta)*dnorm(x/sqrt(sigma2trrho1))
-          num[x <= nus[1]] <- PlatVElowest*(1-VElowest)*risk0
-          return(num)
-        }
-        
-        numerdensXcontrols <- function(x) {
-          num <- (1-risk1cont(x,alphalat,beta))*dnorm(x/sqrt(sigma2trrho1))
-          num[x <= nus[1]] <- PlatVElowest*(1-(1-VElowest)*risk0)
-          return(num)
-        }
-        
-        Xpoints <- seq(-3.5,3.5,len=25000)
-        probscases <-    numerdensXcases(Xpoints)/denomdensityXcases
-        probscontrols <- numerdensXcontrols(Xpoints)/(1-denomdensityXcases)
-        
-        Xcasesrho1 <-    sample(Xpoints,size=nCases,prob=probscases,replace=TRUE)
-        Xcontrolsrho1 <- sample(Xpoints,size=N-nCases,prob=probscontrols,replace=TRUE)
-        Xrho1 <- c(Xcasesrho1,Xcontrolsrho1)
-        
-        f <- function(x) {
-          ans <- risk1cont(x,alphalat,beta)*dnorm(x/sqrt(sigma2trrho2))
-          return(ans)
-        }
-        denomdensityXcases <- integrate(f,lower=nus[2],upper=5)$value
-        denomdensityXcases <- denomdensityXcases + PlatVElowest*(1-VElowest)*risk0
-        
-        numerdensXcases <- function(x) {
-          num <- risk1cont(x,alphalat,beta)*dnorm(x/sqrt(sigma2trrho2))
-          num[x <= nus[2]] <- PlatVElowest*(1-VElowest)*risk0
-          return(num)
-        }
-        
-        numerdensXcontrols <- function(x) {
-          num <- (1-risk1cont(x,alphalat,beta))*dnorm(x/sqrt(sigma2trrho2))
-          num[x <= nus[2]] <- PlatVElowest*(1-(1-VElowest)*risk0)
-          return(num)
-        }
-        
-        probscases <-    numerdensXcases(Xpoints)/denomdensityXcases
-        probscontrols <- numerdensXcontrols(Xpoints)/(1-denomdensityXcases)
-        
-        Xcasesrho2 <-    sample(Xpoints,size=nCases,prob=probscases,replace=TRUE)
-        Xcontrolsrho2 <- sample(Xpoints,size=N-nCases,prob=probscontrols,replace=TRUE)
-        Xrho2 <- c(Xcasesrho2,Xcontrolsrho2)
-        
-        f <- function(x) {
-          ans <- risk1cont(x,alphalat,beta)*dnorm(x/sqrt(sigma2trrho3))
-          return(ans)
-        }
-        denomdensityXcases <- integrate(f,lower=nus[3],upper=5)$value
-        denomdensityXcases <- denomdensityXcases + PlatVElowest*(1-VElowest)*risk0
-        
-        numerdensXcases <- function(x) {
-          num <- risk1cont(x,alphalat,beta)*dnorm(x/sqrt(sigma2trrho3))
-          num[x <= nus[3]] <- PlatVElowest*(1-VElowest)*risk0
-          return(num)
-        }
-        
-        numerdensXcontrols <- function(x) {
-          num <- (1-risk1cont(x,alphalat,beta))*dnorm(x/sqrt(sigma2trrho3))
-          num[x <= nus[3]] <- PlatVElowest*(1-(1-VElowest)*risk0)
-          return(num)
-        }
-        
-        probscases <-    numerdensXcases(Xpoints)/denomdensityXcases
-        probscontrols <- numerdensXcontrols(Xpoints)/(1-denomdensityXcases)
-        
-        Xcasesrho3 <-    sample(Xpoints,size=nCases,prob=probscases,replace=TRUE)
-        Xcontrolsrho3 <- sample(Xpoints,size=N-nCases,prob=probscontrols,replace=TRUE)
-        Xrho3 <- c(Xcasesrho3,Xcontrolsrho3)
-        
-        f <- function(x) {
-          ans <- risk1cont(x,alphalat,beta)*dnorm(x/sqrt(sigma2trrho4))
-          return(ans)
-        }
-        denomdensityXcases <- integrate(f,lower=nus[4],upper=5)$value
-        denomdensityXcases <- denomdensityXcases + PlatVElowest*(1-VElowest)*risk0
-        
-        numerdensXcases <- function(x) {
-          num <- risk1cont(x,alphalat,beta)*dnorm(x/sqrt(sigma2trrho4))
-          num[x <= nus[4]] <- PlatVElowest*(1-VElowest)*risk0
-          return(num)
-        }
-        
-        numerdensXcontrols <- function(x) {
-          num <- (1-risk1cont(x,alphalat,beta))*dnorm(x/sqrt(sigma2trrho4))
-          num[x <= nus[4]] <- PlatVElowest*(1-(1-VElowest)*risk0)
-          return(num)
-        }
-        
-        probscases <-    numerdensXcases(Xpoints)/denomdensityXcases
-        probscontrols <- numerdensXcontrols(Xpoints)/(1-denomdensityXcases)
-        
-        Xcasesrho4 <-    sample(Xpoints,size=nCases,prob=probscases,replace=TRUE)
-        Xcontrolsrho4 <- sample(Xpoints,size=N-nCases,prob=probscontrols,replace=TRUE)
-        Xrho4 <- c(Xcasesrho4,Xcontrolsrho4)
         
         # Create the 4 immune response variables for the 4 degrees of measurement error
-        Srho1 <- Xrho1 + rnorm(N,mean=0,sd=sqrt(sigma2erho1))
-        Srho2 <- Xrho2 + rnorm(N,mean=0,sd=sqrt(sigma2erho2))
-        Srho3 <- Xrho3 + rnorm(N,mean=0,sd=sqrt(sigma2erho3))
-        Srho4 <- Xrho4 + rnorm(N,mean=0,sd=sqrt(sigma2erho4))
+        error <- t(sapply(sigma2e, function(x) rnorm(N,mean=0,sd=sqrt(x))))
+        S <- X + error
         
         # Now keep the S's in nPhase2 of the cases (deleting the rest) and in controlCaseRatio*nPhase2 controls
         casesinds <- c(1:N)[Y==1]
@@ -1271,42 +1142,21 @@ computepower.n <- function(numAtRiskTauCasesVect, numAtRiskTauCasesPhase2Vect, n
         
         # Those with data:
         Ycc <- Y[keepinds]
-        Sccrho1 <- Srho1[keepinds]
-        Sccrho2 <- Srho2[keepinds]
-        Sccrho3 <- Srho3[keepinds]
-        Sccrho4 <- Srho4[keepinds]
+        Scc <- t(apply(S,1, function(x) x[keepinds])) # nrow=length(rhos)
         
-        fit <- tps(Ycc~Sccrho1,nn0=length(Y[Y==0]),nn1=length(Y[Y==1]),group=rep(1,length(Ycc)))
-        pval <- round(min(2*(1-pnorm(abs(fit$coef[2]/sqrt(fit$covm[2,2])))),1.0),4)
-        if (pval <= alpha & fit$coef[2] < 0) { powerscontrho1[j] <- powerscontrho1[j] + 1}
-        
-        fit <- tps(Ycc~Sccrho2,nn0=length(Y[Y==0]),nn1=length(Y[Y==1]),group=rep(1,length(Ycc)))
-        pval <- round(min(2*(1-pnorm(abs(fit$coef[2]/sqrt(fit$covm[2,2])))),1.0),4)
-        if (pval <= alpha & fit$coef[2] < 0) { powerscontrho2[j] <- powerscontrho2[j] + 1}
-        
-        fit <- tps(Ycc~Sccrho3,nn0=length(Y[Y==0]),nn1=length(Y[Y==1]),group=rep(1,length(Ycc)))
-        pval <- round(min(2*(1-pnorm(abs(fit$coef[2]/sqrt(fit$covm[2,2])))),1.0),4)
-        if (pval <= alpha & fit$coef[2] < 0) { powerscontrho3[j] <- powerscontrho3[j] + 1}
-        
-        fit <- tps(Ycc~Sccrho4,nn0=length(Y[Y==0]),nn1=length(Y[Y==1]),group=rep(1,length(Ycc)))
-        pval <- round(min(2*(1-pnorm(abs(fit$coef[2]/sqrt(fit$covm[2,2])))),1.0),4)
-        if (pval <= alpha & fit$coef[2] < 0) { powerscontrho4[j] <- powerscontrho4[j] + 1}
-        
+        for(k in 1:nrow(Scc)){
+          fit <- tps(Ycc~Scc[k,],nn0=length(Y[Y==0]),nn1=length(Y[Y==1]),group=rep(1,length(Ycc)))
+          pval <- round(min(2*(1-pnorm(abs(fit$coef[2]/sqrt(fit$covm[2,2])))),1.0),4)
+          if (pval <= alpha & fit$coef[2] < 0) { powerscont[k,j] <- powerscont[k,j] + 1}
+        }
       }
     }
   }
-  powerstrinaryrho1 <- powerstrinaryrho1/M
-  powerstrinaryrho2 <- powerstrinaryrho2/M
-  powerstrinaryrho3 <- powerstrinaryrho3/M
-  powerstrinaryrho4 <- powerstrinaryrho4/M
-  powerscontrho1 <- powerscontrho1/M
-  powerscontrho2 <- powerscontrho2/M
-  powerscontrho3 <- powerscontrho3/M
-  powerscontrho4 <- powerscontrho4/M
   
-  anstrin <- cbind(powerstrinaryrho1,powerstrinaryrho2,powerstrinaryrho3,powerstrinaryrho4)
-  anscont <- cbind(powerscontrho1,powerscontrho2,powerscontrho3,powerscontrho4)
-  ans <- list(RRlat0point,RRlat2point,anstrin,anscont)
+  powerstrinary <- powerstrinary/M
+  powerscont <- powerscont/M
+  
+  ans <- list(RRlat0point,RRlat2point,t(powerstrinary),t(powerscont))
   write(rhos,file="rhos.dat",ncolumns=1,append=FALSE)
   write(1-RRoverall,file="VEoverallpower2.dat")
   write(alpha,file="alpha2.dat")
@@ -1323,14 +1173,12 @@ computepower.n <- function(numAtRiskTauCasesVect, numAtRiskTauCasesPhase2Vect, n
   write(risk1lat_2,file="risk1lat_2.dat")
   write(risk1lat_1,file="risk1lat_1.dat")
   write(risk1lat_0,file="risk1lat_0.dat")
-  write(t(anstrin),file=paste("powerstrinary",1-RRlat2point,1-RRlat0point,P2,P0,controlCaseRatio,"2ss.dat",sep=""),ncolumns=4,append=FALSE)
-  write(t(anscont),file="powerscont2ss.dat",ncolumns=4,append=FALSE)
+  write(powerstrinary,file=paste("powerstrinary",1-RRlat2point,1-RRlat0point,P2,P0,controlCaseRatio,"2ss.dat",sep=""),ncolumns=4,append=FALSE)
+  write(powerscont,file="powerscont2ss.dat",ncolumns=4,append=FALSE)
   # write out alpha intercept as logit(Y=1|s=0) for trinary/binary case
-  write(c(logit(risk1lo1),logit(risk1lo2),logit(risk1lo3),logit(risk1lo4)), file="trinaryalpha.dat",ncolumns=1,append=FALSE)
+  write(c(t(logit(risk1_0))), file="trinaryalpha.dat",ncolumns=1,append=FALSE)
   # write out beta coefficient as the log odds ratio: logit(Y=1|S=2)-logit(Y=1|s=0) for trinary/binary case
-  write(c(logit(risk1hi1)-logit(risk1lo1),logit(risk1hi2)-logit(risk1lo2),logit(risk1hi3)-logit(risk1lo3),logit(risk1hi4)-logit(risk1lo4)),
-        file="trinarbeta.dat",ncolumns=1,append=FALSE)
-  
+  write(c(t(logit(risk1_2)-logit(risk1_0))), file="trinarbeta.dat",ncolumns=1,append=FALSE)
   
   return(ans)
   
@@ -1363,7 +1211,7 @@ computepower.n <- function(numAtRiskTauCasesVect, numAtRiskTauCasesPhase2Vect, n
 ##################################################
 
 # Original function that requires Plat2 to be a scalar
-computeSensSpecFPFN <- function(sigma2obs,rho,Plat0,Plat2,P0,P2) {
+computeSensSpecFPFN <- function(sigma2obs,rhos,Plat0,Plat2,P0,P2) {
   # sigma2tr = Var(X) = Var(Str) = rho*sigma2obs
   # If Plat0 + Plat2 = 1 then the method collapses to a binary biomarker,
   # and FP1, FP2, FN1, FN2 are irrelevant; this function simply returns 0's in that scenario
@@ -1373,8 +1221,8 @@ computeSensSpecFPFN <- function(sigma2obs,rho,Plat0,Plat2,P0,P2) {
   # P0 may be a scalar or a vector, which should include one value equal to
   #      Plat0 and values straddling either side
   
-  sigma2e <- (1-rho)*sigma2obs
-  sigma2tr <- rho*sigma2obs
+  sigma2e <- (1-rhos)*sigma2obs
+  sigma2tr <- rhos*sigma2obs
   thetahiVE <- qnorm(1-Plat2)*sqrt(sigma2tr)
   thetaloVE <- qnorm(Plat0)*sqrt(sigma2tr)
   
@@ -1382,7 +1230,7 @@ computeSensSpecFPFN <- function(sigma2obs,rho,Plat0,Plat2,P0,P2) {
   m <- length(P2)
   ans <- list()
   
-  for(i in 1:length(rho)){
+  for(i in 1:length(rhos)){
     Sens <- rep(1,m)
     Spec <- rep(1,m)
     FP1 <- rep(0,m)
@@ -1391,7 +1239,7 @@ computeSensSpecFPFN <- function(sigma2obs,rho,Plat0,Plat2,P0,P2) {
     FN2 <- rep(0,m)
     tauhisolution <- rep(0,m)
     taulosolution <- rep(0,m)
-    if (rho[i] < 1) {  #*# if rho=1, then Sens=1, Spec=1, FP1=0, FP2=0, FN1=0, FN2=0
+    if (rhos[i] < 1) {  #*# if rho=1, then Sens=1, Spec=1, FP1=0, FP2=0, FN1=0, FN2=0
       # Stochastic integration
       X <- rnorm(20000,0,sqrt(sigma2tr[i]))
       S <- X + rnorm(20000,0,sqrt(sigma2e[i]))
