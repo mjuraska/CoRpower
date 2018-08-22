@@ -152,6 +152,21 @@ computepower <- function(numAtRiskTauCases, numAtRiskTauCasesPhase2, numAtRiskTa
   P1 <- 1 - P0 - P2
   
   ### Stop function to 
+  # Checks out that all values of RRlat2 are between 0 and 1 and that PlatVElowest meets bounds.
+  # If there are incompatible values of RRlat2, consider making Plat0 smaller,
+  # and/or making VElat0 larger, and then check again if all values of 
+  # RRlat2 are properly between 0 and 1.
+  checkprobabilityviolation <- function(VEoverall,VElat0,Plat0,Plat2,PlatVElowest,VElowestvect) {
+    VElat2 <- (VEoverall*(Plat0+Plat2) - Plat0*VElat0)/Plat2
+    RRlat2 <- 1 - VElat2
+    cat(paste("RRlat2="),"\n")
+    cat(paste(round(RRlat2,3)))
+    cat("\n")
+    if (length(RRlat2[RRlat2 < 0 ])>0) {stop("Input parameters violate probability constraints for trichotomous marker calculations")}
+    if (min(VElowestvect)==0 & PlatVElowest > 1 - VEoverall) {stop("Error: Input parameters PlatVElowest and VElowestvect violate probability constraints for normal marker calculations") }
+  }
+  
+  checkprobabilityviolation(VEoverall,VElat0,Plat0,Plat2,PlatVElowest,VElowestvect)
   
   sigma2e <- (1-rhos)*sigma2obs
   
@@ -166,7 +181,6 @@ computepower <- function(numAtRiskTauCases, numAtRiskTauCasesPhase2, numAtRiskTa
     # Default choice
     
     # Compute Sens, Spec, FP1, FP2, FN1, FN2
-    
     ans <- computeSensSpecFPFN(sigma2obs,rhos,Plat0,Plat2,P0,P2)
     Sens <- unlist(lapply(ans, function(x) x[[1,10]])) 
     Spec <- unlist(lapply(ans, function(x) x[[1,11]]))
@@ -193,7 +207,7 @@ computepower <- function(numAtRiskTauCases, numAtRiskTauCasesPhase2, numAtRiskTa
     x4 <- unlist(c(sigma2obs[4],rhos[4],Plat0,P0,Plat2,P2,Sens[4],Spec[4],FP1[4],FN1[4],FP2[4],FN2[4]))
     #cat("\n")
     #cat(paste(round(x4,3)),"\n")
-    
+
   }
   
   # Approach 1 in the manuscript:
@@ -204,8 +218,6 @@ computepower <- function(numAtRiskTauCases, numAtRiskTauCasesPhase2, numAtRiskTa
     
     # Apply formula (9) in the manuscript
     FP2 <- (P2 - Sens*Plat2 - FP1*Plat0)/Plat1
-    
-    
     
         # Sens1 <- Sens[1] #*# don't need these because we can treat Sens as a vector and it is given
         # Sens2 <- Sens[2]
@@ -261,6 +273,7 @@ computepower <- function(numAtRiskTauCases, numAtRiskTauCasesPhase2, numAtRiskTa
   risk1 <- RRoverall*risk0
   
   # Observed risks P(Y(1)=1|S(1)=0, 1, or 2)  #*# for diff values of rho; using Bayes' rule
+  
   probX0_cond_S2 <- FP1*Plat0/P2
   probX1_cond_S2 <- FP2*Plat1/P2
   probX2_cond_S2 <- Sens*Plat2/P2
@@ -271,18 +284,18 @@ computepower <- function(numAtRiskTauCases, numAtRiskTauCasesPhase2, numAtRiskTa
   risk1_0 <- (probX0_cond_S0 %o% RRlat0 + probX1_cond_S0 %o% RRlat1 + probX2_cond_S0 %o% RRlat2)*risk0
   risk1_1 <- (risk1 - risk1_0*P0 - risk1_2*P2)/P1
   
-      # probXlo_cond_Shi <- FP12*Plat0/P2 #*# don't need these anymore because the variables are vectors now
-      # probXmed_cond_Shi <- FP22*Plat1/P2
-      # probXhi_cond_Shi <- Sens2*Plat2/P2
-      # risk1hi2 <- (RRlat0*probXlo_cond_Shi + RRlat1*probXmed_cond_Shi + RRlat2*probXhi_cond_Shi)*risk0
-      # probXlo_cond_Slo <- Spec2*Plat0/P0
-      # probXmed_cond_Slo <- FN22*Plat1/P0
-      # probXhi_cond_Slo <- FN12*Plat2/P0
-      # risk1lo2 <- (RRlat0*probXlo_cond_Slo + RRlat1*probXmed_cond_Slo + RRlat2*probXhi_cond_Slo)*risk0
+      # probX0_cond_S2 <- FP12*Plat0/P2 #*# don't need these anymore because the variables are vectors now
+      # probX1_cond_S2 <- FP22*Plat1/P2
+      # probX2_cond_S2 <- Sens2*Plat2/P2
+      # risk1hi2 <- (RRlat0*probX0_cond_S2 + RRlat1*probX1_cond_S2 + RRlat2*probX2_cond_S2)*risk0
+      # probX0_cond_S0 <- Spec2*Plat0/P0
+      # probX1_cond_S0 <- FN22*Plat1/P0
+      # probX2_cond_S0 <- FN12*Plat2/P0
+      # risk1lo2 <- (RRlat0*probX0_cond_S0 + RRlat1*probX1_cond_S0 + RRlat2*probX2_cond_S0)*risk0
       # risk1med2 <- (risk1 - risk1lo2*P0 - risk1hi2*P2)/P1
       # 
   
-  # Note: For the biomarker special case, the risk1medx are NA
+  # Note: For the binary biomarker special case, the risk1medx are NA
   
   esvect <- risk1_2/risk1_0 # matrix with nrow=length(rho) and ncol=length(RRlat0)
   
@@ -301,7 +314,7 @@ computepower <- function(numAtRiskTauCases, numAtRiskTauCasesPhase2, numAtRiskTa
   #################################################
   # Computations for a continuous biomarker
   # Define the truebetas indexed by the user-specified vector VElowestvect
-  
+
   o <- length(VElowestvect)
   if (o>0){
     nus <- sqrt(rhos*sigma2obs)*qnorm(PlatVElowest)
@@ -337,6 +350,7 @@ computepower <- function(numAtRiskTauCases, numAtRiskTauCasesPhase2, numAtRiskTa
       truebetas[l] <- (log(D/(1-D)) - alphalatvect[l])/nus[1]
     }
   }
+
   # Function for computing the infection probabilities of vaccinees
   # risk1cont = risk_1^{lat}(x*) in the manuscript
   risk1cont <- function(x,alphalat,betalat) {
@@ -435,13 +449,13 @@ computepower <- function(numAtRiskTauCases, numAtRiskTauCasesPhase2, numAtRiskTa
       
       # Given specifications for Spec, FP1, Sens, and FN1 and a logical value indicating if the 
       # biomarker is binary or not, the function returns a vector composed of biomarker levels (S=0,1,2)
-      biomarkerGroups <- function(SensSpec, binary){
-        Spec <- SensSpec[1]
-        Sens <- SensSpec[2]
-        FP1 <- SensSpec[3]
-        FN1 <- SensSpec[4]
-        FP2 <- SensSpec[5]
-        FN2 <- SensSpec[6]
+      biomarkerGroups <- function(SpecSens, binary){
+        Spec <- SpecSens[1]
+        Sens <- SpecSens[2]
+        FP1 <- SpecSens[3]
+        FN1 <- SpecSens[4]
+        FP2 <- SpecSens[5]
+        FN2 <- SpecSens[6]
         if(binary==TRUE){
           Svalues <- cbind(rmultinom(N0,1,adjustprob(c(Spec,1-FP1-Spec,FP1))),
                            rmultinom(N2,1,adjustprob(c(FN1,1-FN1-Sens,Sens))))
@@ -455,54 +469,25 @@ computepower <- function(numAtRiskTauCases, numAtRiskTauCasesPhase2, numAtRiskTa
         return(Svalues)
       }
       
-      # binary case only
-      if ((P0+P2)==1) {
+      if ((P0+P2)==1) { # binary case only
         
-        SensSpec <- cbind(Spec,Sens,FP1,FN1,FP2,FN2)
-        S <- t(apply(SensSpec, 1, function(x) biomarkerGroups(x, binary=TRUE))) # each row is a set of Sens, Spec, etc. parameters
+        SpecSens <- cbind(Spec,Sens,FP1,FN1,FP2,FN2)
+        S <- t(apply(SpecSens, 1, function(x) biomarkerGroups(x, binary=TRUE))) # each row is a set of Sens, Spec, etc. parameters
         
             # Srho1 <- cbind(rmultinom(N0,1,adjustprob(c(Spec1,1-FP11-Spec1,FP11))),
             #                rmultinom(N2,1,adjustprob(c(FN11,1-FN11-Sens1,Sens1))))
             # Srho1 <- ifelse(Srho1[1,]==1,0,ifelse(Srho1[2,]==1,1,2))
             # 
-            # Srho2 <- cbind(rmultinom(N0,1,adjustprob(c(Spec2,1-FP12-Spec2,FP12))),
-            #                rmultinom(N2,1,adjustprob(c(FN12,1-FN12-Sens2,Sens2))))
-            # Srho2 <- ifelse(Srho2[1,]==1,0,ifelse(Srho2[2,]==1,1,2))
-            # 
-            # Srho3 <- cbind(rmultinom(N0,1,adjustprob(c(Spec3,1-FP13-Spec3,FP13))),
-            #                rmultinom(N2,1,adjustprob(c(FN13,1-FN13-Sens3,Sens3))))
-            # Srho3 <- ifelse(Srho3[1,]==1,0,ifelse(Srho3[2,]==1,1,2))
-            # 
-            # Srho4 <- cbind(rmultinom(N0,1,adjustprob(c(Spec4,1-FP14-Spec4,FP14))),
-            #                rmultinom(N2,1,adjustprob(c(FN14,1-FN14-Sens4,Sens4))))
-            # Srho4 <- ifelse(Srho4[1,]==1,0,ifelse(Srho4[2,]==1,1,2))
         
-      }
-      
-      # trichotomous
-      else {
-        SensSpec <- cbind(Spec,Sens,FP1,FN1,FP2,FN2)
-        S <- t(apply(SensSpec, 1, function(x) biomarkerGroups(x, binary=FALSE))) # each row is a set of Sens, Spec, etc. parameters
+      } else { # trichotomous
+        SpecSens <- cbind(Spec,Sens,FP1,FN1,FP2,FN2)
+        S <- t(apply(SpecSens, 1, function(x) biomarkerGroups(x, binary=FALSE))) # each row is a set of Sens, Spec, etc. parameters
         
             # Srho1 <- cbind(rmultinom(N0,1,adjustprob(c(Spec1,1-FP11-Spec1,FP11))),
             #                rmultinom(N1,1,adjustprob(c(FN21,1-FP21-FN21,FP21))),
             #                rmultinom(N2,1,adjustprob(c(FN11,1-FN11-Sens1,Sens1))))
             # Srho1 <- ifelse(Srho1[1,]==1,0,ifelse(Srho1[2,]==1,1,2))
-            # 
-            # Srho2 <- cbind(rmultinom(N0,1,adjustprob(c(Spec2,1-FP12-Spec2,FP12))),
-            #                rmultinom(N1,1,adjustprob(c(FN22,1-FP22-FN22,FP22))),
-            #                rmultinom(N2,1,adjustprob(c(FN12,1-FN12-Sens2,Sens2))))
-            # Srho2 <- ifelse(Srho2[1,]==1,0,ifelse(Srho2[2,]==1,1,2))
-            # 
-            # Srho3 <- cbind(rmultinom(N0,1,adjustprob(c(Spec3,1-FP13-Spec3,FP13))),
-            #                rmultinom(N1,1,adjustprob(c(FN23,1-FP23-FN23,FP23))),
-            #                rmultinom(N2,1,adjustprob(c(FN13,1-FN13-Sens3,Sens3))))
-            # Srho3 <- ifelse(Srho3[1,]==1,0,ifelse(Srho3[2,]==1,1,2))
-            # 
-            # Srho4 <- cbind(rmultinom(N0,1,adjustprob(c(Spec4,1-FP14-Spec4,FP14))),
-            #                rmultinom(N1,1,adjustprob(c(FN24,1-FP24-FN24,FP24))),
-            #                rmultinom(N2,1,adjustprob(c(FN14,1-FN14-Sens4,Sens4))))
-            # Srho4 <- ifelse(Srho4[1,]==1,0,ifelse(Srho4[2,]==1,1,2))
+            
       }
       
       # Now keep the S's in nPhase2 of the cases (deleting the rest) and in controlCaseRatio*nPhase2 controls
@@ -538,14 +523,15 @@ computepower <- function(numAtRiskTauCases, numAtRiskTauCasesPhase2, numAtRiskTa
             pval <- fisher.test(table(Ycc,Scc[k,])[,c(1,dim(table(Ycc,Scc[k,]))[2])])$p.value 
           }
           if (pval <= alpha & length(Ycc[Scc[k,]==2&Ycc==1])/length(Scc[k,][Scc[k,]==2]) < length(Ycc[Scc[k,]==0&Ycc==1])/length(Scc[k,][Scc[k,]==0])) {
-            powerstrinary[k,j] <- powerstrinaryrho1[k,j] + 1
+            powerstrinary[k,j] <- powerstrinary[k,j] + 1
           }
         }
         
         if (!zerosflag) {
           fit <- tps(Ycc~Scc[k,],nn0=length(Y[Y==0]),nn1=length(Y[Y==1]),group=rep(1,length(Ycc)))
           pval <- round(min(2*(1-pnorm(abs(fit$coef[2]/sqrt(fit$covm[2,2])))),1.0),4)
-          if (pval <= alpha & fit$coef[2] < 0) { powerstrinaryrho1[j] <- powerstrinaryrho1[j] + 1}}
+          if (pval <= alpha & fit$coef[2] < 0) { powerstrinary[k,j] <- powerstrinary[k,j] + 1}
+        }
       }
       
       
@@ -574,7 +560,7 @@ computepower <- function(numAtRiskTauCases, numAtRiskTauCasesPhase2, numAtRiskTa
     
     # Simulate the infection indicators of all vaccine recipients, from a logistic regression model
     # using the function risk1cont() above
-    if (o>0){
+    if (o>0){ #*# at least one lowestVE specified (TRUE if continuous approach is to be used)
       
       for (j in 1:o) {
         beta <- truebetas[j]
@@ -593,118 +579,72 @@ computepower <- function(numAtRiskTauCases, numAtRiskTauCasesPhase2, numAtRiskTa
         # with mean zero and standard deviation sqrt(sigma2tr)
         #
         # rhos[1]:
-        f <- function(x) {
-          ans <- risk1cont(x,alphalat,beta)*dnorm(x/sqrt(sigma2trrho1))
-          return(ans)
-        }
-        denomdensityXcases <- integrate(f,lower=nus[1],upper=5)$value
-        denomdensityXcases <- denomdensityXcases + PlatVElowest*(1-VElowestvect[j])*risk0
+        for(k in 1:length(nus)){
+          f <- function(x) {
+            ans <- risk1cont(x,alphalat,beta)*dnorm(x/sqrt(sigma2tr[k]))
+            return(ans)
+          }
+          denomdensityXcases <- integrate(f,lower=nus[k],upper=5)$value
+          denomdensityXcases <- denomdensityXcases + PlatVElowest*(1-VElowestvect[j])*risk0
+          
+          numerdensXcases <- function(x) {
+            num <- risk1cont(x,alphalat,beta)*dnorm(x/sqrt(sigma2tr[k]))
+            num[x <= nus[k]] <- PlatVElowest*(1-VElowestvect[j])*risk0
+            return(num)
+          }
+          
+          numerdensXcontrols <- function(x) {
+            num <- (1-risk1cont(x,alphalat,beta))*dnorm(x/sqrt(sigma2tr[k]))
+            num[x <= nus[k]] <- PlatVElowest*(1-(1-VElowestvect[j])*risk0)
+            return(num)
+          }
+          
+          Xpoints <- seq(-3.5,3.5,len=25000)
+          probscases <-    numerdensXcases(Xpoints)/denomdensityXcases
+          probscontrols <- numerdensXcontrols(Xpoints)/(1-denomdensityXcases)
+          
+          Xcases <-    sample(Xpoints,size=nCases,prob=probscases,replace=TRUE)
+          Xcontrols <- sample(Xpoints,size=N-nCases,prob=probscontrols,replace=TRUE)
+          X <- c(Xcases,Xcontrols)
+        }  
+
+            # f <- function(x) {
+            #   ans <- risk1cont(x,alphalat,beta)*dnorm(x/sqrt(sigma2tr[1]))
+            #   return(ans)
+            # }
+            # denomdensityXcases <- integrate(f,lower=nus[1],upper=5)$value
+            # denomdensityXcases <- denomdensityXcases + PlatVElowest*(1-VElowestvect[j])*risk0
+            # 
+            # numerdensXcases <- function(x) {
+            #   num <- risk1cont(x,alphalat,beta)*dnorm(x/sqrt(sigma2tr[1]))
+            #   num[x <= nus[1]] <- PlatVElowest*(1-VElowestvect[j])*risk0
+            #   return(num)
+            # }
+            # 
+            # numerdensXcontrols <- function(x) {
+            #   num <- (1-risk1cont(x,alphalat,beta))*dnorm(x/sqrt(sigma2tr[1]))
+            #   num[x <= nus[1]] <- PlatVElowest*(1-(1-VElowestvect[j])*risk0)
+            #   return(num)
+            # }
+            # 
+            # Xpoints <- seq(-3.5,3.5,len=25000)
+            # probscases <-    numerdensXcases(Xpoints)/denomdensityXcases
+            # probscontrols <- numerdensXcontrols(Xpoints)/(1-denomdensityXcases)
+            # 
+            # Xcasesrho1 <-    sample(Xpoints,size=nCases,prob=probscases,replace=TRUE)
+            # Xcontrolsrho1 <- sample(Xpoints,size=N-nCases,prob=probscontrols,replace=TRUE)
+            # Xrho1 <- c(Xcasesrho1,Xcontrolsrho1)
         
-        numerdensXcases <- function(x) {
-          num <- risk1cont(x,alphalat,beta)*dnorm(x/sqrt(sigma2trrho1))
-          num[x <= nus[1]] <- PlatVElowest*(1-VElowestvect[j])*risk0
-          return(num)
-        }
-        
-        numerdensXcontrols <- function(x) {
-          num <- (1-risk1cont(x,alphalat,beta))*dnorm(x/sqrt(sigma2trrho1))
-          num[x <= nus[1]] <- PlatVElowest*(1-(1-VElowestvect[j])*risk0)
-          return(num)
-        }
-        
-        Xpoints <- seq(-3.5,3.5,len=25000)
-        probscases <-    numerdensXcases(Xpoints)/denomdensityXcases
-        probscontrols <- numerdensXcontrols(Xpoints)/(1-denomdensityXcases)
-        
-        Xcasesrho1 <-    sample(Xpoints,size=nCases,prob=probscases,replace=TRUE)
-        Xcontrolsrho1 <- sample(Xpoints,size=N-nCases,prob=probscontrols,replace=TRUE)
-        Xrho1 <- c(Xcasesrho1,Xcontrolsrho1)
-        
-        f <- function(x) {
-          ans <- risk1cont(x,alphalat,beta)*dnorm(x/sqrt(sigma2trrho2))
-          return(ans)
-        }
-        denomdensityXcases <- integrate(f,lower=nus[2],upper=5)$value
-        denomdensityXcases <- denomdensityXcases + PlatVElowest*(1-VElowestvect[j])*risk0
-        
-        numerdensXcases <- function(x) {
-          num <- risk1cont(x,alphalat,beta)*dnorm(x/sqrt(sigma2trrho2))
-          num[x <= nus[2]] <- PlatVElowest*(1-VElowestvect[j])*risk0
-          return(num)
-        }
-        
-        numerdensXcontrols <- function(x) {
-          num <- (1-risk1cont(x,alphalat,beta))*dnorm(x/sqrt(sigma2trrho2))
-          num[x <= nus[2]] <- PlatVElowest*(1-(1-VElowestvect[j])*risk0)
-          return(num)
-        }
-        
-        probscases <-    numerdensXcases(Xpoints)/denomdensityXcases
-        probscontrols <- numerdensXcontrols(Xpoints)/(1-denomdensityXcases)
-        
-        Xcasesrho2 <-    sample(Xpoints,size=nCases,prob=probscases,replace=TRUE)
-        Xcontrolsrho2 <- sample(Xpoints,size=N-nCases,prob=probscontrols,replace=TRUE)
-        Xrho2 <- c(Xcasesrho2,Xcontrolsrho2)
-        
-        f <- function(x) {
-          ans <- risk1cont(x,alphalat,beta)*dnorm(x/sqrt(sigma2trrho3))
-          return(ans)
-        }
-        denomdensityXcases <- integrate(f,lower=nus[3],upper=5)$value
-        denomdensityXcases <- denomdensityXcases + PlatVElowest*(1-VElowestvect[j])*risk0
-        
-        numerdensXcases <- function(x) {
-          num <- risk1cont(x,alphalat,beta)*dnorm(x/sqrt(sigma2trrho3))
-          num[x <= nus[3]] <- PlatVElowest*(1-VElowestvect[j])*risk0
-          return(num)
-        }
-        
-        numerdensXcontrols <- function(x) {
-          num <- (1-risk1cont(x,alphalat,beta))*dnorm(x/sqrt(sigma2trrho3))
-          num[x <= nus[3]] <- PlatVElowest*(1-(1-VElowestvect[j])*risk0)
-          return(num)
-        }
-        
-        probscases <- numerdensXcases(Xpoints)/denomdensityXcases
-        probscontrols <- numerdensXcontrols(Xpoints)/(1-denomdensityXcases)
-        
-        Xcasesrho3 <-    sample(Xpoints,size=nCases,prob=probscases,replace=TRUE)
-        Xcontrolsrho3 <- sample(Xpoints,size=N-nCases,prob=probscontrols,replace=TRUE)
-        Xrho3 <- c(Xcasesrho3,Xcontrolsrho3)
-        
-        f <- function(x) {
-          ans <- risk1cont(x,alphalat,beta)*dnorm(x/sqrt(sigma2trrho4))
-          return(ans)
-        }
-        denomdensityXcases <- integrate(f,lower=nus[4],upper=5)$value
-        denomdensityXcases <- denomdensityXcases + PlatVElowest*(1-VElowestvect[j])*risk0
-        
-        numerdensXcases <- function(x) {
-          num <- risk1cont(x,alphalat,beta)*dnorm(x/sqrt(sigma2trrho4))
-          num[x <= nus[4]] <- PlatVElowest*(1-VElowestvect[j])*risk0
-          return(num)
-        }
-        
-        numerdensXcontrols <- function(x) {
-          num <- (1-risk1cont(x,alphalat,beta))*dnorm(x/sqrt(sigma2trrho4))
-          num[x <= nus[4]] <- PlatVElowest*(1-(1-VElowestvect[j])*risk0)
-          return(num)
-        }
-        
-        probscases <-    numerdensXcases(Xpoints)/denomdensityXcases
-        probscontrols <- numerdensXcontrols(Xpoints)/(1-denomdensityXcases)
-        
-        Xcasesrho4 <-    sample(Xpoints,size=nCases,prob=probscases,replace=TRUE)
-        Xcontrolsrho4 <- sample(Xpoints,size=N-nCases,prob=probscontrols,replace=TRUE)
-        Xrho4 <- c(Xcasesrho4,Xcontrolsrho4)
         
         # Create the 4 immune response variables for the 4 degrees of measurement error
-        Srho1 <- Xrho1 + rnorm(N,mean=0,sd=sqrt(sigma2erho1))
-        Srho2 <- Xrho2 + rnorm(N,mean=0,sd=sqrt(sigma2erho2))
-        Srho3 <- Xrho3 + rnorm(N,mean=0,sd=sqrt(sigma2erho3))
-        Srho4 <- Xrho4 + rnorm(N,mean=0,sd=sqrt(sigma2erho4))
+        error <- t(sapply(sigma2e, function(x) rnorm(N,mean=0,sd=sqrt(x))))
+        S <- X + error
+            # Srho1 <- Xrho1 + rnorm(N,mean=0,sd=sqrt(sigma2erho1))
+            # Srho2 <- Xrho2 + rnorm(N,mean=0,sd=sqrt(sigma2erho2))
+            # Srho3 <- Xrho3 + rnorm(N,mean=0,sd=sqrt(sigma2erho3))
+            # Srho4 <- Xrho4 + rnorm(N,mean=0,sd=sqrt(sigma2erho4))
         
-        # Now keep the S's in nPhase2 of the cases (deleting the rest) and in controlCaseRatio*nPhase2 controls
+        # Now keep the S's in nPhase2 of the cases (deleting the rest) and in controlCaseRatio*nPhase2 of the controls
         casesinds <- c(1:N)[Y==1]
         keepcasesinds <- sample(casesinds,nPhase2,replace=FALSE)
         controlinds <- c(1:N)[Y==0]
@@ -713,39 +653,33 @@ computepower <- function(numAtRiskTauCases, numAtRiskTauCasesPhase2, numAtRiskTa
         
         # Those with data:
         Ycc <- Y[keepinds]
-        Sccrho1 <- Srho1[keepinds]
-        Sccrho2 <- Srho2[keepinds]
-        Sccrho3 <- Srho3[keepinds]
-        Sccrho4 <- Srho4[keepinds]
-        
-        fit <- tps(Ycc~Sccrho1,nn0=length(Y[Y==0]),nn1=length(Y[Y==1]),group=rep(1,length(Ycc)))
-        pval <- round(min(2*(1-pnorm(abs(fit$coef[2]/sqrt(fit$covm[2,2])))),1.0),4)
-        if (pval <= alpha & fit$coef[2] < 0) { powerscontrho1[j] <- powerscontrho1[j] + 1}
-        
-        fit <- tps(Ycc~Sccrho2,nn0=length(Y[Y==0]),nn1=length(Y[Y==1]),group=rep(1,length(Ycc)))
-        pval <- round(min(2*(1-pnorm(abs(fit$coef[2]/sqrt(fit$covm[2,2])))),1.0),4)
-        if (pval <= alpha & fit$coef[2] < 0) { powerscontrho2[j] <- powerscontrho2[j] + 1}
-        
-        fit <- tps(Ycc~Sccrho3,nn0=length(Y[Y==0]),nn1=length(Y[Y==1]),group=rep(1,length(Ycc)))
-        pval <- round(min(2*(1-pnorm(abs(fit$coef[2]/sqrt(fit$covm[2,2])))),1.0),4)
-        if (pval <= alpha & fit$coef[2] < 0) { powerscontrho3[j] <- powerscontrho3[j] + 1}
-        
-        fit <- tps(Ycc~Sccrho4,nn0=length(Y[Y==0]),nn1=length(Y[Y==1]),group=rep(1,length(Ycc)))
-        pval <- round(min(2*(1-pnorm(abs(fit$coef[2]/sqrt(fit$covm[2,2])))),1.0),4)
-        if (pval <= alpha & fit$coef[2] < 0) { powerscontrho4[j] <- powerscontrho4[j] + 1}
-        
+        Scc <- t(apply(S,1, function(x) x[keepinds])) # nrow=length(rhos)
+            # Sccrho1 <- Srho1[keepinds]
+            # Sccrho2 <- Srho2[keepinds]
+            # Sccrho3 <- Srho3[keepinds]
+            # Sccrho4 <- Srho4[keepinds]
+
+        for(k in 1:nrow(Scc)){
+          fit <- tps(Ycc~Scc[k,],nn0=length(Y[Y==0]),nn1=length(Y[Y==1]),group=rep(1,length(Ycc)))
+          pval <- round(min(2*(1-pnorm(abs(fit$coef[2]/sqrt(fit$covm[2,2])))),1.0),4)
+          if (pval <= alpha & fit$coef[2] < 0) { powerscont[k,j] <- powerscont[k,j] + 1}
+        }
+
+            # fit <- tps(Ycc~Sccrho1,nn0=length(Y[Y==0]),nn1=length(Y[Y==1]),group=rep(1,length(Ycc)))
+            # pval <- round(min(2*(1-pnorm(abs(fit$coef[2]/sqrt(fit$covm[2,2])))),1.0),4)
+            # if (pval <= alpha & fit$coef[2] < 0) { powerscontrho1[j] <- powerscontrho1[j] + 1}
       }
     }
   }
   
-  powerstrinaryrho1 <- powerstrinaryrho1/M
-  powerstrinaryrho2 <- powerstrinaryrho2/M
-  powerstrinaryrho3 <- powerstrinaryrho3/M
-  powerstrinaryrho4 <- powerstrinaryrho4/M
-  powerscontrho1 <- powerscontrho1/M
-  powerscontrho2 <- powerscontrho2/M
-  powerscontrho3 <- powerscontrho3/M
-  powerscontrho4 <- powerscontrho4/M
+  powerstrinary <- powerstrinary/M
+      # powerstrinaryrho2 <- powerstrinaryrho2/M
+      # powerstrinaryrho3 <- powerstrinaryrho3/M
+      # powerstrinaryrho4 <- powerstrinaryrho4/M
+  powerscont <- powerscont/M
+      # powerscontrho2 <- powerscontrho2/M
+      # powerscontrho3 <- powerscontrho3/M
+      # powerscontrho4 <- powerscontrho4/M
   
   anstrin <- cbind(powerstrinaryrho1,powerstrinaryrho2,powerstrinaryrho3,powerstrinaryrho4)
   anscont <- cbind(powerscontrho1,powerscontrho2,powerscontrho3,powerscontrho4)
@@ -775,13 +709,11 @@ computepower <- function(numAtRiskTauCases, numAtRiskTauCasesPhase2, numAtRiskTa
   write(P2,file="P2.dat")
   
   # Print out the CoR effect sizes
-  matriskslo <- cbind(risk1lo1,risk1lo2,risk1lo3,risk1lo4)
-  matriskshi <- cbind(risk1hi1,risk1hi2,risk1hi3,risk1hi4)
-  write(t(matriskslo),file=paste("vaccineriskslo",P2,P0,controlCaseRatio,".dat",sep=""),ncolumns=4,append=FALSE)
-  write(t(matriskshi),file=paste("vaccineriskshi",P2,P0,controlCaseRatio,".dat",sep=""),ncolumns=4,append=FALSE)
+  write(risk1_0,file=paste("vaccineriskslo",P2,P0,controlCaseRatio,".dat",sep=""),ncolumns=4,append=FALSE)
+  write(risk1_2,file=paste("vaccineriskshi",P2,P0,controlCaseRatio,".dat",sep=""),ncolumns=4,append=FALSE)
   
   # write out alpha intercept as logit(Y=1|s=0) for trinary/binary case
-  write(c(logit(risk1lo1),logit(risk1lo2),logit(risk1lo3),logit(risk1lo4)), file="trinaryalpha.dat",ncolumns=1,append=FALSE)
+  write(c(t(logit(risk1_0))), file="trinaryalpha.dat",ncolumns=1,append=FALSE)
   # write out beta coefficient as the log odds ratio: logit(Y=1|S=2)-logit(Y=1|s=0) for trinary/binary case
   write(c(logit(risk1hi1)-logit(risk1lo1),logit(risk1hi2)-logit(risk1lo2),logit(risk1hi3)-logit(risk1lo3),logit(risk1hi4)-logit(risk1lo4)),
         file="trinarybeta.dat",ncolumns=1,append=FALSE)
@@ -816,16 +748,16 @@ computepower <- function(numAtRiskTauCases, numAtRiskTauCasesPhase2, numAtRiskTa
 # Output: Power
 
 #' @describeIn computepower Vectors are inputted to repeat power calculations at multiple sample sizes.
-#' @param noobsatriskmotaucasesvectALL  Vector of the number of cases in the vaccine group at-risk at tau and a case by taumax (regardless of whether the biomarker is measured).
-#' @param noobsatriskmotaucasesvectPhase2 Vector of the number of cases in the vaccine group at-risk at tau and a case by taumax and with the biomarker measured (i.e., in Phase 2).
-#' @param noobsatriskmotaucontrolsvectALL Vector of the number of controls in the vaccine group at-risk at tau and not diseased at the end of follow-up taumax (regardless of whether the biomarker is measured).
+#' @param numAtRiskTauCasesVect  Vector of the number of cases in the vaccine group at-risk at tau and a case by taumax (regardless of whether the biomarker is measured).
+#' @param numAtRiskTauCasesPhase2Vect Vector of the number of cases in the vaccine group at-risk at tau and a case by taumax and with the biomarker measured (i.e., in Phase 2).
+#' @param numAtRiskTauControlsVect Vector of the number of controls in the vaccine group at-risk at tau and not diseased at the end of follow-up taumax (regardless of whether the biomarker is measured).
 #' @param RRlat0point For a trichotomous biomarker, one minus VE for the latent low biomarker subgroup.
 #' @param RRlat1point For a trichotomous biomarker, one minus VE for the latent middle biomarker subgroup.
 #' @param RRlat2point For a trichotomous biomarker, one minus VE for the latent high biomarker subgroup.
 #' @param VElowest The lowest possible value of vaccine efficacy
 #'
 #' @export
-computepower.n <- function(noobsatriskmotaucasesvectALL, noobsatriskmotaucasesvectPhase2, noobsatriskmotaucontrolsvectALL,
+computepower.n <- function(numAtRiskTauCasesVect, numAtRiskTauCasesPhase2Vect, numAtRiskTauControlsVect,
                            risk0, RRoverall,
                            Plat0, P2, P0,
                            RRlat2point, RRlat1point, RRlat0point,
@@ -852,20 +784,14 @@ computepower.n <- function(noobsatriskmotaucasesvectALL, noobsatriskmotaucasesve
   Plat1 <- 1 - Plat2 - Plat0
   P1 <- 1 - P0 - P2
   
-  nvectALL <- noobsatriskmotaucasesvectALL
-  nvectPhase2 <- noobsatriskmotaucasesvectPhase2
+  nCasesVect <- numAtRiskTauCasesVect
+  nPhase2Vect <- numAtRiskTauCasesPhase2Vect
   # Overall denominator: number observed to be at risk when the immune response is measured:
-  nnvectALL <- nvectALL + noobsatriskmotaucontrolsvectALL
+  NVect <- nCasesVect + numAtRiskTauControlsVect
   
-  sigma2erho1 <- (1-rhos[1])*sigma2obs
-  sigma2erho2 <- (1-rhos[2])*sigma2obs
-  sigma2erho3 <- (1-rhos[3])*sigma2obs
-  sigma2erho4 <- (1-rhos[4])*sigma2obs
-  
-  sigma2trrho1 <- rhos[1]*sigma2obs
-  sigma2trrho2 <- rhos[2]*sigma2obs
-  sigma2trrho3 <- rhos[3]*sigma2obs
-  sigma2trrho4 <- rhos[4]*sigma2obs
+  sigma2e <- (1-rhos)*sigma2obs
+
+  sigma2tr <- rhos*sigma2obs
   
   ###############################################################
   # Computations for a trinary biomarker
@@ -877,76 +803,29 @@ computepower.n <- function(noobsatriskmotaucasesvectALL, noobsatriskmotaucasesve
     # Default choice
     
     # Compute Sens, Spec, FP1, FP2, FN1, FN2
-    ans <- computeSensSpecFPFN(sigma2obs,rhos[1],Plat0,Plat2,P0,P2)
-    Sens1 <- ans[1,10]
-    Spec1 <- ans[1,11]
-    FP11 <- ans[1,12]
-    FP21 <- ans[1,13]
-    FN11 <- ans[1,14]
-    FN21 <- ans[1,15]
-    ans <- computeSensSpecFPFN(sigma2obs,rhos[2],Plat0,Plat2,P0,P2)
-    Sens2 <- ans[1,10]
-    Spec2 <- ans[1,11]
-    FP12 <- ans[1,12]
-    FP22 <- ans[1,13]
-    FN12 <- ans[1,14]
-    FN22 <- ans[1,15]
-    ans <- computeSensSpecFPFN(sigma2obs,rhos[3],Plat0,Plat2,P0,P2)
-    Sens3 <- ans[1,10]
-    Spec3 <- ans[1,11]
-    FP13 <- ans[1,12]
-    FP23 <- ans[1,13]
-    FN13 <- ans[1,14]
-    FN23 <- ans[1,15]
-    ans <- computeSensSpecFPFN(sigma2obs,rhos[4],Plat0,Plat2,P0,P2)
-    Sens4 <- ans[1,10]
-    Spec4 <- ans[1,11]
-    FP14 <- ans[1,12]
-    FP24 <- ans[1,13]
-    FN14 <- ans[1,14]
-    FN24 <- ans[1,15]
-    
+    ans <- computeSensSpecFPFN(sigma2obs,rhos,Plat0,Plat2,P0,P2)
+    Sens <- unlist(lapply(ans, function(x) x[[1,10]])) 
+    Spec <- unlist(lapply(ans, function(x) x[[1,11]]))
+    FP1 <- unlist(lapply(ans, function(x) x[[1,12]])) 
+    FP2 <- unlist(lapply(ans, function(x) x[[1,13]])) 
+    FN1 <- unlist(lapply(ans, function(x) x[[1,14]]))
+    FN2 <- unlist(lapply(ans, function(x) x[[1,15]]))
   }
   
   # Approach 1 in the manuscript:
   if (!Approach2) {
     
-    Sens1 <- Sens[1]
-    Sens2 <- Sens[2]
-    Sens3 <- Sens[3]
-    Sens4 <- Sens[4]
-    Spec1 <- Spec[1]
-    Spec2 <- Spec[2]
-    Spec3 <- Spec[3]
-    Spec4 <- Spec[4]
-    FP11 <- FP1[1]
-    FP12 <- FP1[2]
-    FP13 <- FP1[3]
-    FP14 <- FP1[4]
-    FN11 <- FN1[1]
-    FN12 <- FN1[2]
-    FN13 <- FN1[3]
-    FN14 <- FN1[4]
-    
-    
     # Apply formula (8) in the manuscript
-    FN21 <- (P0 - Spec1*Plat0 - FN11*Plat2)/Plat1
-    FN22 <- (P0 - Spec2*Plat0 - FN12*Plat2)/Plat1
-    FN23 <- (P0 - Spec3*Plat0 - FN13*Plat2)/Plat1
-    FN24 <- (P0 - Spec4*Plat0 - FN14*Plat2)/Plat1
+    FN2 <- (P0 - Spec*Plat0 - FN1*Plat2)/Plat1   #*#P0, Plat0, Plat2 given params
     
     # Apply formula (9) in the manuscript
-    FP21 <- (P2 - Sens1*Plat2 - FP11*Plat0)/Plat1
-    FP22 <- (P2 - Sens2*Plat2 - FP12*Plat0)/Plat1
-    FP23 <- (P2 - Sens3*Plat2 - FP13*Plat0)/Plat1
-    FP24 <- (P2 - Sens4*Plat2 - FP14*Plat0)/Plat1
+    FP2 <- (P2 - Sens*Plat2 - FP1*Plat0)/Plat1
     
     #Check if an error in the ranges of values due to an out of
     # bounds input parameter
-    if (FN21 < 0 | FN21 > 1 | FN22 < 0 | FN22 > 1 | FN23 < 0 | FN23 > 1 | FN24 < 0 | FN24 > 1 | FN21 < 0 | FN21 > 1 | FN22 < 0 | FN22 > 1 | FN23 < 0 | FN23 > 1 | FN24 < 0 | FN24 > 1) {
-      cat(paste("Approach 1 was used and one of the parameters Sens, Spec, FP1, FN1 is out of range"),"\n")
+    if (any(FN2 < 0 | FN2 > 1 | FP2 < 0 | FP2 > 1)){
+      stop("Approach 1 was used and one of the parameters Sens, Spec, FP1, FN1 is out of range")
     }
-    
   }
   
   # Binary biomarker special case (to remove small values of P1x)
@@ -974,55 +853,22 @@ computepower.n <- function(noobsatriskmotaucasesvectALL, noobsatriskmotaucasesve
   # Made it to the end of follow-up HIV negative
   risk1 <- RRoverall*risk0
   
-  # Observed risks P(Y(1)=1|S(1)=lo, med, or hi)
-  probXlo_cond_Shi <- FP11*Plat0/P2
-  probXmed_cond_Shi <- FP21*Plat1/P2
-  probXhi_cond_Shi <- Sens1*Plat2/P2
-  risk1hi1 <- (RRlat0point*probXlo_cond_Shi + RRlat1point*probXmed_cond_Shi + RRlat2point*probXhi_cond_Shi)*risk0
-  probXlo_cond_Slo <- Spec1*Plat0/P0
-  probXmed_cond_Slo <- FN21*Plat1/P0
-  probXhi_cond_Slo <- FN11*Plat2/P0
-  risk1lo1 <- (RRlat0point*probXlo_cond_Slo + RRlat1point*probXmed_cond_Slo + RRlat2point*probXhi_cond_Slo)*risk0
-  risk1med1 <- (risk1 - risk1lo1*P0 - risk1hi1*P2)/P1
+  # Observed risks P(Y(1)=1|S(1)=0, 1, or 2)  #*# for diff values of rho; using Bayes' rule
   
+  probX0_cond_S2 <- FP1*Plat0/P2
+  probX1_cond_S2 <- FP2*Plat1/P2
+  probX2_cond_S2 <- Sens*Plat2/P2
+  risk1_2 <- (probX0_cond_S2 %o% RRlat0point + probX1_cond_S2 %o% RRlat1point + probX2_cond_S2 %o% RRlat2point)*risk0 # use outer product to get matrix with nrow=length(rho), ncol=length(RRlat0)
+  probX0_cond_S0 <- Spec*Plat0/P0
+  probX1_cond_S0 <- FN2*Plat1/P0
+  probX2_cond_S0 <- FN1*Plat2/P0
+  risk1_0 <- (probX0_cond_S0 %o% RRlat0point + probX1_cond_S0 %o% RRlat1point + probX2_cond_S0 %o% RRlat2point)*risk0
+  risk1_1 <- (risk1 - risk1_0*P0 - risk1_2*P2)/P1
   
-  probXlo_cond_Shi <- FP12*Plat0/P2
-  probXmed_cond_Shi <- FP22*Plat1/P2
-  probXhi_cond_Shi <- Sens2*Plat2/P2
-  risk1hi2 <- (RRlat0point*probXlo_cond_Shi + RRlat1point*probXmed_cond_Shi + RRlat2point*probXhi_cond_Shi)*risk0
-  probXlo_cond_Slo <- Spec2*Plat0/P0
-  probXmed_cond_Slo <- FN22*Plat1/P0
-  probXhi_cond_Slo <- FN12*Plat2/P0
-  risk1lo2 <- (RRlat0point*probXlo_cond_Slo + RRlat1point*probXmed_cond_Slo + RRlat2point*probXhi_cond_Slo)*risk0
-  risk1med2 <- (risk1 - risk1lo2*P0 - risk1hi2*P2)/P1
-  
-  probXlo_cond_Shi <- FP13*Plat0/P2
-  probXmed_cond_Shi <- FP23*Plat1/P2
-  probXhi_cond_Shi <- Sens3*Plat2/P2
-  risk1hi3 <- (RRlat0point*probXlo_cond_Shi + RRlat1point*probXmed_cond_Shi + RRlat2point*probXhi_cond_Shi)*risk0
-  probXlo_cond_Slo <- Spec3*Plat0/P0
-  probXmed_cond_Slo <- FN23*Plat1/P0
-  probXhi_cond_Slo <- FN13*Plat2/P0
-  risk1lo3 <- (RRlat0point*probXlo_cond_Slo + RRlat1point*probXmed_cond_Slo + RRlat2point*probXhi_cond_Slo)*risk0
-  risk1med3 <- (risk1 - risk1lo3*P0 - risk1hi3*P2)/P1
-  
-  probXlo_cond_Shi <- FP14*Plat0/P2
-  probXmed_cond_Shi <- FP24*Plat1/P2
-  probXhi_cond_Shi <- Sens4*Plat2/P2
-  risk1hi4 <- (RRlat0point*probXlo_cond_Shi + RRlat1point*probXmed_cond_Shi + RRlat2point*probXhi_cond_Shi)*risk0
-  probXlo_cond_Slo <- Spec4*Plat0/P0
-  probXmed_cond_Slo <- FN24*Plat1/P0
-  probXhi_cond_Slo <- FN14*Plat2/P0
-  risk1lo4 <- (RRlat0point*probXlo_cond_Slo + RRlat1point*probXmed_cond_Slo + RRlat2point*probXhi_cond_Slo)*risk0
-  risk1med4 <- (risk1 - risk1lo4*P0 - risk1hi4*P2)/P1
-  
-  # Note: For the biomarker special case, the risk1medx are NA
+  # Note: For the binary biomarker special case, the risk1medx are NA
   #       They are never used so it is irrelevant
   
-  es1 <- risk1hi1/risk1lo1  # the index effect size because rho = 1
-  es2 <- risk1hi2/risk1lo2
-  es3 <- risk1hi3/risk1lo3
-  es4 <- risk1hi4/risk1lo4
+  es <- risk1_2/risk1_0
   
   # Vaccine risks within the latent subgroups (independent of rho of course)
   risk1lat_2 <- RRlat2point*risk0
@@ -1069,24 +915,24 @@ computepower.n <- function(noobsatriskmotaucasesvectALL, noobsatriskmotaucasesve
     return(ans) }
   ###################################################
   
-  powerstrinaryrho1 <- rep(0,length(nnvectALL))
-  powerstrinaryrho2 <- rep(0,length(nnvectALL))
-  powerstrinaryrho3 <- rep(0,length(nnvectALL))
-  powerstrinaryrho4 <- rep(0,length(nnvectALL))
-  powerscontrho1  <- rep(0,length(nnvectALL))
-  powerscontrho2  <- rep(0,length(nnvectALL))
-  powerscontrho3  <- rep(0,length(nnvectALL))
-  powerscontrho4  <- rep(0,length(nnvectALL))
+  powerstrinaryrho1 <- rep(0,length(NVect))
+  powerstrinaryrho2 <- rep(0,length(NVect))
+  powerstrinaryrho3 <- rep(0,length(NVect))
+  powerstrinaryrho4 <- rep(0,length(NVect))
+  powerscontrho1  <- rep(0,length(NVect))
+  powerscontrho2  <- rep(0,length(NVect))
+  powerscontrho3  <- rep(0,length(NVect))
+  powerscontrho4  <- rep(0,length(NVect))
   
   for (i in 1:M) {
     
     # Trinary biomarker:
-    for (j in 1:length(nnvectALL)) {
+    for (j in 1:length(NVect)) {
       # Fix the number of cases and controls, putting the cases first and controls
       # second for each subgroup:
-      N <- nnvectALL[j]
-      nCases <- nvectALL[j]
-      nPhase2 <- nvectPhase2[j]
+      N <- NVect[j]
+      nCases <- nCasesVect[j]
+      nPhase2 <- nPhase2Vect[j]
       
       rrlat0 <- risk1lat_0/(risk1lat_0+risk1lat_1+risk1lat_2)
       rrlat1 <- risk1lat_1/(risk1lat_0+risk1lat_1+risk1lat_2)
@@ -1286,10 +1132,10 @@ computepower.n <- function(noobsatriskmotaucasesvectALL, noobsatriskmotaucasesve
     if (!is.null(VElowest)){
       # Simulate the infection indicators of all vaccine recipients, from a logistic regression model
       # using the function risk1cont() above
-      for (j in 1:length(nnvectALL)) {
-        N <- nnvectALL[j]
-        nCases <- nvectALL[j]
-        nPhase2 <- nvectPhase2[j]
+      for (j in 1:length(NVect)) {
+        N <- NVect[j]
+        nCases <- nCasesVect[j]
+        nPhase2 <- nPhase2Vect[j]
         beta <- truebeta
         
         # These simulations condition on n (i.e., number of infections in vaccine arm) and
@@ -1468,8 +1314,8 @@ computepower.n <- function(noobsatriskmotaucasesvectALL, noobsatriskmotaucasesve
   write(1-RRlat2point,file=paste("RRlat2point",P2,".dat",sep=""))
   write(1-RRlat0point,file=paste("RRlat0point",P2,".dat",sep=""))
   write(P2,file=paste("P2",P2,".dat",sep=""))
-  write(noobsatriskmotaucasesvectALL,"samplesizescasesALL.dat",ncolumns=1,append=FALSE)
-  write(noobsatriskmotaucasesvectPhase2,"samplesizescases2Phase.dat",ncolumns=1,append=FALSE)
+  write(numAtRiskTauCasesVect,"samplesizescasesALL.dat",ncolumns=1,append=FALSE)
+  write(numAtRiskTauCasesPhase2Vect,"samplesizescases2Phase.dat",ncolumns=1,append=FALSE)
   write(Plat2,file=paste("Plat2point",P2,".dat",sep=""))
   write(PlatVElowest,file="PlatVElowest.dat")
   write(VElowest,file="VElowest.dat")
