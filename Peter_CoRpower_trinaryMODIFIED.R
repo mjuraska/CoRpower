@@ -20,7 +20,9 @@
 #' @param FP1 For a trichotomous biomarker (or binary as a special case), simulated using 'approach 1', a vector of length 4 with values for the first false positive rate (FP^1) of the measured/observed biomarker. Specifying \code{Spec = rep(1,4)}, \code{FP1 = rep(0,4)}, \code{Sens = rep(1,4)}, and \code{FN1 = rep(0,4)}  indicates that approach 2 is used.
 #' @param Sens For a trichotomous biomarker (or binary as a special case), simulated using 'approach 1', a vector of length 4 with values for the specificity of the measured/observed biomarker. Specifying \code{Spec = rep(1,4)}, \code{FP1 = rep(0,4)}, \code{Sens = rep(1,4)}, and \code{FN1 = rep(0,4)}  indicates that approach 2 is used.
 #' @param FN1 For a trichotomous biomarker (or binary as a special case), simulated using 'approach 1', a vector of length 4 with values for the first false negative rate (FN^1) of the measured/observed biomarker. Specifying \code{Spec = rep(1,4)}, \code{FP1 = rep(0,4)}, \code{Sens = rep(1,4)}, and \code{FN1 = rep(0,4)}  indicates that approach 2 is used.
-#'
+#' @param cohort
+#' @param p
+#' 
 #' @details
 #' This function performs simulations to calculate the power for testing whether a trichotomous or continuous biomarker
 #' is a correlate of risk (CoR).
@@ -123,7 +125,8 @@ computepower <- function(numAtRiskTauCases, numAtRiskTauCasesPhase2, numAtRiskTa
                          alpha=0.05,
                          sigma2obs=1,
                          rhos=c(1,.9,.7,.5),
-                         Spec=rep(1,4), FP1=rep(0,4), Sens=rep(1,4), FN1=rep(0,4)) {
+                         Spec=rep(1,4), FP1=rep(0,4), Sens=rep(1,4), FN1=rep(0,4),
+                         cohort=FALSE, p=NULL) {
   
   # sigma2tr is the variance of the true biomarker X
   # rhos must be a vector with 4 values and is for the continuous and binary biomarker correlates correlations
@@ -212,6 +215,14 @@ computepower <- function(numAtRiskTauCases, numAtRiskTauCasesPhase2, numAtRiskTa
   
   # Approach 1 in the manuscript:
   if (!Approach2) { #*# use given Sens, Spec, FP1, and FN1 params
+    
+    checkParamLengthsMatch <- function(Sens, Spec, FP1, FN1){
+      lengths <- sapply(list(Sens,Spec,FP1,FN1), length)
+      if(max(lengths) != min(lengths)){
+        stop("Vector lengths differ for Sens, Spec, FP1, FN1")
+      }
+    }
+    checkParamLengthsMatch(Sens,Spec,FP1,FN1)
     
     # Apply formula (8) in the manuscript
     FN2 <- (P0 - Spec*Plat0 - FN1*Plat2)/Plat1   #*#P0, Plat0, Plat2 given params
@@ -450,8 +461,9 @@ computepower <- function(numAtRiskTauCases, numAtRiskTauCasesPhase2, numAtRiskTa
       # First simulate not conditioning on Y=1 or 0 to determine S=0,1,2:
       
       # Given specifications for Spec, FP1, Sens, and FN1 and a logical value indicating if the 
-      # biomarker is binary or not, the function returns a vector composed of biomarker levels (S=0,1,2)
-      biomarkerGroups <- function(SpecSens, binary){
+      # biomarker is binary or not, the function returns a vector composed of biomarker levels (S=0,1,2),
+      # where each subject is assigned a specific level
+      AssignBiomarkerLevels <- function(SpecSens, binary){
         Spec <- SpecSens[1]
         Sens <- SpecSens[2]
         FP1 <- SpecSens[3]
@@ -475,7 +487,7 @@ computepower <- function(numAtRiskTauCases, numAtRiskTauCasesPhase2, numAtRiskTa
       
       if ((P0+P2)==1) { # binary case only
 
-        S <- t(apply(SpecSens, 1, function(x) biomarkerGroups(x, binary=TRUE))) # each row is a set of Sens, Spec, etc. parameters
+        S <- t(apply(SpecSens, 1, function(x) AssignBiomarkerLevels(x, binary=TRUE))) # each row is a set of Sens, Spec, etc. parameters
         
             # Srho1 <- cbind(rmultinom(N0,1,adjustprob(c(Spec1,1-FP11-Spec1,FP11))),
             #                rmultinom(N2,1,adjustprob(c(FN11,1-FN11-Sens1,Sens1))))
@@ -484,7 +496,7 @@ computepower <- function(numAtRiskTauCases, numAtRiskTauCasesPhase2, numAtRiskTa
         
       } else { # trichotomous
         
-        S <- t(apply(SpecSens, 1, function(x) biomarkerGroups(x, binary=FALSE))) # each row is a set of Sens, Spec, etc. parameters
+        S <- t(apply(SpecSens, 1, function(x) AssignBiomarkerLevels(x, binary=FALSE))) # each row is a set of Sens, Spec, etc. parameters
         
             # Srho1 <- cbind(rmultinom(N0,1,adjustprob(c(Spec1,1-FP11-Spec1,FP11))),
             #                rmultinom(N1,1,adjustprob(c(FN21,1-FP21-FN21,FP21))),
@@ -492,15 +504,33 @@ computepower <- function(numAtRiskTauCases, numAtRiskTauCasesPhase2, numAtRiskTa
             # Srho1 <- ifelse(Srho1[1,]==1,0,ifelse(Srho1[2,]==1,1,2))
             
       }
+
+      # Select subset of subjects with biomarker measured (R_i=1) according to case-cohort or case-control sampling design
+      BiomSubset <- function(Y, N, nPhase2, controlCaseRatio, p, cohort){
+        
+        if (cohort==TRUE) {  # case-cohort sampling design
+          
+          # subset of subjects with biomarker measured is obtained by drawing a Bernoulli random sample from all at-risk observations 
+          # to form the cohort, then augmenting the cohort with all cases
+          R <- numeric(length(Y))
+          R <- ifelse(rbinom(N, 1, p)==1, 1, R)  # from N, draw Bernoulli sample with sampling probability, p
+          R <- ifelse(Y==1, 1, R)
+          keepinds <- c(1:N)[R==1]
+          
+        } else {  # case-control sampling design
+          
+          # Keep the S's in nPhase2 of the cases (deleting the rest) and in controlCaseRatio*nPhase2 controls
+          casesinds <- c(1:N)[Y==1]
+          keepcasesinds <- sample(casesinds,nPhase2,replace=FALSE)
+          controlinds <- c(1:N)[Y==0]
+          keepcontrolinds <- sample(controlinds,controlCaseRatio*nPhase2,replace=FALSE)
+          keepinds <- sort(c(keepcasesinds,keepcontrolinds))
+        }
+        return(keepinds)
+      }
       
-      # Now keep the S's in nPhase2 of the cases (deleting the rest) and in controlCaseRatio*nPhase2 controls
-      casesinds <- c(1:N)[Y==1]
-      keepcasesinds <- sample(casesinds,nPhase2,replace=FALSE)
-      controlinds <- c(1:N)[Y==0]
-      keepcontrolinds <- sample(controlinds,controlCaseRatio*nPhase2,replace=FALSE)
-      keepinds <- sort(c(keepcasesinds,keepcontrolinds))
-      
-      # Those with data:
+      # Those with biomarker data:
+      keepinds <- BiomSubset(Y, N, nPhase2, controlCaseRatio, p, cohort)
       Ycc <- Y[keepinds]
       Scc <- t(apply(S,1, function(x) x[keepinds])) # nrow=length(Sens)
           # Sccrho1 <- Srho1[keepinds]
@@ -531,7 +561,7 @@ computepower <- function(numAtRiskTauCases, numAtRiskTauCasesPhase2, numAtRiskTa
         }
         
         if (!zerosflag) {
-          fit <- tps(Ycc~Scc[k,],nn0=length(Y[Y==0]),nn1=length(Y[Y==1]),group=rep(1,length(Ycc)))
+          fit <- tps(Ycc~Scc[k,],nn0=length(Y[Y==0]),nn1=length(Y[Y==1]),group=rep(1,length(Ycc)), cohort=cohort)
           pval <- round(min(2*(1-pnorm(abs(fit$coef[2]/sqrt(fit$covm[2,2])))),1.0),4)
           if (pval <= alpha & fit$coef[2] < 0) { powerstrinary[k,j] <- powerstrinary[k,j] + 1}
         }
@@ -646,15 +676,10 @@ computepower <- function(numAtRiskTauCases, numAtRiskTauCasesPhase2, numAtRiskTa
             # Srho2 <- Xrho2 + rnorm(N,mean=0,sd=sqrt(sigma2erho2))
             # Srho3 <- Xrho3 + rnorm(N,mean=0,sd=sqrt(sigma2erho3))
             # Srho4 <- Xrho4 + rnorm(N,mean=0,sd=sqrt(sigma2erho4))
-        
-        # Now keep the S's in nPhase2 of the cases (deleting the rest) and in controlCaseRatio*nPhase2 of the controls
-        casesinds <- c(1:N)[Y==1]
-        keepcasesinds <- sample(casesinds,nPhase2,replace=FALSE)
-        controlinds <- c(1:N)[Y==0]
-        keepcontrolinds <- sample(controlinds,controlCaseRatio*nPhase2,replace=FALSE)
-        keepinds <- sort(c(keepcasesinds,keepcontrolinds))
+
         
         # Those with data:
+        keepinds <- BiomSubset(Y, N, nPhase2, controlCaseRatio, p, cohort)
         Ycc <- Y[keepinds]
         Scc <- t(apply(S,1, function(x) x[keepinds])) # nrow=length(rhos)
             # Sccrho1 <- Srho1[keepinds]
@@ -1002,8 +1027,9 @@ computepower.n <- function(numAtRiskTauCasesVect, numAtRiskTauCasesPhase2Vect, n
       # Formulas (12) and (13) in the manuscript:
       
       # Given specifications for Spec, FP1, Sens, and FN1 and a logical value indicating if the 
-      # biomarker is binary or not, the function returns a vector composed of biomarker levels (S=0,1,2)
-      biomarkerGroups <- function(SpecSens, binary){
+      # biomarker is binary or not, the function returns a vector composed of biomarker levels (S=0,1,2),
+      # where each subject is assigned a specific level
+      AssignBiomarkerLevels <- function(SpecSens, binary){
         Spec <- SpecSens[1]
         Sens <- SpecSens[2]
         FP1 <- SpecSens[3]
@@ -1027,22 +1053,16 @@ computepower.n <- function(numAtRiskTauCasesVect, numAtRiskTauCasesPhase2Vect, n
       
       if ((P0+P2)==1) { # binary case only
         
-        S <- t(apply(SpecSens, 1, function(x) biomarkerGroups(x, binary=TRUE))) # each row is a set of Sens, Spec, etc. parameters
+        S <- t(apply(SpecSens, 1, function(x) AssignBiomarkerLevels(x, binary=TRUE))) # each row is a set of Sens, Spec, etc. parameters
       
       } else { # trichotomous
         
-        S <- t(apply(SpecSens, 1, function(x) biomarkerGroups(x, binary=FALSE))) # each row is a set of Sens, Spec, etc. parameters
+        S <- t(apply(SpecSens, 1, function(x) AssignBiomarkerLevels(x, binary=FALSE))) # each row is a set of Sens, Spec, etc. parameters
       
       }
       
-      # Now keep the S's in nPhase2 of the cases (deleting the rest) and in controlCaseRatio*nPhase2 controls
-      casesinds <- c(1:N)[Y==1]
-      keepcasesinds <- sample(casesinds,nPhase2,replace=FALSE)
-      controlinds <- c(1:N)[Y==0]
-      keepcontrolinds <- sample(controlinds,controlCaseRatio*nPhase2,replace=FALSE)
-      keepinds <- sort(c(keepcasesinds,keepcontrolinds))
-      
       # Those with data:
+      keepinds <- BiomSubset(Y, N, nPhase2, controlCaseRatio, p, cohort)
       Ycc <- Y[keepinds]
       Scc <- t(apply(S,1,function(x) x[keepinds])) #nrow=length(rhos)
       
@@ -1133,14 +1153,15 @@ computepower.n <- function(numAtRiskTauCasesVect, numAtRiskTauCasesPhase2Vect, n
         error <- t(sapply(sigma2e, function(x) rnorm(N,mean=0,sd=sqrt(x))))
         S <- X + error
         
-        # Now keep the S's in nPhase2 of the cases (deleting the rest) and in controlCaseRatio*nPhase2 controls
-        casesinds <- c(1:N)[Y==1]
-        keepcasesinds <- sample(casesinds,nPhase2,replace=FALSE)
-        controlinds <- c(1:N)[Y==0]
-        keepcontrolinds <- sample(controlinds,controlCaseRatio*nPhase2,replace=FALSE)
-        keepinds <- sort(c(keepcasesinds,keepcontrolinds))
+            # # Now keep the S's in nPhase2 of the cases (deleting the rest) and in controlCaseRatio*nPhase2 controls
+            # casesinds <- c(1:N)[Y==1]
+            # keepcasesinds <- sample(casesinds,nPhase2,replace=FALSE)
+            # controlinds <- c(1:N)[Y==0]
+            # keepcontrolinds <- sample(controlinds,controlCaseRatio*nPhase2,replace=FALSE)
+            # keepinds <- sort(c(keepcasesinds,keepcontrolinds))
         
         # Those with data:
+        keepinds <- BiomSubset(Y, N, nPhase2, controlCaseRatio, p, cohort)
         Ycc <- Y[keepinds]
         Scc <- t(apply(S,1, function(x) x[keepinds])) # nrow=length(rhos)
         
