@@ -16,12 +16,13 @@
 #' @param alpha Two-sided type-I error rate for CoR hypothesis tests.
 #' @param sigma2obs For a continuous biomarker, or for a trichotomous or binary biomarker simulated using `approach 2', the variance of the continuous measured/observed biomarker.
 #' @param rhos For a continuous biomarker, or for a trichotomous or binary biomarker simulated using 'approach 2', a vector of length 4 with values for the fraction of protection-relevant variability in the measured/observed continuous biomarker.  The first element of this vector should be 1, corresponding to the case of no measurement error.
-#' @param Spec For a trichotomous biomarker (or binary as a special case), simulated using 'approach 1', a vector of length 4 with values for the sensitivity of the measured biomarker. Specifying \code{Spec = rep(1,4)}, \code{FP1 = rep(0,4)}, \code{Sens = rep(1,4)}, and \code{FN1 = rep(0,4)} indicates that approach 2 is used.
-#' @param FP1 For a trichotomous biomarker (or binary as a special case), simulated using 'approach 1', a vector of length 4 with values for the first false positive rate (FP^1) of the measured/observed biomarker. Specifying \code{Spec = rep(1,4)}, \code{FP1 = rep(0,4)}, \code{Sens = rep(1,4)}, and \code{FN1 = rep(0,4)}  indicates that approach 2 is used.
-#' @param Sens For a trichotomous biomarker (or binary as a special case), simulated using 'approach 1', a vector of length 4 with values for the specificity of the measured/observed biomarker. Specifying \code{Spec = rep(1,4)}, \code{FP1 = rep(0,4)}, \code{Sens = rep(1,4)}, and \code{FN1 = rep(0,4)}  indicates that approach 2 is used.
-#' @param FN1 For a trichotomous biomarker (or binary as a special case), simulated using 'approach 1', a vector of length 4 with values for the first false negative rate (FN^1) of the measured/observed biomarker. Specifying \code{Spec = rep(1,4)}, \code{FP1 = rep(0,4)}, \code{Sens = rep(1,4)}, and \code{FN1 = rep(0,4)}  indicates that approach 2 is used.
-#' @param cohort
-#' @param p
+#' @param Spec For a trichotomous biomarker (or binary as a special case), simulated using 'approach 1', a vector of length 4 with values for the sensitivity of the measured biomarker. Specifying \code{Spec = rep(1,4)}, \code{FP0 = rep(0,4)}, \code{Sens = rep(1,4)}, and \code{FN2 = rep(0,4)} indicates that approach 2 is used.
+#' @param FP0 For a trichotomous biomarker (or binary as a special case), simulated using 'approach 1', a vector of length 4 with values for the first false positive rate (FP^1) of the measured/observed biomarker. Specifying \code{Spec = rep(1,4)}, \code{FP0 = rep(0,4)}, \code{Sens = rep(1,4)}, and \code{FN2 = rep(0,4)}  indicates that approach 2 is used.
+#' @param Sens For a trichotomous biomarker (or binary as a special case), simulated using 'approach 1', a vector of length 4 with values for the specificity of the measured/observed biomarker. Specifying \code{Spec = rep(1,4)}, \code{FP0 = rep(0,4)}, \code{Sens = rep(1,4)}, and \code{FN2 = rep(0,4)}  indicates that approach 2 is used.
+#' @param FN2 For a trichotomous biomarker (or binary as a special case), simulated using 'approach 1', a vector of length 4 with values for the first false negative rate (FN^2) of the measured/observed biomarker. Specifying \code{Spec = rep(1,4)}, \code{FP0 = rep(0,4)}, \code{Sens = rep(1,4)}, and \code{FN2 = rep(0,4)}  indicates that approach 2 is used.
+#' @param tpsMethod Character denoting method for fitting the logistic regression model. Choose from \code{"PL"} for pseudo-likelihood (default), \code{"WL"} for weighted likelihood, and \code{"ML"} for maximum likelihood. 
+#' @param cohort Sampling design to be used. Default is \code{FALSE}, specifying case-control sampling design. If \code{TRUE}, case-cohort sampling is used. 
+#' @param p For case-cohort sampling design, probability that a subject will be in the cohort. 
 #' 
 #' @details
 #' This function performs simulations to calculate the power for testing whether a trichotomous or continuous biomarker
@@ -34,11 +35,11 @@
 #' is what the function uses to obtain \code{RRlat2}.
 #'
 #' Following Step 7 in the manuscript, the measurement error in a trichotomous (or binary) biomarker is accounted for in one of two ways.
-#' Approach 1 specifies \code{Spec}, \code{Sens}, \code{FP1}, and \code{FN1} which determine
-#' \code{FP2} and \code{FN2} from equations (7) and (8).  Four values are required for each input parameter, to allow the evaluation of biomarkers with different levels of measurement error.
+#' Approach 1 specifies \code{Spec}, \code{Sens}, \code{FP0}, and \code{FN2} which determine
+#' \code{FP1} and \code{FN1} from equations (7) and (8).  Four values are required for each input parameter, to allow the evaluation of biomarkers with different levels of measurement error.
 #'
 #' Approach 2 for a trichotomous (or binary) biomarker specifies \code{sigma2obs} and \code{rho}, again requiring four settings
-#' for \code{rho}; this approach assumes the normal measurement error model (4) in the manuscript.  Specifying \code{Spec = rep(1,4)}, \code{FP1 = rep(0,4)}, \code{Sens = rep(1,4)}, and \code{FN1 = rep(0,4)}
+#' for \code{rho}; this approach assumes the normal measurement error model (4) in the manuscript.  Specifying \code{Spec = rep(1,4)}, \code{FP0 = rep(0,4)}, \code{Sens = rep(1,4)}, and \code{FN2 = rep(0,4)}
 #' defaults to approach 2, which is what is used in illustrations in the manuscript.
 #'
 #' For a continuous biomarker, \code{VElowestvect}, \code{sigma2obs} and \code{rho} must be specified.  Setting \code{VElowestvect = NULL}
@@ -58,13 +59,13 @@
 #'
 #' ## Parameters used for the trichotomous or binary biomarker calculations, Approach 1
 #' ## For no measurement error scenario, set
-#' ## Spec[1]=1, FP1[1]=0, Sens[1]=1, FN1[1]=0
+#' ## Spec[1]=1, FP0[1]=0, Sens[1]=1, FN2[1]=0
 #' ## Note the other elements of at least one of these four parameter vectors need
 #' ## to be set to a different value to tell the program to use Approach 1
 #' Spec <- c(1, 0.9, 0.8, 0.7)
-#' FP1 <- rep(0,4)
+#' FP0 <- rep(0,4)
 #' Sens <- c(1, 0.9, 0.8, 0.7)
-#' FN1 <- rep(0,4)
+#' FN2 <- rep(0,4)
 #' RRlat1 <- rep(0,100) # will be turned into NA in computepower() for binary case
 #' RRlat0 <- seq(1,RRoverall,len=100) # 100 data points for the power curve
 #'
@@ -84,7 +85,7 @@
 #' P0 <- Plat0 # different values of P0 can be set
 #' computepower(numAtRiskTauCases, numAtRiskTauCasesPhase2, numAtRiskTauControls,
 #' risk0, RRoverall, Plat0,Plat2, P0,P2, RRlat0,RRlat1, PlatVElowest=0,VElowestvect=NULL,
-#' controlCaseRatio=5, M=1000, alpha=0.05, sigma2obs, rhos, Spec, FP1, Sens, FN1)
+#' controlCaseRatio=5, M=1000, alpha=0.05, sigma2obs, rhos, Spec, FP0, Sens, FN2)
 #'
 #'## Trichotomous biomarker, Approach 1
 #' Plat0 <- 0.1
@@ -93,17 +94,17 @@
 #' P0 <- Plat0 # different values of P0 can be set
 #' computepower(numAtRiskTauCases, numAtRiskTauCasesPhase2, numAtRiskTauControls,
 #' risk0, RRoverall, Plat0,Plat2, P0,P2, RRlat0,RRlat1, PlatVElowest=0,
-#' VElowestvect=NULL, controlCaseRatio=5, M=1000, alpha=0.05, sigma2obs, rhos, Spec, FP1, Sens, FN1)
+#' VElowestvect=NULL, controlCaseRatio=5, M=1000, alpha=0.05, sigma2obs, rhos, Spec, FP0, Sens, FN2)
 #'
 #' ## Binary biomarker, Approach 2
 #' computepower(numAtRiskTauCases, numAtRiskTauCasesPhase2, numAtRiskTauControls, risk0,
 #' RRoverall, Plat0,Plat2, P0,P2, RRlat0,RRlat1, PlatVElowest=0,VElowestvect=NULL, controlCaseRatio=5,
-#' M=1000, alpha=0.05, sigma2obs, rhos, Spec=rep(1,4), FP1=rep(0,4), Sens=rep(1,4), FN1=rep(0,4))
+#' M=1000, alpha=0.05, sigma2obs, rhos, Spec=rep(1,4), FP0=rep(0,4), Sens=rep(1,4), FN2=rep(0,4))
 #'
 #' ## Trichotomous biomarker, Approach 2
 #' computepower(numAtRiskTauCases, numAtRiskTauCasesPhase2, numAtRiskTauControls,
 #' risk0, RRoverall, Plat0,Plat2, P0,P2, RRlat0,RRlat1, PlatVElowest=0,VElowestvect=NULL,
-#' controlCaseRatio=5, M=1000, alpha=0.05, sigma2obs, rhos, Spec=rep(1,4), FP1=rep(0,4), Sens=rep(1,4), FN1=rep(0,4))
+#' controlCaseRatio=5, M=1000, alpha=0.05, sigma2obs, rhos, Spec=rep(1,4), FP0=rep(0,4), Sens=rep(1,4), FN2=rep(0,4))
 #'
 #' ## Continuous biomarker
 
@@ -125,7 +126,8 @@ computepower <- function(numAtRiskTauCases, numAtRiskTauCasesPhase2, numAtRiskTa
                          alpha=0.05,
                          sigma2obs=1,
                          rhos=c(1,.9,.7,.5),
-                         Spec=rep(1,4), FP1=rep(0,4), Sens=rep(1,4), FN1=rep(0,4),
+                         Spec=rep(1,4), FP0=rep(0,4), Sens=rep(1,4), FN2=rep(0,4),
+                         tpsMethod="PL",
                          cohort=FALSE, p=NULL) {
   
   # sigma2tr is the variance of the true biomarker X
@@ -137,6 +139,20 @@ computepower <- function(numAtRiskTauCases, numAtRiskTauCasesPhase2, numAtRiskTa
   
   # VElowestvect is used for a continuous biomarker- a vector of fixed value of VE(x) for
   # the subgroup of subjects with lowest X^* values, where this subgroup has prevalence PlatVElowest
+
+  # check sampling design input parameters are specified and valid
+  if(cohort==TRUE) {  #case-cohort 
+    
+    if (is.null(p)==TRUE) {
+      stop("Case-cohort sampling was chosen and sampling probability, p, is unspecified")
+    } else if (p < 0 | p > 1) {
+      stop("Case-cohort sampling was chosen and sampling probability, p, is not a valid probability")
+    }
+    
+  } else if (is.null(controlCaseRatio)==TRUE) {  #case-control
+    stop("Case-control sampling was chosen and controlCaseRatio is unspecified")
+  }
+
   
   nCases <- numAtRiskTauCases
   nPhase2 <- numAtRiskTauCasesPhase2
@@ -169,7 +185,7 @@ computepower <- function(numAtRiskTauCases, numAtRiskTauCasesPhase2, numAtRiskTa
     if (min(VElowestvect)==0 & PlatVElowest > 1 - VEoverall) {stop("Error: Input parameters PlatVElowest and VElowestvect violate probability constraints for normal marker calculations") }
   }
   
-  checkprobabilityviolation(VEoverall,VElat0,Plat0,Plat2,PlatVElowest,VElowestvect)
+  # checkprobabilityviolation(VEoverall,VElat0,Plat0,Plat2,PlatVElowest,VElowestvect)
   
   sigma2e <- (1-rhos)*sigma2obs
   
@@ -178,57 +194,59 @@ computepower <- function(numAtRiskTauCases, numAtRiskTauCasesPhase2, numAtRiskTa
   #################################################
   # Computations for a trinary biomarker
   
-  Approach2 <- Spec==rep(1,4) & FP1==rep(0,4) & Sens==rep(1,4) & FN1==rep(0,4)   #*# if App2, = TRUE TRUE TRUE TRUE
+  Approach2 <- Spec==rep(1,4) & FP0==rep(0,4) & Sens==rep(1,4) & FN2==rep(0,4)   #*# if App2, = TRUE TRUE TRUE TRUE
   Approach2 <- length(Approach2[Approach2])==4
   if (Approach2) {
     # Default choice
     
-    # Compute Sens, Spec, FP1, FP2, FN1, FN2
+    # Compute Sens, Spec, FP0, FP1, FN2, FN1
+    
     ans <- computeSensSpecFPFN(sigma2obs,rhos,Plat0,Plat2,P0,P2)
     Sens <- unlist(lapply(ans, function(x) x[[1,10]])) 
     Spec <- unlist(lapply(ans, function(x) x[[1,11]]))
-    FP1 <- unlist(lapply(ans, function(x) x[[1,12]])) 
-    FP2 <- unlist(lapply(ans, function(x) x[[1,13]])) 
-    FN1 <- unlist(lapply(ans, function(x) x[[1,14]]))
-    FN2 <- unlist(lapply(ans, function(x) x[[1,15]])) 
+    FP0 <- unlist(lapply(ans, function(x) x[[1,12]])) 
+    FP1 <- unlist(lapply(ans, function(x) x[[1,13]])) 
+    FN2 <- unlist(lapply(ans, function(x) x[[1,14]]))
+    FN1 <- unlist(lapply(ans, function(x) x[[1,15]])) 
+    
     
     # Write out a vector that can be used to make a table mapping (rho,sigma2obs) to the Sens etc. parameters
     
-    x1 <- unlist(c(sigma2obs[1],rhos[1],Plat0,P0,Plat2,P2,Sens[1],Spec[1],FP1[1],FN1[1],FP2[1],FN2[1]))
-    #cat("sigma2obs,rho,Plat0,P0,Plat2,P2,Sens,Spec,FP1,FN1,FP2,FN2 in order of the vector rhos")
+    x1 <- unlist(c(sigma2obs[1],rhos[1],Plat0,P0,Plat2,P2,Sens[1],Spec[1],FP0[1],FN2[1],FP1[1],FN1[1]))
+    #cat("sigma2obs,rho,Plat0,P0,Plat2,P2,Sens,Spec,FP0,FN2,FP1,FN1 in order of the vector rhos")
     #cat("\n")
     #cat(paste(round(x1,3)),"\n")
     
-    x2 <- unlist(c(sigma2obs[2],rhos[2],Plat0,P0,Plat2,P2,Sens[2],Spec[2],FP1[2],FN1[2],FP2[2],FN2[2]))
+    x2 <- unlist(c(sigma2obs[2],rhos[2],Plat0,P0,Plat2,P2,Sens[2],Spec[2],FP0[2],FN2[2],FP1[2],FN1[2]))
     #cat("\n")
     #cat(paste(round(x2,3)),"\n")
     
-    x3 <- unlist(c(sigma2obs[3],rhos[3],Plat0,P0,Plat2,P2,Sens[3],Spec[3],FP1[3],FN1[3],FP2[3],FN2[3]))
+    x3 <- unlist(c(sigma2obs[3],rhos[3],Plat0,P0,Plat2,P2,Sens[3],Spec[3],FP0[3],FN2[3],FP1[3],FN1[3]))
     #cat("\n")
     #cat(paste(round(x3,3)),"\n")
     
-    x4 <- unlist(c(sigma2obs[4],rhos[4],Plat0,P0,Plat2,P2,Sens[4],Spec[4],FP1[4],FN1[4],FP2[4],FN2[4]))
+    x4 <- unlist(c(sigma2obs[4],rhos[4],Plat0,P0,Plat2,P2,Sens[4],Spec[4],FP0[4],FN2[4],FP1[4],FN1[4]))
     #cat("\n")
     #cat(paste(round(x4,3)),"\n")
 
   }
   
   # Approach 1 in the manuscript:
-  if (!Approach2) { #*# use given Sens, Spec, FP1, and FN1 params
+  if (!Approach2) { #*# use given Sens, Spec, FP0, and FN2 params
     
-    checkParamLengthsMatch <- function(Sens, Spec, FP1, FN1){
-      lengths <- sapply(list(Sens,Spec,FP1,FN1), length)
+    checkParamLengthsMatch <- function(Sens, Spec, FP0, FN2){
+      lengths <- sapply(list(Sens,Spec,FP0,FN2), length)
       if(max(lengths) != min(lengths)){
-        stop("Vector lengths differ for Sens, Spec, FP1, FN1")
+        stop("Vector lengths differ for Sens, Spec, FP0, FN2")
       }
     }
-    checkParamLengthsMatch(Sens,Spec,FP1,FN1)
+    checkParamLengthsMatch(Sens,Spec,FP0,FN2)
     
     # Apply formula (8) in the manuscript
-    FN2 <- (P0 - Spec*Plat0 - FN1*Plat2)/Plat1   #*#P0, Plat0, Plat2 given params
+    FN1 <- (P0 - Spec*Plat0 - FN2*Plat2)/Plat1   #*#P0, Plat0, Plat2 given params
     
     # Apply formula (9) in the manuscript
-    FP2 <- (P2 - Sens*Plat2 - FP1*Plat0)/Plat1
+    FP1 <- (P2 - Sens*Plat2 - FP0*Plat0)/Plat1
     
         # Sens1 <- Sens[1] #*# don't need these because we can treat Sens as a vector and it is given
         # Sens2 <- Sens[2]
@@ -238,37 +256,37 @@ computepower <- function(numAtRiskTauCases, numAtRiskTauCasesPhase2, numAtRiskTa
         # Spec2 <- Spec[2]
         # Spec3 <- Spec[3]
         # Spec4 <- Spec[4]
-        # FP11 <- FP1[1]
-        # FP12 <- FP1[2]
-        # FP13 <- FP1[3]
-        # FP14 <- FP1[4]
-        # FN11 <- FN1[1]
-        # FN12 <- FN1[2]
-        # FN13 <- FN1[3]
-        # FN14 <- FN1[4]
+        # FP01 <- FP0[1]
+        # FP02 <- FP0[2]
+        # FP03 <- FP0[3]
+        # FP04 <- FP0[4]
+        # FN21 <- FN2[1]
+        # FN22 <- FN2[2]
+        # FN23 <- FN2[3]
+        # FN24 <- FN2[4]
         
         
         # # Apply formula (8) in the manuscript
-        # FN21 <- (P0 - Spec1*Plat0 - FN11*Plat2)/Plat1 #*# don't need b/c FN2 is a vector
-        # FN22 <- (P0 - Spec2*Plat0 - FN12*Plat2)/Plat1
-        # FN23 <- (P0 - Spec3*Plat0 - FN13*Plat2)/Plat1
-        # FN24 <- (P0 - Spec4*Plat0 - FN14*Plat2)/Plat1
+        # FN11 <- (P0 - Spec1*Plat0 - FN21*Plat2)/Plat1 #*# don't need b/c FN2 is a vector
+        # FN12 <- (P0 - Spec2*Plat0 - FN22*Plat2)/Plat1
+        # FN13 <- (P0 - Spec3*Plat0 - FN23*Plat2)/Plat1
+        # FN14 <- (P0 - Spec4*Plat0 - FN24*Plat2)/Plat1
         # 
         # # Apply formula (9) in the manuscript
-        # FP21 <- (P2 - Sens1*Plat2 - FP11*Plat0)/Plat1
-        # FP22 <- (P2 - Sens2*Plat2 - FP12*Plat0)/Plat1
-        # FP23 <- (P2 - Sens3*Plat2 - FP13*Plat0)/Plat1
-        # FP24 <- (P2 - Sens4*Plat2 - FP14*Plat0)/Plat1
+        # FP01 <- (P2 - Sens1*Plat2 - FP01*Plat0)/Plat1
+        # FP02 <- (P2 - Sens2*Plat2 - FP02*Plat0)/Plat1
+        # FP03 <- (P2 - Sens3*Plat2 - FP03*Plat0)/Plat1
+        # FP04 <- (P2 - Sens4*Plat2 - FP04*Plat0)/Plat1
     
     
     # Check if an error in the ranges of values due to an out of
     # bounds input parameter
     
-    if (any(FN2 < 0 | FN2 > 1 | FP2 < 0 | FP2 > 1)){
-      stop("Approach 1 was used and one of the parameters Sens, Spec, FP1, FN1 is out of range")
+    if (any(FN1 < 0 | FN1 > 1 | FP1 < 0 | FP1 > 1)){
+      stop("Approach 1 was used and one of the parameters Sens, Spec, FP0, FN2 is out of range")
     }
-        # if (FN21 < 0 | FN21 > 1 | FN22 < 0 | FN22 > 1 | FN23 < 0 | FN23 > 1 | FN24 < 0 | FN24 > 1 | FN21 < 0 | FP21 > 1 | FP22 < 0 | FP22 > 1 | FP23 < 0 | FP23 > 1 | FP24 < 0 | FP24 > 1) {
-        #   cat(paste("Approach 1 was used and one of the parameters Sens, Spec, FP1, FN1 is out of range"),"\n")
+        # if (FN11 < 0 | FN11 > 1 | FN12 < 0 | FN12 > 1 | FN13 < 0 | FN13 > 1 | FN14 < 0 | FN14 > 1 | FP11 < 0 | FP11 > 1 | FP12 < 0 | FP12 > 1 | FP13 < 0 | FP13 > 1 | FP14 < 0 | FP14 > 1) {
+        #   cat(paste("Approach 1 was used and one of the parameters Sens, Spec, FP0, FN2 is out of range"),"\n")
         # }
     
   }
@@ -285,23 +303,23 @@ computepower <- function(numAtRiskTauCases, numAtRiskTauCasesPhase2, numAtRiskTa
   
   # Observed risks P(Y(1)=1|S(1)=0, 1, or 2)  #*# for diff values of rho; using Bayes' rule
   
-  probX0_cond_S2 <- FP1*Plat0/P2
-  probX1_cond_S2 <- FP2*Plat1/P2
+  probX0_cond_S2 <- FP0*Plat0/P2
+  probX1_cond_S2 <- FP1*Plat1/P2
   probX2_cond_S2 <- Sens*Plat2/P2
   risk1_2 <- (probX0_cond_S2 %o% RRlat0 + probX1_cond_S2 %o% RRlat1 + probX2_cond_S2 %o% RRlat2 )*risk0 # use outer product to get matrix with nrow=length(rho), ncol=length(RRlat0)
   probX0_cond_S0 <- Spec*Plat0/P0
-  probX1_cond_S0 <- FN2*Plat1/P0
-  probX2_cond_S0 <- FN1*Plat2/P0
+  probX1_cond_S0 <- FN1*Plat1/P0
+  probX2_cond_S0 <- FN2*Plat2/P0
   risk1_0 <- (probX0_cond_S0 %o% RRlat0 + probX1_cond_S0 %o% RRlat1 + probX2_cond_S0 %o% RRlat2)*risk0
   risk1_1 <- (risk1 - risk1_0*P0 - risk1_2*P2)/P1
   
-      # probX0_cond_S2 <- FP12*Plat0/P2 #*# don't need these anymore because the variables are vectors now
-      # probX1_cond_S2 <- FP22*Plat1/P2
+      # probX0_cond_S2 <- FP02*Plat0/P2 #*# don't need these anymore because the variables are vectors now
+      # probX1_cond_S2 <- FP12*Plat1/P2
       # probX2_cond_S2 <- Sens2*Plat2/P2
       # risk1hi2 <- (RRlat0*probX0_cond_S2 + RRlat1*probX1_cond_S2 + RRlat2*probX2_cond_S2)*risk0
       # probX0_cond_S0 <- Spec2*Plat0/P0
-      # probX1_cond_S0 <- FN22*Plat1/P0
-      # probX2_cond_S0 <- FN12*Plat2/P0
+      # probX1_cond_S0 <- FN12*Plat1/P0
+      # probX2_cond_S0 <- FN22*Plat2/P0
       # risk1lo2 <- (RRlat0*probX0_cond_S0 + RRlat1*probX1_cond_S0 + RRlat2*probX2_cond_S0)*risk0
       # risk1med2 <- (risk1 - risk1lo2*P0 - risk1hi2*P2)/P1
       # 
@@ -460,37 +478,37 @@ computepower <- function(numAtRiskTauCases, numAtRiskTauCasesPhase2, numAtRiskTa
       
       # First simulate not conditioning on Y=1 or 0 to determine S=0,1,2:
       
-      # Given specifications for Spec, FP1, Sens, and FN1 and a logical value indicating if the 
+      # Given specifications for Spec, FP0, Sens, and FN2 and a logical value indicating if the 
       # biomarker is binary or not, the function returns a vector composed of biomarker levels (S=0,1,2),
       # where each subject is assigned a specific level
       AssignBiomarkerLevels <- function(SpecSens, binary){
         Spec <- SpecSens[1]
         Sens <- SpecSens[2]
-        FP1 <- SpecSens[3]
-        FN1 <- SpecSens[4]
-        FP2 <- SpecSens[5]
-        FN2 <- SpecSens[6]
+        FP0 <- SpecSens[3]
+        FN2 <- SpecSens[4]
+        FP1 <- SpecSens[5]
+        FN1 <- SpecSens[6]
         if(binary==TRUE){
-          Svalues <- cbind(rmultinom(N0,1,adjustprob(c(Spec,1-FP1-Spec,FP1))),
-                           rmultinom(N2,1,adjustprob(c(FN1,1-FN1-Sens,Sens))))
+          Svalues <- cbind(rmultinom(N0,1,adjustprob(c(Spec,1-FP0-Spec,FP0))),
+                           rmultinom(N2,1,adjustprob(c(FN2,1-FN2-Sens,Sens))))
         } else{
-          Svalues <- cbind(rmultinom(N0,1,adjustprob(c(Spec,1-FP1-Spec,FP1))),
-                           rmultinom(N1,1,adjustprob(c(FN2,1-FP2-FN2,FP2))),
-                           rmultinom(N2,1,adjustprob(c(FN1,1-FN1-Sens,Sens))))
+          Svalues <- cbind(rmultinom(N0,1,adjustprob(c(Spec,1-FP0-Spec,FP0))),
+                           rmultinom(N1,1,adjustprob(c(FN1,1-FP1-FN1,FP1))),
+                           rmultinom(N2,1,adjustprob(c(FN2,1-FN2-Sens,Sens))))
         }
         rownames(Svalues) <- c("S=0","S=1","S=2")
         Svalues <- ifelse(Svalues[1,]==1,0,ifelse(Svalues[2,]==1,1,2))
         return(Svalues)
       }
       
-      SpecSens <- cbind(Spec,Sens,FP1,FN1,FP2,FN2)
+      SpecSens <- cbind(Spec,Sens,FP0,FN2,FP1,FN2)
       
       if ((P0+P2)==1) { # binary case only
 
         S <- t(apply(SpecSens, 1, function(x) AssignBiomarkerLevels(x, binary=TRUE))) # each row is a set of Sens, Spec, etc. parameters
         
-            # Srho1 <- cbind(rmultinom(N0,1,adjustprob(c(Spec1,1-FP11-Spec1,FP11))),
-            #                rmultinom(N2,1,adjustprob(c(FN11,1-FN11-Sens1,Sens1))))
+            # Srho1 <- cbind(rmultinom(N0,1,adjustprob(c(Spec1,1-FP01-Spec1,FP01))),
+            #                rmultinom(N2,1,adjustprob(c(FN21,1-FN21-Sens1,Sens1))))
             # Srho1 <- ifelse(Srho1[1,]==1,0,ifelse(Srho1[2,]==1,1,2))
             # 
         
@@ -498,9 +516,9 @@ computepower <- function(numAtRiskTauCases, numAtRiskTauCasesPhase2, numAtRiskTa
         
         S <- t(apply(SpecSens, 1, function(x) AssignBiomarkerLevels(x, binary=FALSE))) # each row is a set of Sens, Spec, etc. parameters
         
-            # Srho1 <- cbind(rmultinom(N0,1,adjustprob(c(Spec1,1-FP11-Spec1,FP11))),
-            #                rmultinom(N1,1,adjustprob(c(FN21,1-FP21-FN21,FP21))),
-            #                rmultinom(N2,1,adjustprob(c(FN11,1-FN11-Sens1,Sens1))))
+            # Srho1 <- cbind(rmultinom(N0,1,adjustprob(c(Spec1,1-FP01-Spec1,FP01))),
+            #                rmultinom(N1,1,adjustprob(c(FN11,1-FP11-FN11,FP11))),
+            #                rmultinom(N2,1,adjustprob(c(FN21,1-FN21-Sens1,Sens1))))
             # Srho1 <- ifelse(Srho1[1,]==1,0,ifelse(Srho1[2,]==1,1,2))
             
       }
@@ -514,7 +532,7 @@ computepower <- function(numAtRiskTauCases, numAtRiskTauCasesPhase2, numAtRiskTa
           # to form the cohort, then augmenting the cohort with all cases
           R <- numeric(length(Y))
           R <- ifelse(rbinom(N, 1, p)==1, 1, R)  # from N, draw Bernoulli sample with sampling probability, p
-          R <- ifelse(Y==1, 1, R)
+          R <- ifelse(Y==1, 1, R)  # augment all cases
           keepinds <- c(1:N)[R==1]
           
         } else {  # case-control sampling design
@@ -561,7 +579,7 @@ computepower <- function(numAtRiskTauCases, numAtRiskTauCasesPhase2, numAtRiskTa
         }
         
         if (!zerosflag) {
-          fit <- tps(Ycc~Scc[k,],nn0=length(Y[Y==0]),nn1=length(Y[Y==1]),group=rep(1,length(Ycc)), cohort=cohort)
+          fit <- tps(Ycc~Scc[k,],nn0=length(Y[Y==0]),nn1=length(Y[Y==1]),group=rep(1,length(Ycc)), method=tpsMethod, cohort=cohort)
           pval <- round(min(2*(1-pnorm(abs(fit$coef[2]/sqrt(fit$covm[2,2])))),1.0),4)
           if (pval <= alpha & fit$coef[2] < 0) { powerstrinary[k,j] <- powerstrinary[k,j] + 1}
         }
@@ -688,7 +706,7 @@ computepower <- function(numAtRiskTauCases, numAtRiskTauCasesPhase2, numAtRiskTa
             # Sccrho4 <- Srho4[keepinds]
 
         for(k in 1:nrow(Scc)){
-          fit <- tps(Ycc~Scc[k,],nn0=length(Y[Y==0]),nn1=length(Y[Y==1]),group=rep(1,length(Ycc)))
+          fit <- tps(Ycc~Scc[k,],nn0=length(Y[Y==0]),nn1=length(Y[Y==1]),group=rep(1,length(Ycc)), method=tpsMethod, cohort=cohort)
           pval <- round(min(2*(1-pnorm(abs(fit$coef[2]/sqrt(fit$covm[2,2])))),1.0),4)
           if (pval <= alpha & fit$coef[2] < 0) { powerscont[k,j] <- powerscont[k,j] + 1}
         }
@@ -765,12 +783,12 @@ computepower <- function(numAtRiskTauCases, numAtRiskTauCasesPhase2, numAtRiskTa
 
 # As for computepower(),
 # following Step 7 in the article, the program for a trichotomous marker accounts for assay noise in one of two ways.
-# The first approach specifies Spec, Sens, FP1, FN1 which determine FP2 and FN2 from equations (8) and (9).  4 settings
+# The first approach specifies Spec, Sens, FP0, FN2 which determine FP1 and FN2 from equations (8) and (9).  4 settings
 # must be specified.
 #
 # The second approach specifies sigma2obs and rho, again requiring 4 settings for rho; this approach assumes the normal
 # measurement error model (4) in the article.  Specifying
-# the vectors Spec=1, Sens=1, FP1=1, FN1=1 defaults to approach 2, which is used in the manuscript.
+# the vectors Spec=1, Sens=1, FP0=1, FN2=1 defaults to approach 2, which is used in the manuscript.
 
 # Output: Power
 
@@ -794,7 +812,7 @@ computepower.n <- function(numAtRiskTauCasesVect, numAtRiskTauCasesPhase2Vect, n
                            alpha=0.05,
                            sigma2obs=1,
                            rhos=c(1,.9,.7,.5),
-                           Spec=rep(1,4), FP1=rep(0,4), Sens=rep(1,4), FN1=rep(0,4)) {
+                           Spec=rep(1,4), FP0=rep(0,4), Sens=rep(1,4), FN2=rep(0,4)) {
   
   # Like computepower except RRlat2 (now RRlat2point) and VElowest are singulars, and
   # noobsatriskmotaucasesvect and noobsatriskmotaucontrolsvect are vectors
@@ -823,35 +841,35 @@ computepower.n <- function(numAtRiskTauCasesVect, numAtRiskTauCasesPhase2Vect, n
   ###############################################################
   # Computations for a trinary biomarker
   
-  Approach2 <- Spec==rep(1,4) & FP1==rep(0,4) & Sens==rep(1,4) & FN1==rep(0,4)
+  Approach2 <- Spec==rep(1,4) & FP0==rep(0,4) & Sens==rep(1,4) & FN2==rep(0,4)
   Approach2 <- length(Approach2[Approach2])==4
   
   if (Approach2) {
     # Default choice
     
-    # Compute Sens, Spec, FP1, FP2, FN1, FN2
+    # Compute Sens, Spec, FP0, FP1, FN2, FN2
     ans <- computeSensSpecFPFN(sigma2obs,rhos,Plat0,Plat2,P0,P2)
     Sens <- unlist(lapply(ans, function(x) x[[1,10]])) 
     Spec <- unlist(lapply(ans, function(x) x[[1,11]]))
-    FP1 <- unlist(lapply(ans, function(x) x[[1,12]])) 
-    FP2 <- unlist(lapply(ans, function(x) x[[1,13]])) 
-    FN1 <- unlist(lapply(ans, function(x) x[[1,14]]))
-    FN2 <- unlist(lapply(ans, function(x) x[[1,15]]))
+    FP0 <- unlist(lapply(ans, function(x) x[[1,12]])) 
+    FP1 <- unlist(lapply(ans, function(x) x[[1,13]])) 
+    FN2 <- unlist(lapply(ans, function(x) x[[1,14]]))
+    FN1 <- unlist(lapply(ans, function(x) x[[1,15]]))
   }
   
   # Approach 1 in the manuscript:
   if (!Approach2) {
     
     # Apply formula (8) in the manuscript
-    FN2 <- (P0 - Spec*Plat0 - FN1*Plat2)/Plat1   #*#P0, Plat0, Plat2 given params
+    FN1 <- (P0 - Spec*Plat0 - FN2*Plat2)/Plat1   #*#P0, Plat0, Plat2 given params
     
     # Apply formula (9) in the manuscript
-    FP2 <- (P2 - Sens*Plat2 - FP1*Plat0)/Plat1
+    FP1 <- (P2 - Sens*Plat2 - FP0*Plat0)/Plat1
     
     #Check if an error in the ranges of values due to an out of
     # bounds input parameter
-    if (any(FN2 < 0 | FN2 > 1 | FP2 < 0 | FP2 > 1)){
-      stop("Approach 1 was used and one of the parameters Sens, Spec, FP1, FN1 is out of range")
+    if (any(FN1 < 0 | FN1 > 1 | FP1 < 0 | FP1 > 1)){
+      stop("Approach 1 was used and one of the parameters Sens, Spec, FP0, FN2 is out of range")
     }
   }
   
@@ -867,14 +885,14 @@ computepower.n <- function(numAtRiskTauCasesVect, numAtRiskTauCasesPhase2Vect, n
   #risk1 <- RRoverall*risk0
   #
   ## Observed risks P(Y(1)=1|S(1)=lo, med, or hi)
-  #risk1hi1 <- (RRlat0point*FP11 + RRlat1point*FP21 + RRlat2point*Sens1)*risk0
-  #risk1lo1 <- (RRlat0point*Spec1 + RRlat1point*FN21 + RRlat2point*FN11)*risk0
-  #risk1hi2 <- (RRlat0point*FP12 + RRlat1point*FP22 + RRlat2point*Sens2)*risk0
-  #risk1lo2 <- (RRlat0point*Spec2 + RRlat1point*FN22 + RRlat2point*FN12)*risk0
-  #risk1hi3 <- (RRlat0point*FP13 + RRlat1point*FP23 + RRlat2point*Sens3)*risk0
-  #risk1lo3 <- (RRlat0point*Spec3 + RRlat1point*FN23 + RRlat2point*FN13)*risk0
-  #risk1hi4 <- (RRlat0point*FP14 + RRlat1point*FP24 + RRlat2point*Sens4)*risk0
-  #risk1lo4 <- (RRlat0point*Spec4 + RRlat1point*FN24 + RRlat2point*FN14)*risk0
+  #risk1hi1 <- (RRlat0point*FP01 + RRlat1point*FP11 + RRlat2point*Sens1)*risk0
+  #risk1lo1 <- (RRlat0point*Spec1 + RRlat1point*FN11 + RRlat2point*FN21)*risk0
+  #risk1hi2 <- (RRlat0point*FP02 + RRlat1point*FP12 + RRlat2point*Sens2)*risk0
+  #risk1lo2 <- (RRlat0point*Spec2 + RRlat1point*FN12 + RRlat2point*FN22)*risk0
+  #risk1hi3 <- (RRlat0point*FP03 + RRlat1point*FP13 + RRlat2point*Sens3)*risk0
+  #risk1lo3 <- (RRlat0point*Spec3 + RRlat1point*FN13 + RRlat2point*FN23)*risk0
+  #risk1hi4 <- (RRlat0point*FP04 + RRlat1point*FP14 + RRlat2point*Sens4)*risk0
+  #risk1lo4 <- (RRlat0point*Spec4 + RRlat1point*FN14 + RRlat2point*FN24)*risk0
   
   # Compute the marginal risks:
   # Made it to the end of follow-up HIV negative
@@ -882,13 +900,13 @@ computepower.n <- function(numAtRiskTauCasesVect, numAtRiskTauCasesPhase2Vect, n
   
   # Observed risks P(Y(1)=1|S(1)=0, 1, or 2)  #*# for diff values of rho; using Bayes' rule
   
-  probX0_cond_S2 <- FP1*Plat0/P2
-  probX1_cond_S2 <- FP2*Plat1/P2
+  probX0_cond_S2 <- FP0*Plat0/P2
+  probX1_cond_S2 <- FP1*Plat1/P2
   probX2_cond_S2 <- Sens*Plat2/P2
   risk1_2 <- (probX0_cond_S2 * RRlat0point + probX1_cond_S2 * RRlat1point + probX2_cond_S2 * RRlat2point)*risk0 #vector with length=length(rhos)
   probX0_cond_S0 <- Spec*Plat0/P0
-  probX1_cond_S0 <- FN2*Plat1/P0
-  probX2_cond_S0 <- FN1*Plat2/P0
+  probX1_cond_S0 <- FN1*Plat1/P0
+  probX2_cond_S0 <- FN2*Plat2/P0
   risk1_0 <- (probX0_cond_S0 * RRlat0point + probX1_cond_S0 * RRlat1point + probX2_cond_S0 * RRlat2point)*risk0
   risk1_1 <- (risk1 - risk1_0*P0 - risk1_2*P2)/P1
   
@@ -1026,30 +1044,30 @@ computepower.n <- function(numAtRiskTauCasesVect, numAtRiskTauCasesPhase2Vect, n
       # Simulate the trinary surrogate with 0,1,2 = lo,med,hi
       # Formulas (12) and (13) in the manuscript:
       
-      # Given specifications for Spec, FP1, Sens, and FN1 and a logical value indicating if the 
+      # Given specifications for Spec, FP0, Sens, and FN2 and a logical value indicating if the 
       # biomarker is binary or not, the function returns a vector composed of biomarker levels (S=0,1,2),
       # where each subject is assigned a specific level
       AssignBiomarkerLevels <- function(SpecSens, binary){
         Spec <- SpecSens[1]
         Sens <- SpecSens[2]
-        FP1 <- SpecSens[3]
-        FN1 <- SpecSens[4]
-        FP2 <- SpecSens[5]
-        FN2 <- SpecSens[6]
+        FP0 <- SpecSens[3]
+        FN2 <- SpecSens[4]
+        FP1 <- SpecSens[5]
+        FN1 <- SpecSens[6]
         if(binary==TRUE){
-          Svalues <- cbind(rmultinom(N0,1,adjustprob(c(Spec,1-FP1-Spec,FP1))),
-                           rmultinom(N2,1,adjustprob(c(FN1,1-FN1-Sens,Sens))))
+          Svalues <- cbind(rmultinom(N0,1,adjustprob(c(Spec,1-FP0-Spec,FP0))),
+                           rmultinom(N2,1,adjustprob(c(FN2,1-FN2-Sens,Sens))))
         } else{
-          Svalues <- cbind(rmultinom(N0,1,adjustprob(c(Spec,1-FP1-Spec,FP1))),
-                           rmultinom(N1,1,adjustprob(c(FN2,1-FP2-FN2,FP2))),
-                           rmultinom(N2,1,adjustprob(c(FN1,1-FN1-Sens,Sens))))
+          Svalues <- cbind(rmultinom(N0,1,adjustprob(c(Spec,1-FP0-Spec,FP0))),
+                           rmultinom(N1,1,adjustprob(c(FN1,1-FP1-FN1,FP1))),
+                           rmultinom(N2,1,adjustprob(c(FN2,1-FN2-Sens,Sens))))
         }
         rownames(Svalues) <- c("S=0","S=1","S=2")
         Svalues <- ifelse(Svalues[1,]==1,0,ifelse(Svalues[2,]==1,1,2))
         return(Svalues)
       }
       
-      SpecSens <- cbind(Spec,Sens,FP1,FN1,FP2,FN2)
+      SpecSens <- cbind(Spec,Sens,FP0,FN2,FP1,FN1)
       
       if ((P0+P2)==1) { # binary case only
         
@@ -1089,7 +1107,7 @@ computepower.n <- function(numAtRiskTauCasesVect, numAtRiskTauCasesPhase2Vect, n
         }
         
         if (!zerosflag) {
-          fit <- tps(Ycc~Scc[k,],nn0=length(Y[Y==0]),nn1=length(Y[Y==1]),group=rep(1,length(Ycc)))
+          fit <- tps(Ycc~Scc[k,],nn0=length(Y[Y==0]),nn1=length(Y[Y==1]),group=rep(1,length(Ycc)), method=tpsMethod, cohort=cohort)
           pval <- round(min(2*(1-pnorm(abs(fit$coef[2]/sqrt(fit$covm[2,2])))),1.0),4)
           if (pval <= alpha & fit$coef[2] < 0) { powerstrinary[k,j] <- powerstrinary[k,j] + 1}
         }
@@ -1166,7 +1184,7 @@ computepower.n <- function(numAtRiskTauCasesVect, numAtRiskTauCasesPhase2Vect, n
         Scc <- t(apply(S,1, function(x) x[keepinds])) # nrow=length(rhos)
         
         for(k in 1:nrow(Scc)){
-          fit <- tps(Ycc~Scc[k,],nn0=length(Y[Y==0]),nn1=length(Y[Y==1]),group=rep(1,length(Ycc)))
+          fit <- tps(Ycc~Scc[k,],nn0=length(Y[Y==0]),nn1=length(Y[Y==1]),group=rep(1,length(Ycc)), method=tpsMethod, cohort=cohort)
           pval <- round(min(2*(1-pnorm(abs(fit$coef[2]/sqrt(fit$covm[2,2])))),1.0),4)
           if (pval <= alpha & fit$coef[2] < 0) { powerscont[k,j] <- powerscont[k,j] + 1}
         }
@@ -1214,7 +1232,7 @@ computepower.n <- function(numAtRiskTauCasesVect, numAtRiskTauCasesPhase2Vect, n
 
 #############
 # computeSensSpecFPFN is a function for mapping input parameters to Sensitivity and Specificity,
-# FP1, FP2, FN1, FN2 (defined above)
+# FP0, FP1, FN2, FN1 (defined above)
 # S a trichotomous biomarker S = 2 if S* > tauhi for a fixed tauhi and S=0 if S* <= taulo for a fixed taulo,
 # and S = 1 if S* is in between taulo and tauhi.
 # X* is the 'true' biomarker with X* = 2 if X* > thetahiVE and X* = 0 if X* <= thetaloVE
@@ -1228,14 +1246,14 @@ computepower.n <- function(numAtRiskTauCasesVect, numAtRiskTauCasesPhase2Vect, n
 # sigma2tr = Var(X*) rho*sigma2obs
 #
 # This function also applies for a binary biomarker in which case only Sensitivity and Specificity
-# are relevant (FP1, FP2, FN1, FN2 are not used in the calculations)
+# are relevant (FP0, FP1, FN2, FN1 are not used in the calculations)
 ##################################################
 
 # Original function that requires Plat2 to be a scalar
 computeSensSpecFPFN <- function(sigma2obs,rhos,Plat0,Plat2,P0,P2) {
   # sigma2tr = Var(X) = Var(Str) = rho*sigma2obs
   # If Plat0 + Plat2 = 1 then the method collapses to a binary biomarker,
-  # and FP1, FP2, FN1, FN2 are irrelevant; this function simply returns 0's in that scenario
+  # and FP0, FP1, FN2, FN1 are irrelevant; this function simply returns 0's in that scenario
   
   # P2 may be a scalar or a vector, which should include one value equal to
   #      Plat2 and values straddling either side
@@ -1254,83 +1272,117 @@ computeSensSpecFPFN <- function(sigma2obs,rhos,Plat0,Plat2,P0,P2) {
   for(i in 1:length(rhos)){
     Sens <- rep(1,m)
     Spec <- rep(1,m)
+    FP0 <- rep(0,m)
     FP1 <- rep(0,m)
-    FP2 <- rep(0,m)
-    FN1 <- rep(0,m)
     FN2 <- rep(0,m)
+    FN1 <- rep(0,m)
     tauhisolution <- rep(0,m)
     taulosolution <- rep(0,m)
-    if (rhos[i] < 1) {  #*# if rho=1, then Sens=1, Spec=1, FP1=0, FP2=0, FN1=0, FN2=0
+    if (rhos[i] < 1) {  #*# if rho=1, then Sens=1, Spec=1, FP0=0, FP1=0, FN2=0, FN1=0
       # Stochastic integration
+      set.seed(1)
       X <- rnorm(20000,0,sqrt(sigma2tr[i]))
+      set.seed(2)
       S <- X + rnorm(20000,0,sqrt(sigma2e[i]))
       
       Phi <- sum(X>thetahiVE[i])/length(X)
       Plo <- sum(X<=thetaloVE[i])/length(X)
       Pmed <- 1 - Phi - Plo
       
-      # Compute a kernel over a grid of tau values:
-      n <- 10000
-      tauhi <- seq(-2.5,2.5,len=n)
-      taulo <- seq(-2.5,2.5,len=n)
-      Sensvec <- rep(1,n)
-      Specvec <- rep(1,n)
-      FP1vec <- rep(0,n)
-      FP2vec <- rep(0,n)
-      FN1vec <- rep(0,n)
-      FN2vec <- rep(0,n)
-      
-      for (j in 1:length(tauhi)) {
-        Sensvec[j] <- (sum(S>tauhi[j] & X > thetahiVE[i])/length(S))/Phi
-        Specvec[j] <- (sum(S<=taulo[j] & X <= thetaloVE[i])/length(S))/Plo
-        if (Pmed==0) { #*# if binary biomarker, 0's for FP2, FP1, FN2, FN1
-          FP2vec[j] <- 0
-          FP1vec[j] <- 0
-          FN1vec[j] <- 0
-          FN2vec[j] <- 0 }
-        if (Pmed > 0) {
-          FP2vec[j] <- (sum(S>tauhi[j] & X > thetaloVE[i] & X <= thetahiVE[i])/length(S))/Pmed
-          FP1vec[j] <- (sum(S>tauhi[j] & X <= thetaloVE[i])/length(S))/Plo
-          FN1vec[j] <- (sum(S<=taulo[j] & X > thetahiVE[i])/length(S))/Phi
-          FN2vec[j] <- (sum(S<=taulo[j] & X > thetaloVE[i] & X <= thetahiVE[i])/length(S))/Pmed
-        }
-      }
+          # # Compute a kernel over a grid of tau values:
+          # n <- 10000
+          # tauhi <- seq(-2.5,2.5,len=n)
+          # taulo <- seq(-2.5,2.5,len=n)
+          # Sensvec <- rep(1,n)
+          # Specvec <- rep(1,n)
+          # FP0vec <- rep(0,n)
+          # FP1vec <- rep(0,n)
+          # FN2vec <- rep(0,n)
+          # FN1vec <- rep(0,n)
+          # 
+          # for (j in 1:length(tauhi)) {
+          #   Sensvec[j] <- (sum(S>tauhi[j] & X > thetahiVE[i])/length(S))/Phi
+          #   Specvec[j] <- (sum(S<=taulo[j] & X <= thetaloVE[i])/length(S))/Plo
+          #   if (Pmed==0) { #*# if binary biomarker, 0's for FP1, FP0, FN2, FN1
+          #     FP1vec[j] <- 0
+          #     FP0vec[j] <- 0
+          #     FN2vec[j] <- 0
+          #     FN1vec[j] <- 0 }
+          #   if (Pmed > 0) {
+          #     FP1vec[j] <- (sum(S>tauhi[j] & X > thetaloVE[i] & X <= thetahiVE[i])/length(S))/Pmed
+          #     FP0vec[j] <- (sum(S>tauhi[j] & X <= thetaloVE[i])/length(S))/Plo
+          #     FN2vec[j] <- (sum(S<=taulo[j] & X > thetahiVE[i])/length(S))/Phi
+          #     FN1vec[j] <- (sum(S<=taulo[j] & X > thetaloVE[i] & X <= thetahiVE[i])/length(S))/Pmed
+          #   }
+          # }
       
       for (l in 1:m) {
-        kernelhi <- Sensvec*Plat2 + FP2vec*Plat1 + FP1vec*Plat0 - P2[l]
-        kernelhi <- kernelhi^2
         
-        kernello <- Specvec*Plat0 + FN2vec*Plat1 + FN1vec*Plat2 - P0[l]
-        kernello <- kernello^2
+        # Find the cut points tauhi and taulo by solving the following equations:
+        #   0 = Sensvec*Plat2 + FP1vec*Plat1 + FP0vec*Plat0 - P2  (eqn 8 in manuscript)
+        #   0 = Specvec*Plat0 + FN1vec*Plat1 + FN2vec*Plat2 - P0  (eqn 7 in manuscript)
+        # where 
+        #   Sensvec <- (sum(S>tauhi & X > thetahiVE[i])/length(S))/Phi
+        #   Specvec <- (sum(S<=taulo & X <= thetaloVE[i])/length(S))/Plo
+        # if binary biomarker, 
+        #   FP1vec <- 0
+        #   FP0vec <- 0
+        #   FN2vec <- 0
+        #   FN1vec <- 0
+        # if trichotomous biomarker,
+        #   FP1vec <- (sum(S>tauhi & X > thetaloVE[i] & X <= thetahiVE[i])/length(S))/Pmed
+        #   FP0vec <- (sum(S>tauhi & X <= thetaloVE[i])/length(S))/Plo
+        #   FN2vec <- (sum(S<=taulo & X > thetahiVE[i])/length(S))/Phi
+        #   FN1vec <- (sum(S<=taulo & X > thetaloVE[i] & X <= thetahiVE[i])/length(S))/Pmed
         
-        indhi <- c(1:length(kernelhi))[kernelhi==min(kernelhi)] #*# equiv to which(kernelhi==min(kernelhi))
-        tauhisol <- tauhi[indhi]
-        indlo <- c(1:length(kernello))[kernello==min(kernello)]
-        taulosol <- taulo[indlo]
+        if (Pmed==0){  # binary 
+          f2 <- function(tauhi) ((sum(S>tauhi & X > thetahiVE[i])/length(S))/Phi)*Plat2 - P2[l]
+          f0 <- function(taulo) ((sum(S<=taulo & X <= thetaloVE[i])/length(S))/Plo)*Plat0 - P0[l]
+        } else {  # trichotomous
+          f2 <- function(tauhi) ((sum(S>tauhi & X > thetahiVE[i])/length(S))/Phi)*Plat2 +
+                                ((sum(S>tauhi & X > thetaloVE[i] & X <= thetahiVE[i])/length(S))/Pmed)*Plat1 +
+                                ((sum(S>tauhi & X <= thetaloVE[i])/length(S))/Plo)*Plat0 - P2[l]
+          f0 <- function(taulo) ((sum(S<=taulo & X <= thetaloVE[i])/length(S))/Plo)*Plat0 +
+                                ((sum(S<=taulo & X > thetaloVE[i] & X <= thetahiVE[i])/length(S))/Pmed)*Plat1 +
+                                ((sum(S<=taulo & X > thetahiVE[i])/length(S))/Phi)*Plat2 - P0[l]
+        }
+        tauhisol <- uniroot(f2, interval=c(-2.5,2.5))$root
+        taulosol <- uniroot(f0, interval=c(-2.5,2.5))$root
         
-        if (length(tauhisol)>1) {tauhisol <- tauhisol[1]} #*# if more than one tau given, choose first one
-        if (length(taulosol)>1) {taulosol <- taulosol[1]}
+            # kernelhi <- Sensvec*Plat2 + FP1vec*Plat1 + FP0vec*Plat0 - P2[l]
+            # kernelhi <- kernelhi^2
+            # 
+            # kernello <- Specvec*Plat0 + FN1vec*Plat1 + FN2vec*Plat2 - P0[l]
+            # kernello <- kernello^2
+            # 
+            # indhi <- c(1:length(kernelhi))[kernelhi==min(kernelhi)] #*# equiv to which(kernelhi==min(kernelhi))
+            # tauhisol <- tauhi[indhi]
+            # indlo <- c(1:length(kernello))[kernello==min(kernello)]
+            # taulosol <- taulo[indlo]
+            # 
+            # if (length(tauhisol)>1) {tauhisol <- tauhisol[1]} #*# if more than one tau given, choose first one
+            # if (length(taulosol)>1) {taulosol <- taulosol[1]}
         
         tauhisolution[l] <- tauhisol
         taulosolution[l] <- taulosol
         
         Sens[l] <- sum(S>tauhisolution[l] & X > thetahiVE[i])/sum(X>thetahiVE[i])
         Spec[l] <- sum(S<=taulosolution[l] & X <= thetaloVE[i])/sum(X<=thetaloVE[i])
-        if (Pmed==0) {  #*# if binary biomarker, 0's for FP2, FP1, FN2, FN1
-          FP2[l] <- 0
+        if (Pmed==0) {  #*# if binary biomarker, 0's for FP1, FP0, FN2, FN1
           FP1[l] <- 0
+          FP0[l] <- 0
           FN2[l] <- 0
           FN1[l] <- 0 }
         if (Pmed > 0) {
-          FP2[l] <- (sum(S>tauhisolution[l] & X > thetaloVE[i] & X <= thetahiVE[i])/length(S))/Pmed
-          FP1[l] <- (sum(S>tauhisolution[l] & X <= thetaloVE[i])/length(S))/Plo
-          FN1[l] <- (sum(S<=taulosolution[l] & X > thetahiVE[i])/length(S))/Phi
-          FN2[l] <- (sum(S<=taulosolution[l] & X > thetaloVE[i] & X <= thetahiVE[i])/length(S))/Pmed
+          FP1[l] <- (sum(S>tauhisolution[l] & X > thetaloVE[i] & X <= thetahiVE[i])/length(S))/Pmed
+          FP0[l] <- (sum(S>tauhisolution[l] & X <= thetaloVE[i])/length(S))/Plo
+          FN2[l] <- (sum(S<=taulosolution[l] & X > thetahiVE[i])/length(S))/Phi
+          FN1[l] <- (sum(S<=taulosolution[l] & X > thetaloVE[i] & X <= thetahiVE[i])/length(S))/Pmed
         }
       }
     }
     ans[[i]] <- cbind(rep(thetaloVE[i],m),rep(thetahiVE[i],m),rep(Plat0,m),rep(Plat1,m),rep(Plat2,m),P0,P2,
-                      taulosolution,tauhisolution,Sens,Spec,FP1,FP2,FN1,FN2)
+                      taulosolution,tauhisolution,Sens,Spec,FP0,FP1,FN2,FN1)
   }  
   return(ans)
 }
