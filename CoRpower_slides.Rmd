@@ -1,5 +1,5 @@
 ---
-title: "R package CoRpower"
+title: "R package CoRpower: power and sample size calculations for correlates of risk"
 author: "Michal Juraska"
 date: "September 24-26, 2018"
 output: 
@@ -13,31 +13,67 @@ library(survival)
 library(osDesign)
 source("T:/vaccine/StephanieWu/CoR Power Package In Progress/CoRpower/Peter_CoRpower_trinaryMODIFIED.R")
 
-dataDir <- "T:/vaccine/StephanieWu/CoR Power Package In Progress/Figures"
-
+figDir <- "T:/vaccine/StephanieWu/CoR Power Package In Progress/Figures"
 ```
 
-## R package CoRpower: correlates of risk power and sample size calculations
-- `computepower` function
-- Input scenarios:
+## R package CoRpower: `computepower` function input parameters
+- `numAtRiskTauCases`: number of vaccinees at risk at $\tau$ who become cases 
+- `numAtRiskTauCasesPhase2`: number of vaccinees at risk at $\tau$ who become cases and have biomarker measured 
+- `numAtRiskTauControls`: number of vaccinees at risk at $\tau$ who become controls 
+- `risk0`: cumulative failure rate in placebo arm between month $\tau$ and $\tau_{max}$ 
+- `RRoverall`: 1 minus the overall vaccine efficacy (overall relative risk of vaccinees vs. placebos) 
+- `Plat0`: for trichotomous biomarker, probability true biomarker, X, belongs to the lowest latent subgroup
+- `Plat2`: for trichotomous biomarker, probability true biomarker, X, belongs to the highest latent subgroup
+
+## `computepower` input parameters (cont'd)
+- `P0`: for trichotomous biomarker, probability observed biomarker, S, belongs to the lowest subgroup
+- `P2`: for trichotomous biomarker, probability the observed biomarker, S, belongs to the highest subgroup
+- `RRlat0`: for trichotomous biomarker, vector of relative risks of vaccinees vs. placebos for lowest latent subgroup
+- `RRlat1`: for trichotomous biomarker, vector of relative risks of vaccinees vs. placebos for middle latent subgroup (assumed to be equal to `RRoverall`). For binary biomarker, can be left unspecified
+- `biomType`: type of biomarker used. Default is "continuous"; other choices are "trichotomous" and "binary".
+- `cohort`: sampling design used. Default is `FALSE`, specifying case-control sampling design. If `TRUE`, case-cohort sampling is used. 
+- `p`: for case-cohort sampling design, probability that a subject will be in the cohort. 
+
+## `computepower` input parameters (cont'd)
+- `PlatVElowest`: for continuous biomarker, proportion of vaccine recipients with the lowest value of VE
+- `VElowestvect`: for continuous biomarker, a vector of values corresponding to the lowest possible value of VE.  Typically, will range from 0 to 1 - `RRoverall`.
+- `sigma2obs`: for continuous biomarker or trichotomous biomarker using approach 2, variance of the continuous observed biomarker, S*
+- `rhos`: for continuous biomarker or trichotomous biomarker using approach 2, fraction of protection-relevant variability in the observed continuous biomarker
+- `controlCaseRatio`: for case-control sampling design, number of controls sampled per case in the vaccine arm
+- `Sens`: for trichotomous biomarker using approach 1, sensitivity of the measured biomarker, X. Specifying `Spec=NULL`, `FP0=NULL`, `Sens=NULL`, and `FN2=NULL` defaults to approach 2
+
+## `computepower` input parameters (cont'd)
+- `Spec`: for trichotomous biomarker using approach 1, specificity of the measured biomarker, X. 
+- `FP0`: for trichotomous biomarker using approach 1, false positive rate of the observed biomarker when latent subgroup is 0 ($P(S=2|X=0)$). 
+- `FN2`: for trichotomous biomarker using approach 1, false negative rate of the observed biomarker when latent subgroup is 2($P(S=0|X=2)$). 
+- `M`: number of simulated clinical trials
+- `alpha`: two-sided type-I error rate for CoR hypothesis tests
+- `tpsMethod`: character denoting method for fitting the logistic regression model. Choose from "PL" for pseudo-likelihood (default), "ML" for maximum likelihood, and "WL" for weighted likelihood. 
+
+## CoRpower input scenarios:
 1. Trichotomous biomarker, Approach 1 ($Sens$, $Spec$, $FP^0$, $FN^2$ specified)
 2. Trichotomous biomarker, Appraoch 2 ($\rho$, $\sigma^2_{obs}$ specified)
 3. Continuous biomarker ($\rho$, $\sigma^2_{obs}$, $VE_{lowestvect}$, $P^{lat}_{VElowest}$ specified)
 
-## 1. Trichotomous, Approach 1 {.smaller}
-Scenario 1: Vary control:case ratio
+## 1. Trichotomous, Approach 1
+###Scenario 1: Vary control:case ratio
+<br>
+<div style="float: left; width: 50%;">
+- controlCaseRatio = 5:1, 3:1, 1:1
 - $n_{cases} = 31$
-- fraction of enrolled cases selected for immunogenicity subset = 1.0
+- fraction of cases with biomarker measured = 1.0
 - $n_{controls}=4485$
-- cumulative failure rate in hypothetical placebo arm = 0.034
+- $risk_0$ = 0.034
 - $RR_{overall} = 0.25$
+</div>
+<div style="float: right; width: 50%;">
 - $P^{lat}_0 = P_0 = 0.2$
 - $P^{lat}_2 = P_2 = 0.6$
 - $RR^{lat}_0 = 1 to 0.25$
 - $RR^{lat}_1 = RR_{overall}$
 - $sens = spec = 0.8$
 - $FP^0 = FN^2 = 0$
-- Varying Parameter: controlCaseRatio = 5:1, 3:1, 1:1
+</div>
 
 ## Scenario 1: Trichotomous, approach 1, vary control:case ratio {.smaller}
 ```{r, eval=FALSE}
@@ -47,16 +83,13 @@ ans <- computepower(numAtRiskTauCases=31,
                     numAtRiskTauControls=4485,
                     risk0=0.034, 
                     RRoverall=0.25, 
-                    Plat0=0.2, P0=0.2, 
-                    Plat2=0.6, P2=0.6, 
-                    RRlat0=seq(1, 25, len=100), 
-                    RRlat1=rep(0.25, 100), 
+                    Plat0=0.2, P0=0.2, Plat2=0.6, P2=0.6, 
+                    RRlat0=seq(1, 25, len=100), RRlat1=rep(0.25, 100), 
                     PlatVElowest=0, VElowestvect=NULL,  # specified for continuous biomarker only
                     controlCaseRatio=5*, 
                     M=1000, 
                     alpha=0.05, 
-                    Spec=0.8, Sens=0.8, 
-                    FP0=0 FN2=0, 
+                    Spec=0.8, Sens=0.8, FP0=0 FN2=0, 
                     biomType="trichotomous", 
                     cohort=FALSE, p=NULL, 
                     tpsMethod= "PL")
@@ -67,23 +100,29 @@ ans <- computepower(numAtRiskTauCases=31,
 ## Output files
 
 ## Scenario 1 Figures
-```{r, echo=FALSE}
-![Trichotomous biomarker, approach 1, control:case ratio varies](file.path(dataDir, "powertrinary_CoR_Scen1"))
+```{r, echo=FALSE, fig.align='center', out.width='100%'}
+knitr::include_graphics(file.path(figDir,"powertrinary_CoR_Scen1.pdf"))
 ```
 
 ## 1. Trichotomous, Approach 1
-Scenario 2: Vary $P^{lat}_0, P_0, P^{lat}_2, P_2$ 
+###Scenario 2: Vary $P^{lat}_0, P_0, P^{lat}_2, P_2$ 
+
+<div style="float: left; width: 50%;">
+- $P^{lat}_0 = P_0 = 0.05, 0.1, 0.15, 0.2$
+- $P^{lat}_2 = P_2 = 0.15, 0.3, 0.45, 0.6$
 - $n_{cases} = 31$
-- fraction of enrolled cases selected for immunogenicity subset = 1.0
-- $n_{controls} = 4485$
-- cumulative failure rate in hypothetical placebo arm = 0.034
+- fraction of cases with biomarker measured = 1.0
+- $n_{controls}=4485$
+- $risk_0$ = 0.034
+</div>
+<div style="float: right; width: 50%;">
 - controlCaseRatio = 5:1
 - $RR_{overall} = 0.25$
 - $RR^{lat}_0 = 1 to 0.25$
 - $RR^{lat}_1 = RR_{overall}$
 - $sens = spec = 0.8$
 - $FP^0 = FN^2 = 0$
-- Varying Parameter: $P^{lat}_0 = P_0 = 0.05, 0.1, 0.15, 0.2$ and $P^{lat}_2 = P_2 = 0.15, 0.3, 0.45, 0.6$
+</div>
 
 ## Scenario 2: Trichotomous, approach 1, \(\small\, P^{lat}_0, P_0, P^{lat}_2, P_2\) {.smaller}
 ```{r, eval=FALSE}
@@ -92,16 +131,13 @@ ans <- computepower(numAtRiskTauCases=31,
                     numAtRiskTauControls=4485,
                     risk0=0.034, 
                     RRoverall=0.25, 
-                    Plat0=0.05*, P0=0.05*, 
-                    Plat2=0.15*, P2=0.15*, 
-                    RRlat0=seq(1, 25, len=100), 
-                    RRlat1=rep(0.25, 100), 
+                    Plat0=0.05*, P0=0.05*, Plat2=0.15*, P2=0.15*, 
+                    RRlat0=seq(1, 25, len=100), RRlat1=rep(0.25, 100), 
                     PlatVElowest=0, VElowestvect=NULL,  # specified for continuous biomarker only
                     controlCaseRatio=5, 
                     M=1000, 
                     alpha=0.05, 
-                    Spec=0.8, Sens=0.8, 
-                    FP0=0 FN2=0, 
+                    Spec=0.8, Sens=0.8, FP0=0 FN2=0, 
                     biomType="trichotomous", 
                     cohort=FALSE, p=NULL, 
                     tpsMethod= "PL")
@@ -110,24 +146,29 @@ ans <- computepower(numAtRiskTauCases=31,
 *$P^{lat}_0$ and $P_0$ take on 0.05, 0.1, 0.15, and 0.2, and $P^{lat}_2$ and $P_2$ take on 0.15, 0.3, 0.45, and 0.6
 
 ## Scenario 2 Figures
-```{r, echo=FALSE}
-![Trichotomous biomarker, approach 1, control:case ratio varies](file.path(dataDir, "powertrinary_CoR_Scen2"))
+```{r, echo=FALSE, fig.align='center', out.width='100%'}
+knitr::include_graphics(file.path(figDir,"powertrinary_CoR_Scen2.pdf"))
 ```
 
 ## 1. Trichotomous, Approach 1
-Scenario 3: Vary $sens$ and $spec$ 
+### Scenario 3: Vary $sens$ and $spec$ 
+
+<div style="float: left; width: 50%;">
+- $sens=spec = 1, 0.9, 0.8, 0.7$ 
 - $n_{cases} = 31$
-- fraction of enrolled cases selected for immunogenicity subset = 1.0
-- $n_{controls} = 4485$
-- cumulative failure rate in hypothetical placebo arm = 0.034
+- fraction of cases with biomarker measured = 1.0
+- $n_{controls}=4485$
+- $risk_0$ = 0.034
 - controlCaseRatio = 5:1
+</div>
+<div style="float: right; width: 50%;">
 - $RR_{overall} = 0.25$
 - $P^{lat}_0 = P_0 = 0.2$
 - $P^{lat}_2 = P_2 = 0.6$
 - $RR^{lat}_0 = 1 to 0.25$
 - $RR^{lat}_1 = RR_{overall}$
 - $FP^0 = FN^2 = 0$
-- Varying Parameter: $sens=spec=1, 0.9, 0.8, 0.7$ 
+</div>
 
 ## Scenario 3: Trichotomous, approach 1, vary \(\small\, sens, spec\) {.smaller}
 ```{r, eval=FALSE}
@@ -136,16 +177,13 @@ ans <- computepower(numAtRiskTauCases=31,
                     numAtRiskTauControls=4485,
                     risk0=0.034, 
                     RRoverall=0.25, 
-                    Plat0=0.2, P0=0.2, 
-                    Plat2=0.6, P2=0.6, 
-                    RRlat0=seq(1, 25, len=100), 
-                    RRlat1=rep(0.25, 100), 
+                    Plat0=0.2, P0=0.2, Plat2=0.6, P2=0.6, 
+                    RRlat0=seq(1, 25, len=100), RRlat1=rep(0.25, 100), 
                     PlatVElowest=0, VElowestvect=NULL,
                     controlCaseRatio=5, 
                     M=1000, 
                     alpha=0.05, 
-                    Spec=1*, Sens=1*, 
-                    FP0=0 FN2=0, 
+                    Spec=1*, Sens=1*, FP0=0 FN2=0, 
                     biomType="trichotomous", 
                     cohort=FALSE, p=NULL, 
                     tpsMethod= "PL")
@@ -154,6 +192,6 @@ ans <- computepower(numAtRiskTauCases=31,
 *$sens$ and $spec$ take on 1, 0.9, 0.8, and 0.7
 
 ## Scenario 3 Figures
-```{r, echo=FALSE}
-![Trichotomous biomarker, approach 1, control:case ratio varies](file.path(dataDir, "powertrinary_CoR_Scen3"))
+```{r, echo=FALSE, fig.align='center', out.width='100%'}
+knitr::include_graphics(file.path(figDir,"powertrinary_CoR_Scen3.pdf"))
 ```
