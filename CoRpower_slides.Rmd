@@ -1,5 +1,5 @@
 ---
-title: "R package CoRpower: power and sample size calculations for correlates of risk"
+title: "R Package `CoRpower`: Power and Sample Size Calculations for Correlates of Risk"
 author: "Michal Juraska"
 date: "September 24-26, 2018"
 output: 
@@ -100,8 +100,8 @@ ans <- computepower(numAtRiskTauCases=31,
 ## Output files
 
 ## Scenario 1 Figures
-```{r, echo=FALSE, fig.align='center', out.width='100%'}
-knitr::include_graphics(file.path(figDir,"powertrinary_CoR_Scen1.pdf"))
+```{r, echo=FALSE, fig.align='center', out.width='65%'}
+knitr::include_graphics(file.path(figDir,"powertrinary_CoR_Scen1.png"))
 ```
 
 ## 1. Trichotomous, Approach 1
