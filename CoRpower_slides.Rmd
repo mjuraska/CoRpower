@@ -29,15 +29,15 @@ figDir <- "T:/vaccine/StephanieWu/CoR Power Package In Progress/Figures"
 <br>
 - All R code illustrated considering P2-VP8 rotavirus vaccine efficacy trial design
 
-## Set-up and notation
+## Set-up and notation | Without replacement sampling
 - Assume a randomized vaccine vs. placebo/control vaccine efficacy trial
 - $N=$ number of vaccine recipients observed to be at risk at $\tau$
-- $n_{cases}$ ($n_{controls}$) $=$ number of observed cases (controls) with measured $S$ (or $S^{\ast}$), where cases have $\Delta Y = 1$ and controls have $\Delta (1-Y) = 1$
+- $n_{cases}$ ($n_{controls}$) $=$ number of observed cases (controls) between $\tau$ and $\tau_{\mathrm{max}}$ with measured $S$ (or $S^{\ast}$), where cases have $\Delta Y = 1$ and controls have $\Delta (1-Y) = 1$
 
 <br>
 - If calculations done at design stage, then $N$, $n_{cases}$, and $n_{controls}$ projected numbers
 
-## Algorithm for trichotomous \(\small\, S\) [without replacement sampling]
+## Algorithm for trichotomous biomarker \(\small\, S\) | Without replacement sampling
 <ol>
 <li> Specify overall $VE$ between $\tau$ and $\tau_{\mathrm{max}}$
   <ul>
@@ -61,7 +61,7 @@ figDir <- "T:/vaccine/StephanieWu/CoR Power Package In Progress/Figures"
 </li>
 </ol>
 
-## Algorithm for trichotomous \(\small\, S\) [without replacement sampling]
+## Algorithm for trichotomous biomarker \(\small\, S\) | Without replacement sampling
 <ol start=5>
 <li> Specify $P^{lat}_0$ and $P^{lat}_2$, then $P^{lat}_1 = 1-P^{lat}_0-P^{lat}_2$
   <ul>
@@ -73,6 +73,111 @@ figDir <- "T:/vaccine/StephanieWu/CoR Power Package In Progress/Figures"
   <li> If $VE^{lat}_0$ varies from $VE$ to 0, then $VE^{lat}_2$ varies from VE to $VE\, (P^{lat}_0 + P^{lat}_2)/P^{lat}_2$
   </ul>
 </li>
+<li> Specify $P_0$ and $P_2$, then $P_1 = 1-P_0-P_2$
+  <ul>
+  <li> E.g., $P_0 = P^{lat}_0$ and $P_2 = P^{lat}_2$
+  </ul>
+</li>
+</ol>
+
+## Algorithm for trichotomous biomarker \(\small\, S\) | Without replacement sampling
+<ol start=7>
+<li> **Approach 1:** Specify two of the three $(Sens, FP^0, FP^1)$ and two of the three $(Spec, FN^2, FN^1)$
+  <ul>
+  <li> E.g., specify $Sens$ and $Spec$ and $FP^0 = FN^2 = 0$
+  </ul>
+
+**Approach 2:** Specify $\sigma^2_{obs}$ and $\rho = \sigma^2_{tr} / \sigma^2_{obs}$ and determine $(Sens, Spec, FP^0, FP^1, FN^1, FN^2)$ (next slides)
+  <ul>
+  <li> Typically, $\sigma^2_{obs} = 1$
+  </ul>
+</li>
+</ol>
+
+## Algorithm for trichotomous biomarker \(\small\, S\) | Without replacement sampling
+### **Calculation of $(Sens, Spec, FP^0, FP^1, FN^1, FN^2)$ in Approach 2**
+<br>
+<ol type="i">
+<li> Assuming the classical measurement error model, where $X^{\ast} \sim \mathsf{N}(0,\rho\sigma^2_{obs})$, solve
+\[
+P^{lat}_0 = P(X^{\ast} \leq \theta_0) \quad \textrm{and} \quad P^{lat}_2 = P(X^{\ast} > \theta_2)
+\]
+for $\theta_0$ and $\theta_2$
+</ol>
+
+## Algorithm for trichotomous biomarker \(\small\, S\) | Without replacement sampling
+### **Calculation of $(Sens, Spec, FP^0, FP^1, FN^1, FN^2)$ in Approach 2**
+<br>
+<ol type="i" start=2>
+<li> Generate $M$ realizations of $X^{\ast}$ and $S^{\ast} = X^{\ast} + e$, where $e \sim \mathsf{N}(0,(1-\rho)\sigma^2_{obs})$, and $X^{\ast}$ independent of $e$
+  <ul>
+  <li> $M = 20000$ by default
+  </ul>
+</li>
+</ol>
+
+## Algorithm for trichotomous biomarker \(\small\, S\) | Without replacement sampling
+### **Calculation of $(Sens, Spec, FP^0, FP^1, FN^1, FN^2)$ in Approach 2**
+<br>
+<ol type="i" start=3>
+<li> Using $\theta_0$ and $\theta_2$ from Step i., define
+\[
+\begin{align}
+Spec(\phi_0) &= P(S^{\ast} \leq \phi_0 \mid X^{\ast} \leq \theta_0)\\
+FN^1(\phi_0) &= P(S^{\ast} \leq \phi_0 \mid X^{\ast} \in (\theta_0,\theta_2])\\
+FN^2(\phi_0) &= P(S^{\ast} \leq \phi_0 \mid X^{\ast} > \theta_2)\\
+Sens(\phi_2) &= P(S^{\ast} > \phi_2 \mid X^{\ast} > \theta_2)\\
+FP^1(\phi_2) &= P(S^{\ast} > \phi_2 \mid X^{\ast} \in (\theta_0,\theta_2])\\
+FP^0(\phi_2) &= P(S^{\ast} > \phi_2 \mid X^{\ast} \leq \theta_0)
+\end{align}
+\]
+</ol>
+
+## Algorithm for trichotomous biomarker \(\small\, S\) | Without replacement sampling
+### **Calculation of $(Sens, Spec, FP^0, FP^1, FN^1, FN^2)$ in Approach 2**
+<br>
+<ol type="i" start=3>
+<li> Estimate $Spec(\phi_0)$ by
+\[
+\widehat{Spec}(\phi_0) = \frac{\#\{S^{\ast}_m \leq \phi_0, X^{\ast}_m \leq \theta_0\}}{\#\{X^{\ast}_m \leq \theta_0\}}\,,
+\]
+etc.
+</ol>
+
+## Algorithm for trichotomous biomarker \(\small\, S\) | Without replacement sampling
+### **Calculation of $(Sens, Spec, FP^0, FP^1, FN^1, FN^2)$ in Approach 2**
+<br>
+<ol type="i" start=4>
+<li> Find $\phi_0 = \phi^{\ast}_0$ and $\phi_2 = \phi^{\ast}_2$ that numerically solve
+\[
+\begin{align}
+P_0 &= \widehat{Spec}(\phi_0)P^{lat}_0 + \widehat{FN}^1(\phi_0)P^{lat}_1 + \widehat{FN}^2(\phi_0)P^{lat}_2\\
+P_2 &= \widehat{Sens}(\phi_2)P^{lat}_2 + \widehat{FP}^1(\phi_2)P^{lat}_1 + \widehat{FP}^0(\phi_2)P^{lat}_0
+\end{align}
+\]
+and compute
+\[
+Spec = \widehat{Spec}(\phi^{\ast}_0),\; Sens = \widehat{Sens}(\phi^{\ast}_2),\; \textrm{etc.}
+\]
+</ol>
+
+## Algorithm for trichotomous biomarker \(\small\, S\) | Without replacement sampling
+- In Approach 2, plot
+\[
+RR_t \quad \textrm{vs.} \quad RR^{lat}_2\big/ RR^{lat}_0,
+\]
+where
+\[
+RR_t = \frac{\sum_{x=0}^2 RR^{lat}_x P(X=x|S=2)}{\sum_{x=0}^2 RR^{lat}_x P(X=x|S=0)}
+\]
+- For $\rho < 1$, $RR_t$ closer to 1 than $RR^{lat}_2\big/ RR^{lat}_0$
+
+## Algorithm for trichotomous biomarker \(\small\, S\) | Without replacement sampling
+<ol start=8>
+<li> Simulate $B$ data sets under the true parameter values
+<li> For each data set, compute the 1-sided Wald test statistic for $H_0 \Leftrightarrow \widetilde{H}_0: \beta_S \geq 0$ from IPW logistic regression model that accounts for biomarker sampling design (function `tps` in R package `osDesign`)
+<li> Compute power as proportion of data sets with 1-sided Wald test $p \leq \alpha/2$ for specified $\alpha$
+<li> Repeat power calculation varying control:case ratio, $(P^{lat}_0, P^{lat}_2, P_0, P_2)$, $n_{cases}$, $(Sens, Spec)$, $\rho$
 </ol>
 
 ## R package CoRpower: `computepower` function input parameters
