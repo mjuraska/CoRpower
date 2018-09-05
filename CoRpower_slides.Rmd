@@ -175,6 +175,17 @@ RR_t = \frac{\sum_{x=0}^2 RR^{lat}_x P(X=x|S=2)}{\sum_{x=0}^2 RR^{lat}_x P(X=x|S
 ## Algorithm for trichotomous biomarker \(\small\, S\) | Without replacement sampling
 <ol start=8>
 <li> Simulate $B$ data sets under the true parameter values
+  <ol type="a">
+  <li> $N_x = N \times P^{lat}_x$
+  <li> $\left(n_{cases}(0),n_{cases}(1),n_{cases}(2)\right) \sim \mathsf{Mult}(n_{cases},(p_0,p_1,p_2))$, where $p_k=P(X=k|Y=1,Y^{\tau}=0,Z=1)$
+  <li> For each of the $N_x$ subjects, generate $S_i$ by a draw from $\mathsf{Mult}(1,(p_0,p_1,p_2))$, where $p_k=P(S=k|X=x)$
+  <li> Sample without replacement $n_{controls} = K n_{cases}$ controls, i.e., $n_{controls}(x)$ is a random variable for $x=0,1,2$
+  </ol>
+</li>
+</ol>
+
+## Algorithm for trichotomous biomarker \(\small\, S\) | Without replacement sampling
+<ol start=9>
 <li> For each data set, compute the 1-sided Wald test statistic for $H_0 \Leftrightarrow \widetilde{H}_0: \beta_S \geq 0$ from IPW logistic regression model that accounts for biomarker sampling design (function `tps` in R package `osDesign`)
 <li> Compute power as proportion of data sets with 1-sided Wald test $p \leq \alpha/2$ for specified $\alpha$
 <li> Repeat power calculation varying control:case ratio, $(P^{lat}_0, P^{lat}_2, P_0, P_2)$, $n_{cases}$, $(Sens, Spec)$, $\rho$
