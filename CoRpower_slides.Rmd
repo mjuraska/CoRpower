@@ -40,24 +40,39 @@ figDir <- "T:/vaccine/StephanieWu/CoR Power Package In Progress/Figures"
 ## Algorithm for trichotomous \(\small\, S\) [without replacement sampling]
 <ol>
 <li> Specify overall $VE$ between $\tau$ and $\tau_{\mathrm{max}}$
-    + Protocol-specified design alternative or $\widehat{VE}$
+  <ul>
+  <li> Protocol-specified design alternative or $\widehat{VE}$
+  </ul>
+</li>
 <li> Specify $risk_0$
-    + Protocol-specified placebo-group endpoint rate or $\widehat{risk}_0$
+  <ul>
+  <li> Protocol-specified placebo-group endpoint rate or $\widehat{risk}_0$
+  </ul>
+</li>
 <li> Select a grid of $VE^{lat}_0$ values
-    + E.g., ranging from $VE$ ($H_0$) to 0 (maximal $H_1$ not allowing harm by vaccination)
+  <ul>
+  <li> E.g., ranging from $VE$ ($H_0$) to 0 (maximal $H_1$ not allowing harm by vaccination)
+  </ul>
+</li>
 <li> Select a grid of $VE^{lat}_1 \geq VE^{lat}_0$ values
-    + E.g., $VE^{lat}_1 = VE$
+  <ul>
+  <li> E.g., $VE^{lat}_1 = VE$
+  </ul>
+</li>
 </ol>
 
 ## Algorithm for trichotomous \(\small\, S\) [without replacement sampling]
 <ol start=5>
 <li> Specify $P^{lat}_0$ and $P^{lat}_2$, then $P^{lat}_1 = 1-P^{lat}_0-P^{lat}_2$
-    + Assuming $risk^{lat}_0(x) = risk_0$,
-    \[
-    VE = VE^{lat}_0 P^{lat}_0 + VE^{lat}_1 P^{lat}_1 + VE^{lat}_2 P^{lat}_2
-    \]
-    yields $VE^{lat}_2$
-    + If $VE^{lat}_0$ varies from $VE$ to 0, then $VE^{lat}_2$ varies from VE to $VE (P^{lat}_0 + P^{lat}_2)/P^{lat}_2$
+  <ul>
+  <li> Assuming $risk^{lat}_0(x) = risk_0$,
+  \[
+  VE = VE^{lat}_0 P^{lat}_0 + VE^{lat}_1 P^{lat}_1 + VE^{lat}_2 P^{lat}_2
+  \]
+  yields $VE^{lat}_2$
+  <li> If $VE^{lat}_0$ varies from $VE$ to 0, then $VE^{lat}_2$ varies from VE to $VE\, (P^{lat}_0 + P^{lat}_2)/P^{lat}_2$
+  </ul>
+</li>
 </ol>
 
 ## R package CoRpower: `computepower` function input parameters
