@@ -38,23 +38,27 @@ figDir <- "T:/vaccine/StephanieWu/CoR Power Package In Progress/Figures"
 - If calculations done at design stage, then $N$, $n_{cases}$, and $n_{controls}$ projected numbers
 
 ## Algorithm for trichotomous \(\small\, S\) [without replacement sampling]
-1. Specify overall $VE$ between $\tau$ and $\tau_{\mathrm{max}}$
+<ol>
+<li> Specify overall $VE$ between $\tau$ and $\tau_{\mathrm{max}}$
     + Protocol-specified design alternative or $\widehat{VE}$
-2. Specify $risk_0$
+<li> Specify $risk_0$
     + Protocol-specified placebo-group endpoint rate or $\widehat{risk}_0$
-3. Select a grid of $VE^{lat}_0$ values
+<li> Select a grid of $VE^{lat}_0$ values
     + E.g., ranging from $VE$ ($H_0$) to 0 (maximal $H_1$ not allowing harm by vaccination)
-4. Select a grid of $VE^{lat}_1 \geq VE^{lat}_0$ values
+<li> Select a grid of $VE^{lat}_1 \geq VE^{lat}_0$ values
     + E.g., $VE^{lat}_1 = VE$
-    
+</ol>
+
 ## Algorithm for trichotomous \(\small\, S\) [without replacement sampling]
-5. Specify $P^{lat}_0$ and $P^{lat}_2$, then $P^{lat}_1 = 1-P^{lat}_0-P^{lat}_2$
+<ol start=5>
+<li> Specify $P^{lat}_0$ and $P^{lat}_2$, then $P^{lat}_1 = 1-P^{lat}_0-P^{lat}_2$
     + Assuming $risk^{lat}_0(x) = risk_0$,
     \[
     VE = VE^{lat}_0 P^{lat}_0 + VE^{lat}_1 P^{lat}_1 + VE^{lat}_2 P^{lat}_2
     \]
     yields $VE^{lat}_2$
     + If $VE^{lat}_0$ varies from $VE$ to 0, then $VE^{lat}_2$ varies from VE to $VE (P^{lat}_0 + P^{lat}_2)/P^{lat}_2$
+</ol>
 
 ## R package CoRpower: `computepower` function input parameters
 - `numAtRiskTauCases`: number of vaccinees at risk at $\tau$ who become cases 
@@ -186,8 +190,8 @@ ans <- computepower(numAtRiskTauCases=31,
 *$P^{lat}_0$ and $P_0$ take on 0.05, 0.1, 0.15, and 0.2, and $P^{lat}_2$ and $P_2$ take on 0.15, 0.3, 0.45, and 0.6
 
 ## Scenario 2 Figures
-```{r, echo=FALSE, fig.align='center', out.width='100%'}
-knitr::include_graphics(file.path(figDir,"powertrinary_CoR_Scen2.pdf"))
+```{r, echo=FALSE, fig.align='center', out.width='65%'}
+knitr::include_graphics(file.path(figDir,"powertrinary_CoR_Scen2.png"))
 ```
 
 ## 1. Trichotomous, Approach 1
@@ -232,6 +236,6 @@ ans <- computepower(numAtRiskTauCases=31,
 *$sens$ and $spec$ take on 1, 0.9, 0.8, and 0.7
 
 ## Scenario 3 Figures
-```{r, echo=FALSE, fig.align='center', out.width='100%'}
-knitr::include_graphics(file.path(figDir,"powertrinary_CoR_Scen3.pdf"))
+```{r, echo=FALSE, fig.align='center', out.width='65%'}
+knitr::include_graphics(file.path(figDir,"powertrinary_CoR_Scen3.png"))
 ```
