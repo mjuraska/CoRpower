@@ -417,6 +417,8 @@ BiomSubset <- function(Y, N, nPhase2, controlCaseRatio, p, cohort){
 #' @param biomType Type of biomarker that is used. The default is "continuous"; other choices are "trichotomous" and "binary".
 #' @param cohort Sampling design to be used. Default is \code{FALSE}, specifying case-control sampling design. If \code{TRUE}, case-cohort sampling is used. 
 #' @param p For case-cohort sampling design, probability that a subject will be in the cohort. 
+#' @param saveDir Character denoting the directory that the function output is to be saved in. Default is \code{NULL}. 
+#' @param saveFile Character denoting the name of the file the function output will be saved in. Output will be saved as an .RData file. Default is \code{NULL}.
 #' 
 #' @details
 #' This function performs simulations to calculate the power for testing whether a trichotomous or continuous biomarker
@@ -760,7 +762,8 @@ computepower <- function(numAtRiskTauCases, numAtRiskTauCasesPhase2, numAtRiskTa
                          Spec=NULL, FP0=NULL, Sens=NULL, FN2=NULL,
                          tpsMethod=c("PL", "ML","WL"),
                          biomType=c("continuous", "trichotomous", "binary"),
-                         cohort=FALSE, p=NULL) {
+                         cohort=FALSE, p=NULL,
+                         saveDir=NULL, saveFile=NULL) {
   
   # sigma2tr is the variance of the true biomarker X
   # rhos must be a vector with 4 values and is for the continuous and binary biomarker correlates correlations
@@ -1023,21 +1026,30 @@ computepower <- function(numAtRiskTauCases, numAtRiskTauCasesPhase2, numAtRiskTa
         }  
       }  
     }  
-    
+    # power calculations
     powerstrinary <- powerstrinary/M
-    ans <- list(RRlat2,t(powerstrinary))
     
-    write(RRlat2,file="RRlat2.dat",ncolumns=1,append=FALSE)
-    write(RRlat0,file="RRlat0.dat",ncolumns=1,append=FALSE)
-    write(powerstrinary,file=paste("powerstrinary",P2,P0,controlCaseRatio,".dat",sep=""),ncolumns=nrow(powerstrinary),append=FALSE)
-    write(P2,file="P2.dat")
-    # Print out the CoR effect sizes
-    write(risk1_0,file=paste("vaccineriskslo",P2,P0,controlCaseRatio,".dat",sep=""),ncolumns=length(rhos),append=FALSE)
-    write(risk1_2,file=paste("vaccineriskshi",P2,P0,controlCaseRatio,".dat",sep=""),ncolumns=length(rhos),append=FALSE)
     # write out alpha intercept as logit(Y=1|s=0) for trinary/binary case
-    write(c(t(logit(risk1_0))), file="trinaryalpha.dat",ncolumns=1,append=FALSE)
+    trinaryalpha <- c(logit(risk1_0))
     # write out beta coefficient as the log odds ratio: logit(Y=1|S=2)-logit(Y=1|s=0) for trinary/binary case
-    write(c(t(logit(risk1_2)-logit(risk1_0))), file="trinarybeta.dat",ncolumns=1,append=FALSE)
+    trinarybeta <- c(logit(risk1_2)-logit(risk1_0))
+    # CoR effect sizes
+    RRt <- risk1_2/risk1_0
+    
+    ans <- list("powerstrinary"=powerstrinary, "RRt"=RRt, "risk1_2"=risk1_2, "risk1_0"=risk1_0, "RRlat2"=RRlat2, "RRlat0"=RRlat0, "Plat2"=Plat2, "Plat0"=Plat0, 
+                "P2"=P2, "P0"=P0, "trinaryalpha"=trinaryalpha, "trinarybeta"=trinarybeta, "Sens"=Sens, "Spec"=Spec, "FP0"=FP0, "FN2"=FN2)
+    
+        # write(RRlat2,file="RRlat2.dat",ncolumns=1,append=FALSE)
+        # write(RRlat0,file="RRlat0.dat",ncolumns=1,append=FALSE)
+        # write(powerstrinary,file=paste("powerstrinary",P2,P0,controlCaseRatio,".dat",sep=""),ncolumns=nrow(powerstrinary),append=FALSE)
+        # write(P2,file="P2.dat")
+        # # Print out the CoR effect sizes
+        # write(risk1_0,file=paste("vaccineriskslo",P2,P0,controlCaseRatio,".dat",sep=""),ncolumns=length(rhos),append=FALSE)
+        # write(risk1_2,file=paste("vaccineriskshi",P2,P0,controlCaseRatio,".dat",sep=""),ncolumns=length(rhos),append=FALSE)
+        # # write out alpha intercept as logit(Y=1|s=0) for trinary/binary case
+        # write(c(t(logit(risk1_0))), file="trinaryalpha.dat",ncolumns=1,append=FALSE)
+        # # write out beta coefficient as the log odds ratio: logit(Y=1|S=2)-logit(Y=1|s=0) for trinary/binary case
+        # write(c(t(logit(risk1_2)-logit(risk1_0))), file="trinarybeta.dat",ncolumns=1,append=FALSE)
     
   } else if (biomType=="continuous") {  
     
@@ -1205,27 +1217,43 @@ computepower <- function(numAtRiskTauCases, numAtRiskTauCasesPhase2, numAtRiskTa
         }
       }
     } 
-    
+    # power calculations
     powerscont <- powerscont/M
-    ans <- list(RRlat2,exp(truebetas),t(powerscont))
     
-    # RRs the relative risks that are the effect sizes RR_c that
-    # need to be on the x-axis of powerplots
-    write(exp(truebetas),file="RRs.dat",ncolumns=1,append=FALSE)
-    write(powerscont,file=paste("powerscont",controlCaseRatio,".dat",sep=""),ncolumns=nrow(powerscont),append=FALSE)
-    write(PlatVElowest,file="PlatVElowest.dat")
-    write(VElowestvect,file="VElowestvect.dat",ncolumns=1,append=FALSE)
-    write(truebetas,file="truebetas.dat")
+    # RRs the relative risks that are the effect sizes RR_c that need to be on the x-axis of powerplots
+    RRs <- exp(truebetas)
+    
+    ans <- list("powerscont"=powerscont, "RRs"=RRs, "truebetas"=truebetas, "PlatVElowest"=PlatVElowest, "VElowestvect"=VElowestvect, "sigma2obs"=sigma2obs)
+    
+        # # RRs the relative risks that are the effect sizes RR_c that
+        # # need to be on the x-axis of powerplots
+        # write(exp(truebetas),file="RRs.dat",ncolumns=1,append=FALSE)
+        # write(powerscont,file=paste("powerscont",controlCaseRatio,".dat",sep=""),ncolumns=nrow(powerscont),append=FALSE)
+        # write(PlatVElowest,file="PlatVElowest.dat")
+        # write(VElowestvect,file="VElowestvect.dat",ncolumns=1,append=FALSE)
+        # write(truebetas,file="truebetas.dat")
   }
   
-  write(N,file="sampsizeALL.dat")
-  write(nCases,file="numbeventsALL.dat")
-  write(nPhase2,file="numbeventsPhase2.dat")
-  write(1-RRoverall,file="VEoverallCoRpower.dat")
-  write(alpha,file="alpha.dat")
-  write(rhos,file="rhos.dat",ncolumns=1,append=FALSE)
-  write(controlCaseRatio,file="controlCaseRatio.dat")
-  
+      # VEoverall <- 1-RRoverall
+      # ans <- c(ans, list(N), list(nCases), list(nPhase2), VEoverall, alpha, list(rhos), controlCaseRatio)
+  ans$N <- N
+  ans$nCases <- nCases
+  ans$nPhase2 <- nPhase2
+  ans$VEoverall <- 1-RRoverall
+  ans$alpha <- alpha
+  ans$rhos <- rhos
+  ans$controlCaseRatio <- controlCaseRatio
+        # write(N,file="sampsizeALL.dat")
+        # write(nCases,file="numbeventsALL.dat")
+        # write(nPhase2,file="numbeventsPhase2.dat")
+        # write(1-RRoverall,file="VEoverallCoRpower.dat")
+        # write(alpha,file="alpha.dat")
+        # write(rhos,file="rhos.dat",ncolumns=1,append=FALSE)
+        # write(controlCaseRatio,file="controlCaseRatio.dat")
+  if(!is.null(saveDir) & !is.null(saveFile)) {
+    save(ans, file=paste0(file.path(saveDir, saveFile),".RData"))
+  }
+
   return(ans)
   
 }

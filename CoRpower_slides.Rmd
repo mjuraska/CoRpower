@@ -226,9 +226,24 @@ RR_t = \frac{\sum_{x=0}^2 RR^{lat}_x P(X=x|S=2)}{\sum_{x=0}^2 RR^{lat}_x P(X=x|S
 - `tpsMethod`: character denoting method for fitting the logistic regression model. Choose from "PL" for pseudo-likelihood (default), "ML" for maximum likelihood, and "WL" for weighted likelihood. 
 
 ## CoRpower input scenarios:
-1. Trichotomous biomarker, Approach 1 ($Sens$, $Spec$, $FP^0$, $FN^2$ specified)
-2. Trichotomous biomarker, Appraoch 2 ($\rho$, $\sigma^2_{obs}$ specified)
-3. Continuous biomarker ($\rho$, $\sigma^2_{obs}$, $VE_{lowestvect}$, $P^{lat}_{VElowest}$ specified)
+Trichotomous biomarker, Approach 1 ($Sens$, $Spec$, $FP^0$, $FN^2$ specified)
+    + Scenario 1: vary control:case ratio
+    + Scenario 2: vary $P_0^{lat}$, $P_0$, $P_2^{lat}$, $P_2$
+    + Scenario 3: vary sensitivity and specificity
+    + Scenario 4: vary cohort sampling probability
+<br>
+Trichotomous biomarker, Approach 2 ($\rho$, $\sigma^2_{obs}$ specified)
+    + Scenario 5: vary $\rho$
+    + Scenario 6: vary $P_0^{lat}$, $P_0$, $P_2^{lat}$, $P_2$
+    + Scenario 7: vary $n_{cases}$
+<br>
+Binary biomarker, Approach 2 ($\rho$, $\sigma^2_{obs}$ specified, $P_0^{lat}+P_2^{lat}=1$)
+    + Scenario 8: vary $n_{cases}$
+<br>
+Continuous biomarker ($\rho$, $\sigma^2_{obs}$, $VE_{lowestvect}$, $P^{lat}_{VElowest}$ specified)
+    + Scenario 9: vary $\rho$
+    + Scenario 10: vary $P_{lowestVE}^{lat}$
+    + Scenario 11: vary cohort sampling probability
 
 ## 1. Trichotomous, Approach 1
 ###Scenario 1: Vary control:case ratio
