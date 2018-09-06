@@ -214,33 +214,56 @@ Assuming the standard survival analysis framework,
 - $n^S_{cases} = n_{cases}$
 - $n^S_{controls} = K n^S_{cases}$
 
-## CoRpower input scenarios: 
-Trichotomous biomarker, Approach 1 ($Sens$, $Spec$, $FP^0$, $FN^2$ specified)
-<ul>
-  <li>Scenario 1: vary control:case ratio
-  <li>Scenario 2: vary $P_0^{lat}$, $P_0$, $P_2^{lat}$, $P_2$
-  <li>Scenario 3: vary sensitivity and specificity
-  <li>Scenario 4: vary cohort sampling probability
-</ul>
+## Illustration: `CoRpower` for trichotomous \(\small\, S\) | Without replacement sampling
+**Approach 1** $(Sens, Spec, FP^0, FN^2$ specified$)$
+
+- *Scenario 1:* vary control:case ratio
+- *Scenario 2:* vary $Sens$, $Spec$
+- *Scenario 3:* vary $P_0^{lat}$, $P_2^{lat}$, $P_0$, $P_2$
+
+**Approach 2** $(\sigma^2_{obs}$ and $\rho$ specified$)$
+
+- *Scenario 4:* vary $\rho$
+- *Scenario 5:* vary $P_0^{lat}$, $P_2^{lat}$, $P_0$, $P_2$
+- *Scenario 6:* vary $n_{cases}$
+
+## Stephanie: Would you please insert here code chunks and output/figures/tables for Scenarios 1--6 from the previous slide?
+
+## Illustration: `CoRpower` for binary \(\small\, S\) | Without replacement sampling
+Accomplished by selecting $P_0^{lat}$, $P_2^{lat}$, $P_0$, $P_2$ such that
+\[
+\begin{align}
+P_0^{lat} + P_2^{lat} &= 1\\
+P_0 + P_2 &= 1
+\end{align}
+\]
+
 <br>
-Trichotomous biomarker, Approach 2 ($\rho$, $\sigma^2_{obs}$ specified)
-<ul>
-  <li>Scenario 5: vary $\rho$
-  <li>Scenario 6: vary $P_0^{lat}$, $P_0$, $P_2^{lat}$, $P_2$
-  <li>Scenario 7: vary $n_{cases}$
-</ul>
-## CoRpower input scenarios (cont'd): 
-Binary biomarker, Approach 2 ($\rho$, $\sigma^2_{obs}$ specified, $P_0^{lat}+P_2^{lat}=1$)
-<ul>
-  <li>Scenario 8: vary $n_{cases}$
-</ul>
-<br>
-Continuous biomarker ($\rho$, $\sigma^2_{obs}$, $VE_{lowestvect}$, $P^{lat}_{VElowest}$ specified)
-<ul>
-  <li>Scenario 9: vary $\rho$
-  <li>Scenario 10: vary $P_{lowestVE}^{lat}$
-  <li>Scenario 11: vary cohort sampling probability
-</ul>
+**Approach 2** $(\sigma^2_{obs}$ and $\rho$ specified$)$
+
+- *Scenario 7:* vary $n_{cases}$
+
+## Stephanie: Would you please insert here the code chunk and output/figure for Scenario 7 from the previous slide?
+
+## To do for Michal: Slides on algorithm for a continuous biomarker and without replacement sampling
+
+## Illustration: `CoRpower` for continuous \(\small\, S\) | Without replacement sampling
+- *Scenario 8:* vary $\rho$
+- *Scenario 9:* vary $P_{lowestVE}^{lat}$
+
+## Stephanie: Would you please insert here code chunks and output/figures/tables for Scenarios 8--9 from the previous slide?
+
+## To do for Michal: Slides on Bernoulli sampling of both a trichotomous and continuous marker
+
+## Illustration: `CoRpower` for trichotomous \(\small\, S\) | Bernoulli sampling
+- *Scenario 10:* vary the probability of sampling into the subcohort at baseline
+
+## Stephanie: Would you please insert here the code chunk and output/figures for Scenario 10 from the previous slide?
+
+## Illustration: `CoRpower` for continuous \(\small\, S\) | Bernoulli sampling
+- *Scenario 11:* vary the probability of sampling into the subcohort at baseline
+
+## Stephanie: Would you please insert here the code chunk and output/figures for Scenario 11 from the previous slide?
 
 ## Scenario 1: Trichotomous, approach 1, vary control:case ratio {.smaller}
 ```{r, eval=FALSE}
