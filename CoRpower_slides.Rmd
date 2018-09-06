@@ -26,16 +26,17 @@ figDir <- "T:/vaccine/StephanieWu/CoR Power Package In Progress/Figures"
      + Continuous biomarker
 2. **Bernoulli sampling** for prospective case-cohort designs
 
-<br>
-- All R code illustrated considering P2-VP8 rotavirus vaccine efficacy trial design
+<!-- <br> -->
+<!-- - All R code illustrated considering P2-VP8 rotavirus vaccine efficacy trial design -->
 
 ## Set-up and notation | Without replacement sampling
 - Assume a randomized vaccine vs. placebo/control vaccine efficacy trial
 - $N=$ number of vaccine recipients observed to be at risk at $\tau$
-- $n_{cases}$ ($n_{controls}$) $=$ number of observed cases (controls) between $\tau$ and $\tau_{\mathrm{max}}$ with measured $S$ (or $S^{\ast}$), where cases have $\Delta Y = 1$ and controls have $\Delta (1-Y) = 1$
+- $n_{cases}$ ($n_{controls}$) $=$ number of observed cases (controls) between $\tau$ and $\tau_{\mathrm{max}}$, where cases have $\Delta Y = 1$ and controls have $\Delta (1-Y) = 1$
+- $n^S_{cases}$ ($n^S_{controls}$) $=$ number of observed cases (controls) between $\tau$ and $\tau_{\mathrm{max}}$ with measured $S$ (or $S^{\ast}$)
 
 <br>
-- If calculations done at design stage, then $N$, $n_{cases}$, and $n_{controls}$ projected numbers
+- If calculations done at design stage, then $N$, $n_{cases}$, $n_{controls}$, $n^S_{cases}$, and $n^S_{controls}$ projected numbers
 
 ## Algorithm for trichotomous biomarker \(\small\, S\) | Without replacement sampling
 <ol>
@@ -87,7 +88,7 @@ figDir <- "T:/vaccine/StephanieWu/CoR Power Package In Progress/Figures"
   <li> E.g., specify $Sens$ and $Spec$ and $FP^0 = FN^2 = 0$
   </ul>
 
-**Approach 2:** Specify $\sigma^2_{obs}$ and $\rho = \sigma^2_{tr} / \sigma^2_{obs}$ and determine $(Sens, Spec, FP^0, FP^1, FN^1, FN^2)$ (next slides)
+**Approach 2:** Specify $\sigma^2_{obs}$ and $\rho = \sigma^2_{tr} / \sigma^2_{obs}$ and determine $(Sens, Spec, FP^0, FP^1, FN^1, FN^2)$ (subsequent slides)
   <ul>
   <li> Typically, $\sigma^2_{obs} = 1$
   </ul>
@@ -174,19 +175,21 @@ RR_t = \frac{\sum_{x=0}^2 RR^{lat}_x P(X=x|S=2)}{\sum_{x=0}^2 RR^{lat}_x P(X=x|S
 
 ## Algorithm for trichotomous biomarker \(\small\, S\) | Without replacement sampling
 <ol start=8>
-<li> Simulate $B$ data sets under the true parameter values
+<li> Simulate $B$ data sets under the true parameter values:
   <ol type="a">
+  *Full data*
   <li> $N_x = N \times P^{lat}_x$
   <li> $\left(n_{cases}(0),n_{cases}(1),n_{cases}(2)\right) \sim \mathsf{Mult}(n_{cases},(p_0,p_1,p_2))$, where $p_k=P(X=k|Y=1,Y^{\tau}=0,Z=1)$
-  <li> For each of the $N_x$ subjects, generate $S_i$ by a draw from $\mathsf{Mult}(1,(p_0,p_1,p_2))$, where $p_k=P(S=k|X=x)$
-  <li> Sample without replacement $n_{controls} = K n_{cases}$ controls with measured $S$, i.e., the control:case ratio is not fixed within subgroup $X=x$
+  <li> For each of the $N_x$ subjects, generate $S_i$ by a draw from $\mathsf{Mult}(1,(p_0,p_1,p_2))$, where $p_k=P(S=k|X=x)$ </li>
+  *Observed data*
+  <li> Sample without replacement $n^S_{cases}$ and $n^S_{controls} = K n^S_{cases}$ controls with measured $S$ $(R=1)$, i.e., the control:case ratio is not fixed within subgroup $X=x$
   </ol>
 </li>
 </ol>
 
 ## Algorithm for trichotomous biomarker \(\small\, S\) | Without replacement sampling
 <ol start=9>
-<li> For each data set, compute the 1-sided one-degree-of-freedom Wald test statistic for $H_0 \Leftrightarrow \widetilde{H}_0: \beta_S \geq 0$ from IPW logistic regression model that accounts for biomarker sampling design (function `tps` in R package `osDesign`)
+<li> For each observed data set, compute the 1-sided one-degree-of-freedom Wald test statistic for $H_0 \Leftrightarrow \{\widetilde{H}_0: \beta_S \geq 0\}$ from IPW logistic regression model that accounts for biomarker sampling design (function `tps` in R package `osDesign`)
   <ul>
   <li> Alternatively, use the generalized two-degree-of-freedom Wald test
   </ul>
