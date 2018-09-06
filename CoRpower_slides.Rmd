@@ -110,9 +110,9 @@ for $\theta_0$ and $\theta_2$
 ### **Calculation of $(Sens, Spec, FP^0, FP^1, FN^1, FN^2)$ in Approach 2**
 <br>
 <ol type="i" start=2>
-<li> Generate $M$ realizations of $X^{\ast}$ and $S^{\ast} = X^{\ast} + e$, where $e \sim \mathsf{N}(0,(1-\rho)\sigma^2_{obs})$, and $X^{\ast}$ independent of $e$
+<li> Generate $B$ realizations of $X^{\ast}$ and $S^{\ast} = X^{\ast} + e$, where $e \sim \mathsf{N}(0,(1-\rho)\sigma^2_{obs})$, and $X^{\ast}$ independent of $e$
   <ul>
-  <li> $M = 20000$ by default
+  <li> $B = 20000$ by default
   </ul>
 </li>
 </ol>
@@ -140,7 +140,7 @@ FP^0(\phi_2) &= P(S^{\ast} > \phi_2 \mid X^{\ast} \leq \theta_0)
 <ol type="i" start=3>
 <li> Estimate $Spec(\phi_0)$ by
 \[
-\widehat{Spec}(\phi_0) = \frac{\#\{S^{\ast}_m \leq \phi_0, X^{\ast}_m \leq \theta_0\}}{\#\{X^{\ast}_m \leq \theta_0\}}\,,
+\widehat{Spec}(\phi_0) = \frac{\#\{S^{\ast}_b \leq \phi_0, X^{\ast}_b \leq \theta_0\}}{\#\{X^{\ast}_b \leq \theta_0\}}\,,
 \]
 etc.
 </ol>
@@ -175,7 +175,7 @@ RR_t = \frac{\sum_{x=0}^2 RR^{lat}_x P(X=x|S=2)}{\sum_{x=0}^2 RR^{lat}_x P(X=x|S
 
 ## Algorithm for trichotomous biomarker \(\small\, S\) | Without replacement sampling
 <ol start=8>
-<li> Simulate $B$ data sets under the true parameter values:
+<li> Simulate $M$ data sets under the true parameter values:
   <ol type="a">
   *Full data*
   <li> $N_x = N \times P^{lat}_x$
@@ -195,8 +195,24 @@ RR_t = \frac{\sum_{x=0}^2 RR^{lat}_x P(X=x|S=2)}{\sum_{x=0}^2 RR^{lat}_x P(X=x|S
   </ul>
 </li>
 <li> Compute power as proportion of data sets with 1-sided Wald test $p \leq \alpha/2$ for specified $\alpha$
-<li> Repeat power calculation varying control:case ratio, $(P^{lat}_0, P^{lat}_2, P_0, P_2)$, $n_{cases}$, $(Sens, Spec)$, $\rho$
+<li> Repeat power calculation varying control:case ratio, $n_{cases}$, $n^S_{cases}$, $(P^{lat}_0, P^{lat}_2, P_0, P_2)$, $(Sens, Spec)$, $\rho$
 </ol>
+
+## Illustration: hypothetical randomized placebo-controlled VE trial
+### **Trial design**
+- $N_{rand} = 4,600$ participants randomized to each of the vaccine and placebo group and followed for $\tau_{\mathrm{max}}=$ 24 months
+- Samples for measurement of $S$ at $\tau=$ 3.5 months stored in all vaccine recipients
+- Cumulative endpoint rate between $\tau$ and $\tau_{\mathrm{max}}$ in placebo group $=2.9\%$ $(=risk_0)$
+- $VE_{\tau-\tau_{\mathrm{max}}}=75\%$, $\quad VE_{0-\tau}=VE_{\tau-\tau_{\mathrm{max}}}/2$
+- Cumulative dropout rate between 0 and $\tau_{\mathrm{max}}=10\%$
+
+## Illustration: calculation of input parameters
+Assuming the standard survival analysis framework,
+
+- $N = N_{rand} \times P(T>\tau, C>\tau \mid Z=1) \approx 4,516$
+- $n_{cases} = N \times P(T\leq \tau_{\mathrm{max}}, T\leq C \mid T>\tau, C>\tau, Z=1) \approx 31$
+- $n^S_{cases} = n_{cases}$
+- $n^S_{controls} = K n^S_{cases}$
 
 ## CoRpower input scenarios: 
 Trichotomous biomarker, Approach 1 ($Sens$, $Spec$, $FP^0$, $FN^2$ specified)
