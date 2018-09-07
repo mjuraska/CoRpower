@@ -26,8 +26,8 @@ figDir <- "T:/vaccine/StephanieWu/CoR Power Package In Progress/Figures"
      + Continuous biomarker
 2. **Bernoulli sampling** for prospective case-cohort designs
 
-<!-- <br> -->
-<!-- - All R code illustrated considering P2-VP8 rotavirus vaccine efficacy trial design -->
+<br> 
+- All R code illustrated considering P2-VP8 rotavirus vaccine efficacy trial design 
 
 ## Set-up and notation | Without replacement sampling
 - Assume a randomized vaccine vs. placebo/control vaccine efficacy trial
@@ -110,9 +110,9 @@ for $\theta_0$ and $\theta_2$
 ### **Calculation of $(Sens, Spec, FP^0, FP^1, FN^1, FN^2)$ in Approach 2**
 <br>
 <ol type="i" start=2>
-<li> Generate $M$ realizations of $X^{\ast}$ and $S^{\ast} = X^{\ast} + e$, where $e \sim \mathsf{N}(0,(1-\rho)\sigma^2_{obs})$, and $X^{\ast}$ independent of $e$
+<li> Generate $B$ realizations of $X^{\ast}$ and $S^{\ast} = X^{\ast} + e$, where $e \sim \mathsf{N}(0,(1-\rho)\sigma^2_{obs})$, and $X^{\ast}$ independent of $e$
   <ul>
-  <li> $M = 20000$ by default
+  <li> $B = 20000$ by default
   </ul>
 </li>
 </ol>
@@ -140,7 +140,7 @@ FP^0(\phi_2) &= P(S^{\ast} > \phi_2 \mid X^{\ast} \leq \theta_0)
 <ol type="i" start=3>
 <li> Estimate $Spec(\phi_0)$ by
 \[
-\widehat{Spec}(\phi_0) = \frac{\#\{S^{\ast}_m \leq \phi_0, X^{\ast}_m \leq \theta_0\}}{\#\{X^{\ast}_m \leq \theta_0\}}\,,
+\widehat{Spec}(\phi_0) = \frac{\#\{S^{\ast}_b \leq \phi_0, X^{\ast}_b \leq \theta_0\}}{\#\{X^{\ast}_b \leq \theta_0\}}\,,
 \]
 etc.
 </ol>
@@ -175,7 +175,7 @@ RR_t = \frac{\sum_{x=0}^2 RR^{lat}_x P(X=x|S=2)}{\sum_{x=0}^2 RR^{lat}_x P(X=x|S
 
 ## Algorithm for trichotomous biomarker \(\small\, S\) | Without replacement sampling
 <ol start=8>
-<li> Simulate $B$ data sets under the true parameter values:
+<li> Simulate $M$ data sets under the true parameter values:
   <ol type="a">
   *Full data*
   <li> $N_x = N \times P^{lat}_x$
@@ -195,40 +195,39 @@ RR_t = \frac{\sum_{x=0}^2 RR^{lat}_x P(X=x|S=2)}{\sum_{x=0}^2 RR^{lat}_x P(X=x|S
   </ul>
 </li>
 <li> Compute power as proportion of data sets with 1-sided Wald test $p \leq \alpha/2$ for specified $\alpha$
-<li> Repeat power calculation varying control:case ratio, $(P^{lat}_0, P^{lat}_2, P_0, P_2)$, $n_{cases}$, $(Sens, Spec)$, $\rho$
+<li> Repeat power calculation varying control:case ratio, $n_{cases}$, $n^S_{cases}$, $(P^{lat}_0, P^{lat}_2, P_0, P_2)$, $(Sens, Spec)$, $\rho$
 </ol>
 
-# Running the `computepower` function
+## Illustration: hypothetical randomized placebo-controlled VE trial
+### **Trial design**
+- $N_{rand} = 4,600$ participants randomized to each of the vaccine and placebo group and followed for $\tau_{\mathrm{max}}=$ 24 months
+- Samples for measurement of $S$ at $\tau=$ 3.5 months stored in all vaccine recipients
+- Cumulative endpoint rate between $\tau$ and $\tau_{\mathrm{max}}$ in placebo group $=2.9\%$ $(=risk_0)$
+- $VE_{\tau-\tau_{\mathrm{max}}}=75\%$, $\quad VE_{0-\tau}=VE_{\tau-\tau_{\mathrm{max}}}/2$
+- Cumulative dropout rate between 0 and $\tau_{\mathrm{max}}=10\%$
 
-## CoRpower input scenarios: 
-Trichotomous biomarker, Approach 1 ($Sens$, $Spec$, $FP^0$, $FN^2$ specified)
-<ul>
-  <li>Scenario 1: vary control:case ratio
-  <li>Scenario 2: vary $P_0^{lat}$, $P_0$, $P_2^{lat}$, $P_2$
-  <li>Scenario 3: vary sensitivity and specificity
-  <li>Scenario 4: vary cohort sampling probability, p
-</ul>
-<br>
-Trichotomous biomarker, Approach 2 ($\rho$, $\sigma^2_{obs}$ specified)
-<ul>
-  <li>Scenario 5: vary $\rho$
-  <li>Scenario 6: vary $P_0^{lat}$, $P_0$, $P_2^{lat}$, $P_2$
-  <li>Scenario 7: vary $n_{cases}$
-</ul>
-## CoRpower input scenarios: 
-Binary biomarker, Approach 2 ($\rho$, $\sigma^2_{obs}$ specified, $P_0^{lat}+P_2^{lat}=1$)
-<ul>
-  <li>Scenario 8: vary $n_{cases}$
-</ul>
-<br>
-Continuous biomarker ($\rho$, $\sigma^2_{obs}$, $VE_{lowestvect}$, $P^{lat}_{VElowest}$ specified)
-<ul>
-  <li>Scenario 9: vary $\rho$
-  <li>Scenario 10: vary $P_{lowestVE}^{lat}$
-  <li>Scenario 11: vary cohort sampling probability, p
-</ul>
+## Illustration: calculation of input parameters
+Assuming the standard survival analysis framework,
 
-## Scenario 1: Trichotomous, approach 1 | Vary control:case ratio {.smaller}
+- $N = N_{rand} \times P(T>\tau, C>\tau \mid Z=1) \approx 4,516$
+- $n_{cases} = N \times P(T\leq \tau_{\mathrm{max}}, T\leq C \mid T>\tau, C>\tau, Z=1) \approx 31$
+- $n^S_{cases} = n_{cases}$
+- $n^S_{controls} = K n^S_{cases}$
+
+## Illustration: `CoRpower` for trichotomous \(\small\, S\) | Without replacement sampling
+**Approach 1** $(Sens, Spec, FP^0, FN^2$ specified$)$
+
+- *Scenario 1:* vary control:case ratio
+- *Scenario 2:* vary $Sens$, $Spec$
+- *Scenario 3:* vary $P_0^{lat}$, $P_2^{lat}$, $P_0$, $P_2$
+
+**Approach 2** $(\sigma^2_{obs}$ and $\rho$ specified$)$
+
+- *Scenario 4:* vary $\rho$
+- *Scenario 5:* vary $P_0^{lat}$, $P_2^{lat}$, $P_0$, $P_2$
+- *Scenario 6:* vary $n_{cases}$
+
+## *Scenario 1:* Trichotomous, approach 1 | Vary control:case ratio {.smaller}
 ```{r, eval=FALSE}
 library(CoRpower)
 ans <- computepower(numAtRiskTauCases=31,  # n_cases
@@ -260,9 +259,8 @@ risk1_2 <- matrix(scan('vaccineriskshi0.60.25.dat'), nrow=1, byrow=T)
 RRt <- risk1_2/risk1_0
 RRlat2 <- RRlat2 <- scan('RRlat2.dat')
 ```
-## Scenario 1 Output | List of 23 elements: {.smaller}
 
-<br>
+## Scenario 1 Output for `controlCaseRatio=5` | List of 23 elements: {.smaller}
 <ul>
 <li>`powerstrinary`
 ```{r, echo=FALSE}
@@ -284,34 +282,7 @@ RRlat2[1:7]
 knitr::include_graphics(file.path(figDir,"powertrinary_CoR_Scen1.png"))
 ```
 
-## Scenario 2: Trichotomous, approach 1 | Vary \(\small\, P^{lat}_0, P_0, P^{lat}_2, P_2\) {.smaller}
-```{r, eval=FALSE}
-ans <- computepower(numAtRiskTauCases=31, 
-                    numAtRiskTauCasesPhase2=31, 
-                    numAtRiskTauControls=4485,
-                    risk0=0.034, 
-                    RRoverall=0.25, 
-                    ### <b>
-                    Plat0=0.05*, P0=0.05*,
-                    Plat2=0.15*, P2=0.15*, 
-                    ### </b>
-                    RRlat0=seq(1, 25, len=100), RRlat1=rep(0.25, 100), 
-                    PlatVElowest=0, VElowestvect=NULL,  
-                    controlCaseRatio=5, 
-                    M=1000, 
-                    alpha=0.05, 
-                    Spec=0.8, Sens=0.8, FP0=0, FN2=0, 
-                    biomType="trichotomous")
-```
-
-*$P^{lat}_0$ and $P_0$ take on 0.05, 0.1, 0.15, and 0.2, and $P^{lat}_2$ and $P_2$ take on 0.15, 0.3, 0.45, and 0.6
-
-## Scenario 2 Figures
-```{r, echo=FALSE, fig.align='center', out.width='65%'}
-knitr::include_graphics(file.path(figDir,"powertrinary_CoR_Scen2.png"))
-```
-
-## Scenario 3: Trichotomous, approach 1 | Vary \(\small\, Sens \) and \(\small\, Spec\) {.smaller}
+## *Scenario 2:* Trichotomous, approach 1 | Vary \(\small\, Sens \) and \(\small\, Spec\) {.smaller}
 ```{r, eval=FALSE}
 ans <- computepower(numAtRiskTauCases=31, 
                     numAtRiskTauCasesPhase2=31, 
@@ -334,41 +305,39 @@ ans <- computepower(numAtRiskTauCases=31,
 
 *$Sens$ and $Spec$ take on 1, 0.9, 0.8, and 0.7
 
-## Scenario 3 Figures
+## Scenario 2 Figures
 ```{r, echo=FALSE, fig.align='center', out.width='65%'}
 knitr::include_graphics(file.path(figDir,"powertrinary_CoR_Scen3.png"))
 ```
 
-## Scenario 4: Trichotomous, approach 1 | Vary cohort sampling probability, p {.smaller}
+## *Scenario 3:* Trichotomous, approach 1 | Vary \(\small\, P^{lat}_0, P_0, P^{lat}_2, P_2\) {.smaller}
 ```{r, eval=FALSE}
 ans <- computepower(numAtRiskTauCases=31, 
                     numAtRiskTauCasesPhase2=31, 
                     numAtRiskTauControls=4485,
                     risk0=0.034, 
                     RRoverall=0.25, 
-                    Plat0=0.2, P0=0.2, 
-                    Plat2=0.6, P2=0.6, 
+                    ### <b>
+                    Plat0=0.05*, P0=0.05*,
+                    Plat2=0.15*, P2=0.15*, 
+                    ### </b>
                     RRlat0=seq(1, 25, len=100), RRlat1=rep(0.25, 100), 
-                    PlatVElowest=0, VElowestvect=NULL,
+                    PlatVElowest=0, VElowestvect=NULL,  
+                    controlCaseRatio=5, 
                     M=1000, 
                     alpha=0.05, 
-                    Spec=1, Sens=1, FP0=0 FN2=0, 
-                    biomType="trichotomous", 
-                    cohort=TRUE, 
-                    ### <b>
-                    p=0.01*)
-                    ### </b>
-                    
+                    Spec=0.8, Sens=0.8, FP0=0, FN2=0, 
+                    biomType="trichotomous")
 ```
 
-*$p$ takes on 0.01, 0.02, 0.03, and 0.05
+*$P^{lat}_0$ and $P_0$ take on 0.05, 0.1, 0.15, and 0.2, and $P^{lat}_2$ and $P_2$ take on 0.15, 0.3, 0.45, and 0.6
 
-## Scenario 4 Figures
+## Scenario 3 Figures
 ```{r, echo=FALSE, fig.align='center', out.width='65%'}
-knitr::include_graphics(file.path(figDir,"powertrinary_CoR_Scen4.png"))
+knitr::include_graphics(file.path(figDir,"powertrinary_CoR_Scen2.png"))
 ```
 
-## Scenario 5: Trichotomous, approach 2 | Vary \(\small\, \rho \) {.smaller}
+## *Scenario 4:* Trichotomous, approach 2 | Vary \(\small\, \rho \) {.smaller}
 ```{r, eval=FALSE}
 ans <- computepower(numAtRiskTauCases=31, 
                     numAtRiskTauCasesPhase2=31, 
@@ -382,9 +351,9 @@ ans <- computepower(numAtRiskTauCases=31,
                     controlCaseRatio=5, 
                     M=1000, 
                     alpha=0.05, 
-                    sigma2obs=1,
+                    sigma2obs=1,  # variance of observed biomarker
                     ### <b>
-                    rhos=c(1, 0.9, 0.7, 0.5),
+                    rhos=c(1, 0.9, 0.7, 0.5),  # fraction of relevant variability in the observed biomarker
                     ### </b>
                     biomType="trichotomous")
 ```
@@ -398,7 +367,7 @@ RRt <- risk1_2/risk1_0
 RRlat2 <- RRlat2 <- scan('RRlat2.dat')
 ```
 
-## Scenario 5 Output | List of 23 elements: {.smaller}
+## Scenario 4 Output | List of 23 elements: {.smaller}
 
 <div style="float: left; width: 70%;">
 <ul>
@@ -433,18 +402,17 @@ RRlat2[1:5]
   <li> `alpha`, `rhos`, `controlCaseRatio`
 </ul>
 
-## Scenario 5 Figures
+## Scenario 4 Figures
 ```{r, echo=FALSE, fig.align='center', out.width='65%'}
 knitr::include_graphics(file.path(figDir,"powertrinary_CoR_Scen5.png"))
 ```
 
-## Scenario 5 Table
+## Scenario 4 Table
 ```{r, echo=FALSE, fig.align='center', out.width='90%'}
 knitr::include_graphics(file.path(figDir,"Scen5Table1.png"))
 ```
 
-
-## Scenario 6: Trichotomous, approach 2 | Vary \(\small\, P^{lat}_0, P_0, P^{lat}_2, P_2\) {.smaller}
+## *Scenario 5:* Trichotomous, approach 2 | Vary \(\small\, P^{lat}_0, P_0, P^{lat}_2, P_2\) {.smaller}
 ```{r, eval=FALSE}
 ans <- computepower(numAtRiskTauCases=31, 
                     numAtRiskTauCasesPhase2=31, 
@@ -467,18 +435,18 @@ ans <- computepower(numAtRiskTauCases=31,
 
 *$P^{lat}_0$ and $P_0$ take on 0.05, 0.1, 0.15, and 0.2, and $P^{lat}_2$ and $P_2$ take on 0.15, 0.3, 0.45, and 0.6
 
-## Scenario 6 Figures
+## Scenario 5 Figures
 ```{r, echo=FALSE, fig.align='center', out.width='65%'}
 knitr::include_graphics(file.path(figDir,"powertrinary_CoR_Scen6.png"))
 ```
 
-## Scenario 6 Table
+## Scenario 5 Table
 ```{r, echo=FALSE, fig.align='center', out.width='90%'}
 knitr::include_graphics(file.path(figDir,"Scen6Table1.png"))
 ```
 
 
-## Scenario 7: Trichotomous, approach 2 | Vary \(\small\, n_{cases}\) {.smaller}
+## *Scenario 6:* Trichotomous, approach 2 | Vary \(\small\, n_{cases}\) {.smaller}
 ```{r, eval=FALSE}
 ans <- computepower(### <b>
                     numAtRiskTauCases=c(25, 31, 35, 40), 
@@ -499,18 +467,33 @@ ans <- computepower(### <b>
                     biomType="trichotomous")
 ```
 
-## Scenario 7 Figures
+## Scenario 6 Figures
 ```{r, echo=FALSE, fig.align='center', out.width='65%'}
 knitr::include_graphics(file.path(figDir,"powertrinary_CoR_Scen7.png"))
 ```
 
-## Scenario 7 Table
+## Scenario 6 Table
 ```{r, echo=FALSE, fig.align='center', out.width='90%'}
 knitr::include_graphics(file.path(figDir,"Scen7Table1.png"))
 ```
 
 
-## Scenario 8: Binary, approach 2 | Vary \(\small\, n_{cases}\) {.smaller}
+
+## Illustration: `CoRpower` for binary \(\small\, S\) | Without replacement sampling
+Accomplished by selecting $P_0^{lat}$, $P_2^{lat}$, $P_0$, $P_2$ such that
+\[
+\begin{align}
+P_0^{lat} + P_2^{lat} &= 1\\
+P_0 + P_2 &= 1
+\end{align}
+\]
+
+<br>
+**Approach 2** $(\sigma^2_{obs}$ and $\rho$ specified$)$
+
+- *Scenario 7:* vary $n_{cases}$
+
+## *Scenario 7:* Binary, approach 2 | Vary \(\small\, n_{cases}\) {.smaller}
 ```{r, eval=FALSE}
 ans <- computepower(### <b>
                     numAtRiskTauCases=c(25, 31, 35, 40), 
@@ -531,17 +514,25 @@ ans <- computepower(### <b>
                     biomType="trichotomous")
 ```
 
-## Scenario 8 Figures
+## Scenario 7 Figures
 ```{r, echo=FALSE, fig.align='center', out.width='65%'}
 knitr::include_graphics(file.path(figDir,"powertrinary_CoR_Scen8.png"))
 ```
 
-## Scenario 8 Table
+## Scenario 7 Table
 ```{r, echo=FALSE, fig.align='center', out.width='90%'}
 knitr::include_graphics(file.path(figDir,"Scen8Table1.png"))
 ```
 
-## Scenario 9: Continuous | Vary \(\small\, \rho\) {.smaller}
+
+## To do for Michal: Slides on algorithm for a continuous biomarker and without replacement sampling
+
+## Illustration: `CoRpower` for continuous \(\small\, S\) | Without replacement sampling
+- *Scenario 8:* vary $\rho$
+- *Scenario 9:* vary $P_{lowestVE}^{lat}$
+
+
+## *Scenario 8:* Continuous | Vary \(\small\, \rho\) {.smaller}
 ```{r, eval=FALSE}
 ans <- computepower(numAtRiskTauCases=31, 
                     numAtRiskTauCasesPhase2=31, 
@@ -568,7 +559,7 @@ RRc <- scan('RRs.dat')
 VElowestvect <- scan('VElowestvect.dat')
 ```
 
-## Scenario 9 Output | List of 13 elements: {.smaller}
+## Scenario 8 Output | List of 13 elements: {.smaller}
 <ul>
   <li> `powerstrinary`
 ```{r, echo=FALSE}
@@ -586,17 +577,17 @@ VElowestvect[1:5]
 </ul>
 
 
-## Scenario 9 Figures
+## Scenario 8 Figures
 ```{r, echo=FALSE, fig.align='center', out.width='65%'}
 knitr::include_graphics(file.path(figDir,"powercontinuous_CoR_Scen9.png"))
 ```
 
-## Scenario 9 Figures 
+## Scenario 8 Figures 
 ```{r, echo=FALSE, fig.align='center', out.width='65%'}
 knitr::include_graphics(file.path(figDir,"plotVEcurveCoRcontinuous_Scen9.png"))
 ```
 
-## Scenario 10: Continuous| Vary \(\small\, P_{lowestVE}^{lat} \) {.smaller}
+## *Scenario 9:* Continuous| Vary \(\small\, P_{lowestVE}^{lat} \) {.smaller}
 ```{r, eval=FALSE}
 ans <- computepower(numAtRiskTauCases=31, 
                     numAtRiskTauCasesPhase2=31, 
@@ -616,17 +607,54 @@ ans <- computepower(numAtRiskTauCases=31,
 ```
 *$P_{lowestVE}^{lat}$ takes on 0.05, 0.1, 0.15, and 0.2
 
-## Scenario 10 Figures
+## Scenario 9 Figures
 ```{r, echo=FALSE, fig.align='center', out.width='65%'}
 knitr::include_graphics(file.path(figDir,"powercontinuous_CoR_Scen10.png"))
 ```
 
-## Scenario 10 Figures 
+## Scenario 9 Figures 
 ```{r, echo=FALSE, fig.align='center', out.width='65%'}
 knitr::include_graphics(file.path(figDir,"plotVEcurveCoRcontinuous_Scen10.png"))
 ```
 
-## Scenario 11: Continuous | Vary cohort sampling probabiliy, p {.smaller}
+## To do for Michal: Slides on Bernoulli sampling of both a trichotomous and continuous marker
+
+## Illustration: `CoRpower` for trichotomous \(\small\, S\) | Bernoulli sampling
+- *Scenario 10:* vary the probability of sampling into the subcohort at baseline
+
+## *Scenario 10:* Trichotomous, approach 1 | Vary cohort sampling probability, p {.smaller}
+```{r, eval=FALSE}
+ans <- computepower(numAtRiskTauCases=31, 
+                    numAtRiskTauCasesPhase2=31, 
+                    numAtRiskTauControls=4485,
+                    risk0=0.034, 
+                    RRoverall=0.25, 
+                    Plat0=0.2, P0=0.2, 
+                    Plat2=0.6, P2=0.6, 
+                    RRlat0=seq(1, 25, len=100), RRlat1=rep(0.25, 100), 
+                    PlatVElowest=0, VElowestvect=NULL,
+                    M=1000, 
+                    alpha=0.05, 
+                    Spec=1, Sens=1, FP0=0 FN2=0, 
+                    biomType="trichotomous", 
+                    cohort=TRUE, 
+                    ### <b>
+                    p=0.01*)
+                    ### </b>
+                    
+```
+
+*$p$ takes on 0.01, 0.02, 0.03, and 0.05
+
+## Scenario 10 Figures
+```{r, echo=FALSE, fig.align='center', out.width='65%'}
+knitr::include_graphics(file.path(figDir,"powertrinary_CoR_Scen4.png"))
+```
+
+## Illustration: `CoRpower` for continuous \(\small\, S\) | Bernoulli sampling
+- *Scenario 11:* vary the probability of sampling into the subcohort at baseline
+
+## *Scenario 11:* Continuous | Vary cohort sampling probabiliy, p {.smaller}
 ```{r, eval=FALSE}
 ans <- computepower(numAtRiskTauCases=31, 
                     numAtRiskTauCasesPhase2=31, 
@@ -647,7 +675,10 @@ ans <- computepower(numAtRiskTauCases=31,
 ```
 *$p$ takes on 0.01, 0.02, 0.03, 0.05
 
-## Scenario 11 Figures
+## *Scenario 11* Figures
 ```{r, echo=FALSE, fig.align='center', out.width='65%'}
 knitr::include_graphics(file.path(figDir,"powercontinuous_CoR_Scen11.png"))
 ```
+
+
+
