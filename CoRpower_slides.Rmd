@@ -230,54 +230,59 @@ Assuming the standard survival analysis framework,
 ## *Scenario 1:* vary control:case ratio (Approach 1) | Trichotomous \(\small\, S\), without replacement sampling {.smaller}
 ```{r, eval=FALSE}
 library(CoRpower)
-pwr <- computepower(numAtRiskTauCases = 31,           # n_cases
-                    numAtRiskTauCasesPhase2 = 31,     # num^S_cases
-                    numAtRiskTauControls = 4485,      # n_controls
+pwr <- computepower(nAtRiskTauCases = 31,             # n_cases
+                    nAtRiskTauControls = 4485,        # n_controls
+                    nAtRiskTauCasesPhase2 = 31,       # num^S_cases
+                    controlCaseRatio = 5,             # scalar, ie separate 'computepower' calls for 5, 3, 1
                     RRoverall = 0.25,                 # 1 - overall VE
                     risk0 = 0.029,                    # cumulative placebo risk between tau and tau_max 
                     RRlat0 = seq(1, 0.25, len = 100), # grid of relative risk (V/P) among lower protected
                     RRlat1 = rep(0.25, 100),          # grid of relative risk (V/P) among medium protected
+                    VElowest = NULL,                  # lowest VE level for true biomarker X* <= nu
                     Plat0 = 0.2,                      # prevalence of lower protected
                     Plat2 = 0.6,                      # prevalence of higher protected
                     P0 = 0.2,                         # probability of low biomarker response
                     P2=0.6,                           # probability of high biomarker response
                     PlatVElowest = 0,                 # prevalence of VE_lowest
-                    VElowestvect = NULL,              # lowest VE level for true biomarker X* <= \nu
-                    controlCaseRatio = 5,             # scalar, ie separate 'computepower' calls for 5, 3, 1
+                    Sens = 0.8, Spec = 0.8, FP0 = 0, FN2 = 0,
                     M = 1000,                         # number of simulated clinical trials
                     alpha = 0.05,                     # two-sided Wald test Type 1 error rate
-                    Sens = 0.8, Spec = 0.8, FP0 = 0, FN2 = 0, 
                     biomType = "trichotomous")        # "continuous" by default
 ```
 
 
-```{r, echo=FALSE}
+```{r, include=FALSE, cache=TRUE}
 setwd("T:/vaccine/StephanieWu/CoR Power Package In Progress/Scenario1/K1")
-powerstrinary <- matrix(scan('powerstrinary0.60.25.dat'),nrow=1, byrow=T)
-risk1_0 <- matrix(scan('vaccineriskslo0.60.25.dat'), nrow=1, byrow=T)
-risk1_2 <- matrix(scan('vaccineriskshi0.60.25.dat'), nrow=1, byrow=T)
+powerstrinary <- matrix(scan('powerstrinary0.60.25.dat'),nrow=1, byrow=TRUE)
+risk1_0 <- matrix(scan('vaccineriskslo0.60.25.dat'), nrow=1, byrow=TRUE)
+risk1_2 <- matrix(scan('vaccineriskshi0.60.25.dat'), nrow=1, byrow=TRUE)
 RRt <- risk1_2/risk1_0
 RRlat2 <- RRlat2 <- scan('RRlat2.dat')
 ```
 
-## Scenario 1 Output for `controlCaseRatio=5` | List of 23 elements: {.smaller}
-<ul>
-<li>`powerstrinary`
-```{r, echo=FALSE}
-powerstrinary[1,1:7]
+## *Scenario 1:* vary control:case ratio (Approach 1) | Trichotomous \(\small\, S\), without replacement sampling {.smaller}
+Output list for `controlCaseRatio = 5`:
+```{r, eval=FALSE}
+pwr$power[1, c(1, 25, 50, 75, 100)]
 ```
-<li>CoR effect size `RRt`
 ```{r, echo=FALSE}
-RRt[1,1:7]
+powerstrinary[1, c(1,25,50,75,100)]
 ```
-<li>`RRlat2` 
+```{r, eval=FALSE}
+pwr$RRt[1, c(1, 25, 50, 75, 100)]
+```
+```{r, echo=FALSE}
+RRt[1, c(1,25,50,75,100)]
+```
+```{r, eval=FALSE}
+pwr$RRlat2[c(1, 25, 50, 75, 100)]
+```
 ```{r, echo=FALSE} 
-RRlat2[1:7]
+RRlat2[c(1,25,50,75,100)]
 ```
-<li>`risk1_2`, `risk1_0`, `RRlat0`, `Plat2`, `Plat0`, `P2`, `P0`, `trinaryalpha`, `trinarybeta`, `Sens`, `Spec`, `FP0`, `FN2`, `N`, `nCases`, `nCasesPhase2`, `VEoverall`, `alpha`, `rhos`, `controlCaseRatio`
-</ul>
+Other components: `risk1_2`, `risk1_0`, `RRlat0`, `Plat2`, `Plat0`, `P2`, `P0`, `trinaryalpha`, `trinarybeta`, `Sens`, `Spec`, `FP0`, `FN2`, `N`, `nCases`, `nCasesPhase2`, `VEoverall`, `alpha`, `rhos`, `controlCaseRatio`
 
-## Scenario 1 Figures
+## *Scenario 1:* vary control:case ratio (Approach 1)
 ```{r, echo=FALSE, fig.align='center', out.width='65%'}
 knitr::include_graphics(file.path(figDir,"powertrinary_CoR_Scen1.png"))
 ```
