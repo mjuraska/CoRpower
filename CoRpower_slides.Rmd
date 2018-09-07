@@ -26,8 +26,8 @@ figDir <- "T:/vaccine/StephanieWu/CoR Power Package In Progress/Figures"
      + Continuous biomarker
 2. **Bernoulli sampling** for prospective case-cohort designs
 
-<br> 
-- All R code illustrated considering P2-VP8 rotavirus vaccine efficacy trial design 
+<!-- <br>  -->
+<!-- - All R code illustrated considering P2-VP8 rotavirus vaccine efficacy trial design  -->
 
 ## Set-up and notation | Without replacement sampling
 - Assume a randomized vaccine vs. placebo/control vaccine efficacy trial
@@ -227,29 +227,29 @@ Assuming the standard survival analysis framework,
 - *Scenario 5:* vary $P_0^{lat}$, $P_2^{lat}$, $P_0$, $P_2$
 - *Scenario 6:* vary $n_{cases}$
 
-## *Scenario 1:* Trichotomous, approach 1 | Vary control:case ratio {.smaller}
+## *Scenario 1:* vary control:case ratio (Approach 1) | Trichotomous \(\small\, S\), without replacement sampling {.smaller}
 ```{r, eval=FALSE}
 library(CoRpower)
-ans <- computepower(numAtRiskTauCases=31,  # n_cases
-                    numAtRiskTauCasesPhase2=31,  # num cases with biomarker measured
-                    numAtRiskTauControls=4485,  # n_controls
-                    risk0=0.034,  # placebo failure rate 
-                    RRoverall=0.25,  # 1-VEoverall
-                    Plat0=0.2, P0=0.2,  # low subgroup probabilities for true and observed biomarker
-                    Plat2=0.6, P2=0.6,
-                    RRlat0=seq(1, 25, len=100),  # rel risks for vaccine vs. placebo in low latent subgroup
-                    RRlat1=rep(0.25, 100),  
-                    PlatVElowest=0, VElowestvect=NULL,  # set to prevent continuous biomarker scenario
-                    ### <b>
-                    controlCaseRatio=5*, 
-                    ### </b>
-                    M=1000,  # number of simulated clinical trials
-                    alpha=0.05,  # two-sided type-1 error rate
-                    Spec=0.8, Sens=0.8, FP0=0, FN2=0, 
-                    biomType="trichotomous")
+pwr <- computepower(numAtRiskTauCases = 31,           # n_cases
+                    numAtRiskTauCasesPhase2 = 31,     # num^S_cases
+                    numAtRiskTauControls = 4485,      # n_controls
+                    RRoverall = 0.25,                 # 1 - overall VE
+                    risk0 = 0.029,                    # cumulative placebo risk between tau and tau_max 
+                    RRlat0 = seq(1, 0.25, len = 100), # grid of relative risk (V/P) among lower protected
+                    RRlat1 = rep(0.25, 100),          # grid of relative risk (V/P) among medium protected
+                    Plat0 = 0.2,                      # prevalence of lower protected
+                    Plat2 = 0.6,                      # prevalence of higher protected
+                    P0 = 0.2,                         # probability of low biomarker response
+                    P2=0.6,                           # probability of high biomarker response
+                    PlatVElowest = 0,                 # prevalence of VE_lowest
+                    VElowestvect = NULL,              # lowest VE level for true biomarker X* <= \nu
+                    controlCaseRatio = 5,             # scalar, ie separate 'computepower' calls for 5, 3, 1
+                    M = 1000,                         # number of simulated clinical trials
+                    alpha = 0.05,                     # two-sided Wald test Type 1 error rate
+                    Sens = 0.8, Spec = 0.8, FP0 = 0, FN2 = 0, 
+                    biomType = "trichotomous")        # "continuous" by default
 ```
 
-*controlCaseRatio takes on 5, 3, and 1
 
 ```{r, echo=FALSE}
 setwd("T:/vaccine/StephanieWu/CoR Power Package In Progress/Scenario1/K1")
