@@ -21,16 +21,15 @@ RRlatmed <- rep(RRoverall,100)
 RRlatlo <- seq(1,RRoverall,len=100)
 
 # Number enrolled in the subunit vaccine group:
-Nv <- 4600
+Nv <- 4100
 
 # Cumulative failure rate in the hypothetical placebo arm  
 # between Month tau and taumax (which is rate0 in the paper):
-rate0 <- 0.029
+rate0 <- 0.034
 
 # Cumulative failure rate in the hypothetical placebo arm
 # between Month 0 and 24:
 rate0Mo0totaumax <- rate0*(1 + tau/taumax)
-# rate0Mo0totaumax <- 0.034
 
 # Specify VE in the early period between enrollment and time tau --
 # specify it half way between 0 and VEoverall:
