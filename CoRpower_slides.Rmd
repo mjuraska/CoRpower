@@ -200,17 +200,17 @@ RR_t = \frac{\sum_{x=0}^2 RR^{lat}_x P(X=x|S=2)}{\sum_{x=0}^2 RR^{lat}_x P(X=x|S
 
 ## Illustration: hypothetical randomized placebo-controlled VE trial
 ### **Trial design**
-- $N_{rand} = 4,600$ participants randomized to each of the vaccine and placebo group and followed for $\tau_{\mathrm{max}}=$ 24 months
+- $N_{rand} = 4,100$ participants randomized to each of the vaccine and placebo group and followed for $\tau_{\mathrm{max}}=$ 24 months
 - Samples for measurement of $S$ at $\tau=$ 3.5 months stored in all vaccine recipients
-- Cumulative endpoint rate between $\tau$ and $\tau_{\mathrm{max}}$ in placebo group $=2.9\%$ $(=risk_0)$
+- Cumulative endpoint rate between $\tau$ and $\tau_{\mathrm{max}}$ in placebo group $=3.4\%$ $(=risk_0)$
 - $VE_{\tau-\tau_{\mathrm{max}}}=75\%$, $\quad VE_{0-\tau}=VE_{\tau-\tau_{\mathrm{max}}}/2$
 - Cumulative dropout rate between 0 and $\tau_{\mathrm{max}}=10\%$
 
 ## Illustration: calculation of input parameters
 Assuming the standard survival analysis framework,
 
-- $N = N_{rand} \times P(T>\tau, C>\tau \mid Z=1) \approx 4,516$
-- $n_{cases} = N \times P(T\leq \tau_{\mathrm{max}}, T\leq C \mid T>\tau, C>\tau, Z=1) \approx 31$
+- $N = N_{rand} \times P(T>\tau, C>\tau \mid Z=1) \approx 4,023$
+- $n_{cases} = N \times P(T\leq \tau_{\mathrm{max}}, T\leq C \mid T>\tau, C>\tau, Z=1) \approx 32$
 - $n^S_{cases} = n_{cases}$
 - $n^S_{controls} = K n^S_{cases}$
 
@@ -230,12 +230,12 @@ Assuming the standard survival analysis framework,
 ## *Scenario 1:* vary control:case ratio (Approach 1) | Trichotomous \(\small\, S\), without replacement sampling {.smaller}
 ```{r, eval=FALSE}
 library(CoRpower)
-pwr <- computepower(nAtRiskTauCases = 31,             # n_cases
-                    nAtRiskTauControls = 4485,        # n_controls
-                    nAtRiskTauCasesPhase2 = 31,       # num^S_cases
+pwr <- computepower(nAtRiskTauCases = 32,             # n_cases
+                    nAtRiskTauControls = 3991,        # n_controls
+                    nAtRiskTauCasesPhase2 = 32,       # num^S_cases
                     controlCaseRatio = 5,             # scalar, ie separate 'computepower' calls for 5, 3, 1
                     RRoverall = 0.25,                 # 1 - overall VE
-                    risk0 = 0.029,                    # cumulative placebo risk between tau and tau_max 
+                    risk0 = 0.034,                    # cumulative placebo risk between tau and tau_max 
                     RRlat0 = seq(1, 0.25, len = 100), # grid of relative risk (V/P) among lower protected
                     RRlat1 = rep(0.25, 100),          # grid of relative risk (V/P) among medium protected
                     Plat0 = 0.2,                      # prevalence of lower protected
@@ -479,7 +479,7 @@ knitr::include_graphics(file.path(figDir,"Scen7Table1.png"))
 
 
 ## Illustration: `CoRpower` for binary \(\small\, S\) | Without replacement sampling
-Accomplished by selecting $P_0^{lat}$, $P_2^{lat}$, $P_0$, $P_2$ such that
+Achieved by selecting $P_0^{lat}$, $P_2^{lat}$, $P_0$, $P_2$ such that
 \[
 \begin{align}
 P_0^{lat} + P_2^{lat} &= 1\\
@@ -524,9 +524,63 @@ knitr::include_graphics(file.path(figDir,"Scen8Table1.png"))
 ```
 
 
-## To do for Michal: Slides on algorithm for a continuous biomarker and without replacement sampling
+## Algorithm for continuous biomarker \(\small\, S^{\ast}\) | Without replacement sampling
+<ol>
+<li> Specify overall $VE$ between $\tau$ and $\tau_{\mathrm{max}}$
+  <ul>
+  <li> Protocol-specified design alternative or $\widehat{VE}$
+  </ul>
+</li>
+<li> Specify $risk_0$
+  <ul>
+  <li> Protocol-specified placebo-group endpoint rate or $\widehat{risk}_0$
+  </ul>
+</li>
+</ol>
 
-## Illustration: `CoRpower` for continuous \(\small\, S\) | Without replacement sampling
+## Algorithm for continuous biomarker \(\small\, S^{\ast}\) | Without replacement sampling
+<ol start=3>
+<li> Specify $P^{lat}_{lowestVE}$, $\rho$, and a grid of $VE_{lowest}$ values (e.g., ranging from $VE$ to 0)
+  <ul>
+  <li> Fixed $(VE, risk_0, P^{lat}_{lowestVE}, VE_{lowest}, \rho)$ and
+  \[
+  \begin{align}
+  VE^{lat}_{x^{\ast}} &= VE_{lowest},\quad x^{\ast} \leq \nu\\
+  VE^{lat}_{x^{\ast}} &= 1-\frac{\mathop{\mathrm{logit}}^{-1}\!(\alpha^{lat}+\beta^{lat}x^{\ast})}{risk_0}\,,\quad x^{\ast} \geq \nu
+  \end{align}
+  \]
+  yield $\alpha^{lat}$ and $\beta^{lat}$
+  <li> Plot $VE^{lat}_{x^{\ast}}$ vs. $x^{\ast}$ and calculate the pertaining CoR effect size $\exp(\beta^{lat})$ for each level of $VE_{lowest}$
+  </ul>
+</li>
+</ol>
+
+## Algorithm for continuous biomarker \(\small\, S^{\ast}\) | Without replacement sampling
+<ol start=4>
+<li> Simulate $M$ data sets under the true parameter values:
+  <ol type="a">
+  *Full data*
+  <li> Sample $X^{\ast}$ for $n_{cases}$ cases from $f_{X^{\ast}}(x^{\ast}|Y=1,Y^{\tau}=0,Z=1)$ using Bayes rule
+  <li> Sample $X^{\ast}$ for $n_{controls}$ controls from $f_{X^{\ast}}(x^{\ast}|Y=0,Y^{\tau}=0,Z=1)$ using Bayes rule
+  <br>
+  - How? Use a fine grid of $\widetilde{x}^{\ast}$ values and then 
+  <br>
+  $\;\;$`sample(`$\widetilde{x}^{\ast}$, `prob=`$f_{X^{\ast}}(\widetilde{x}^{\ast}|Y=\cdot,Y^{\tau}=0,Z=1)$, `replace=TRUE)`
+  <li> Sample $S^{\ast}$ following $S^{\ast} = X^{\ast} + e$ </li>
+  *Observed data*
+  <li> Sample without replacement $n^S_{cases}$ and $n^S_{controls} = K n^S_{cases}$ controls with measured $S^{\ast}$ $(R=1)$
+  </ol>
+</li>
+</ol>
+
+## Algorithm for continuous biomarker \(\small\, S^{\ast}\) | Without replacement sampling
+<ol start=5>
+<li> For each observed data set, compute the 1-sided one-degree-of-freedom Wald test statistic for $H_0 \Leftrightarrow \{\widetilde{H}_0: \beta_{S^{\ast}} \geq 0\}$ from IPW logistic regression model that accounts for biomarker sampling design (function `tps` in R package `osDesign`)
+<li> Compute power as proportion of data sets with 1-sided Wald test $p \leq \alpha/2$ for specified $\alpha$
+<li> Repeat power calculation varying control:case ratio, $n_{cases}$, $n^S_{cases}$, $P^{lat}_{lowestVE}$, $\rho$
+</ol>
+
+## Illustration: `CoRpower` for continuous \(\small\, S^{\ast}\) | Without replacement sampling
 - *Scenario 8:* vary $\rho$
 - *Scenario 9:* vary $P_{lowestVE}^{lat}$
 
@@ -616,10 +670,23 @@ knitr::include_graphics(file.path(figDir,"powercontinuous_CoR_Scen10.png"))
 knitr::include_graphics(file.path(figDir,"plotVEcurveCoRcontinuous_Scen10.png"))
 ```
 
-## To do for Michal: Slides on Bernoulli sampling of both a trichotomous and continuous marker
+## Bernoulli / case-cohort sampling of \(\small\, S\) (or \(\small\, S^{\ast}\))
+- Bernoulli sample at baseline with sampling probability $p$
+- $S$ (or $S^{\ast}$) measured at $\tau$ in
+    - a subset of the sample with $Y^{\tau}=0$, and
+    - all cases with $Y^{\tau}=0$
+- Implications:
+    - $n_{cases} = n^S_{cases}$
+    - $n^S_{controls}$ replaced by $p$, i.e., the number of controls sampled into the subcohort for measurement of $S$ (or $S^{\ast}$) is a random variable
 
-## Illustration: `CoRpower` for trichotomous \(\small\, S\) | Bernoulli sampling
-- *Scenario 10:* vary the probability of sampling into the subcohort at baseline
+## Illustration: `CoRpower` for trichotomous \(\small\, S\) and continuous \(\small\, S^{\ast}\) | Bernoulli sampling
+Trichotomous $S$
+
+- *Scenario 10:* vary $p$
+
+Continuous $S^{\ast}$
+
+- *Scenario 11:* vary $p$
 
 ## *Scenario 10:* Trichotomous, approach 1 | Vary cohort sampling probability, p {.smaller}
 ```{r, eval=FALSE}
@@ -650,8 +717,6 @@ ans <- computepower(numAtRiskTauCases=31,
 knitr::include_graphics(file.path(figDir,"powertrinary_CoR_Scen4.png"))
 ```
 
-## Illustration: `CoRpower` for continuous \(\small\, S\) | Bernoulli sampling
-- *Scenario 11:* vary the probability of sampling into the subcohort at baseline
 
 ## *Scenario 11:* Continuous | Vary cohort sampling probabiliy, p {.smaller}
 ```{r, eval=FALSE}
@@ -678,6 +743,3 @@ ans <- computepower(numAtRiskTauCases=31,
 ```{r, echo=FALSE, fig.align='center', out.width='65%'}
 knitr::include_graphics(file.path(figDir,"powercontinuous_CoR_Scen11.png"))
 ```
-
-
-
