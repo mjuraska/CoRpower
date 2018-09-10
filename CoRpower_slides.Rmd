@@ -242,41 +242,24 @@ pwr <- computePower(nAtRiskTauCases = 32,                # n_cases
                     Plat2 = 0.6,                         # prevalence of higher protected
                     P0 = 0.2,                            # probability of low biomarker response
                     P2 = 0.6,                            # probability of high biomarker response
-                    Sens = 0.8, Spec = 0.8, FP0 = 0, FN2 = 0,
+                    sens = 0.8, spec = 0.8, FP0 = 0, FN2 = 0,
                     M = 1000,                            # number of simulated clinical trials
                     alpha = 0.05,                        # two-sided Wald test Type 1 error rate
                     biomType = "trichotomous")           # "continuous" by default
 ```
 
-
 ```{r, include=FALSE, cache=TRUE}
-setwd("T:/vaccine/StephanieWu/CoR Power Package In Progress/Scenario1/K1")
-powerstrinary <- matrix(scan('powerstrinary0.60.25.dat'),nrow=1, byrow=TRUE)
-risk1_0 <- matrix(scan('vaccineriskslo0.60.25.dat'), nrow=1, byrow=TRUE)
-risk1_2 <- matrix(scan('vaccineriskshi0.60.25.dat'), nrow=1, byrow=TRUE)
-RRt <- risk1_2/risk1_0
-RRlat2 <- RRlat2 <- scan('RRlat2.dat')
+setwd("T:/vaccine/StephanieWu/CoR Power Package In Progress/Scenario1/K3")
+load("ansScen1.RData")
+pwr <- ans
 ```
 
 ## *Scenario 1:* vary control:case ratio (Approach 1) | Trichotomous \(\small\, S\), without replacement sampling {.smaller}
 Output list for `controlCaseRatio = 5`:
-```{r, eval=FALSE}
+```{r}
 pwr$power[1, c(1, 25, 50, 75, 100)]
-```
-```{r, echo=FALSE}
-powerstrinary[1, c(1,25,50,75,100)]
-```
-```{r, eval=FALSE}
 pwr$RRt[1, c(1, 25, 50, 75, 100)]
-```
-```{r, echo=FALSE}
-RRt[1, c(1,25,50,75,100)]
-```
-```{r, eval=FALSE}
-pwr$RRlat2[c(1, 25, 50, 75, 100)]
-```
-```{r, echo=FALSE} 
-RRlat2[c(1,25,50,75,100)]
+pwr$VElat2[c(1, 25, 50, 75, 100)]
 ```
 Other components: `risk1_2`, `risk1_0`, `RRlat0`, `Plat2`, `Plat0`, `P2`, `P0`, `trinaryalpha`, `trinarybeta`, `Sens`, `Spec`, `FP0`, `FN2`, `N`, `nCases`, `nCasesPhase2`, `VEoverall`, `alpha`, `rhos`, `controlCaseRatio`
 
@@ -299,7 +282,7 @@ pwr <- computePower(nAtRiskTauCases = 32,                # n_cases
                     Plat2 = 0.6,                         # prevalence of higher protected
                     P0 = 0.2,                            # probability of low biomarker response
                     P2 = 0.6,                            # probability of high biomarker response
-                    Sens = c(1, 0.9, 0.8, 0.7), Spec = c(1, 0.9, 0.8, 0.7), 
+                    sens = c(1, 0.9, 0.8, 0.7), spec = c(1, 0.9, 0.8, 0.7), 
                     FP0 = 0, FN2 = 0,
                     M = 1000,                            # number of simulated clinical trials
                     alpha = 0.05,                        # two-sided Wald test Type 1 error rate
@@ -325,7 +308,7 @@ pwr <- computePower(nAtRiskTauCases = 32,                # n_cases
                     Plat2 = 0.15,                        # scalar, ie separate calls for 0.15, 0.3, 0.45, 0.6
                     P0 = 0.05,                           # scalar, ie separate calls for 0.05, 0.1, 0.15, 0.2
                     P2 = 0.15,                           # scalar, ie separate calls for 0.15, 0.3, 0.45, 0.6
-                    Sens = 0.8, Spec = 0.8, FP0 = 0, FN2 = 0,
+                    sens = 0.8, spec = 0.8, FP0 = 0, FN2 = 0,
                     M = 1000,                            # number of simulated clinical trials
                     alpha = 0.05,                        # two-sided Wald test Type 1 error rate
                     biomType = "trichotomous")           # "continuous" by default
@@ -346,24 +329,15 @@ ans <- computePower(nAtRiskTauCases = 32,                # n_cases
                     risk0 = 0.034,                       # cumulative placebo risk between tau and tau_max 
                     VElat0 = seq(0, VEoverall, len=100), # grid of VE (V/P) among lower protected
                     VElat1 = rep(VEoverall, 100),        # grid of VE (V/P) among medium protected
-                    Plat0 = 0.2,                         # scalar, ie separate calls for 0.05, 0.1, 0.15, 0.2
-                    Plat2 = 0.6,                         # scalar, ie separate calls for 0.15, 0.3, 0.45, 0.6
-                    P0 = 0.2,                            # scalar, ie separate calls for 0.05, 0.1, 0.15, 0.2
-                    P2 = 0.6,                            # scalar, ie separate calls for 0.15, 0.3, 0.45, 0.6
+                    Plat0 = 0.2,                         # prevalence of lower protected
+                    Plat2 = 0.6,                         # prevalence of higher protected
+                    P0 = 0.2,                            # probability of low biomarker response
+                    P2 = 0.6,                            # probability of high biomarker response
                     M = 1000,                            # number of simulated clinical trials
                     alpha = 0.05,                        # two-sided Wald test Type 1 error rate
-                    sigma2obs=1,                         # variance of observed biomarker
-                    rhos=c(1, 0.9, 0.7, 0.5),            # fraction of relevant variability in the observed biomarker
+                    sigma2obs = 1,                       # variance of observed biomarker
+                    rho = c(1, 0.9, 0.7, 0.5),           # fraction of relevant variance in the observed biomarker
                     biomType = "trichotomous")           # "continuous" by default
-```
-
-```{r, echo=FALSE}
-setwd("T:/vaccine/StephanieWu/CoR Power Package In Progress/Scenario5")
-powerstrinary <- matrix(scan('powerstrinary0.60.25.dat'),nrow=4, byrow=T)
-risk1_0 <- matrix(scan('vaccineriskslo0.60.25.dat'), nrow=4, byrow=T)
-risk1_2 <- matrix(scan('vaccineriskshi0.60.25.dat'), nrow=4, byrow=T)
-RRt <- risk1_2/risk1_0
-RRlat2 <- RRlat2 <- scan('RRlat2.dat')
 ```
 
 ## Scenario 4 Figures
@@ -383,26 +357,24 @@ knitr::include_graphics(file.path(figDir,"Scen5Table1.png"))
 
 ## *Scenario 5:* Trichotomous, approach 2 | Vary \(\small\, P^{lat}_0, P_0, P^{lat}_2, P_2\) {.smaller}
 ```{r, eval=FALSE}
-ans <- computePower(numAtRiskTauCases=31, 
-                    numAtRiskTauCasesPhase2=31, 
-                    numAtRiskTauControls=4485,
-                    risk0=0.034, 
-                    RRoverall=0.25, 
-                    ### <b>
-                    Plat0=0.05*, P0=0.05*, 
-                    Plat2=0.15*, P2=0.15*, 
-                    ### </b>
-                    RRlat0=seq(1, 25, len=100), RRlat1=rep(0.25, 100), 
-                    PlatVElowest=0, VElowestvect=NULL,  
-                    controlCaseRatio=5, 
-                    M=1000, 
-                    alpha=0.05, 
-                    sigma2obs=1,
-                    rhos=0.9,
-                    biomType="trichotomous")
+ans <- computePower(nAtRiskTauCases = 32,                # n_cases
+                    nAtRiskTauControls = 3991,           # n_controls
+                    nAtRiskTauCasesPhase2 = 32,          # n^S_cases
+                    controlCaseRatio = 5,                # n^S_controls : n^S_cases ratio
+                    VEoverall = 0.75,                    # overall VE
+                    risk0 = 0.034,                       # cumulative placebo risk between tau and tau_max 
+                    VElat0 = seq(0, VEoverall, len=100), # grid of VE (V/P) among lower protected
+                    VElat1 = rep(VEoverall, 100),        # grid of VE (V/P) among medium protected
+                    Plat0 = 0.05,                        # scalar, ie separate calls for 0.05, 0.1, 0.15, 0.2
+                    Plat2 = 0.15,                        # scalar, ie separate calls for 0.15, 0.3, 0.45, 0.6
+                    P0 = 0.05,                           # scalar, ie separate calls for 0.05, 0.1, 0.15, 0.2
+                    P2 = 0.15,                           # scalar, ie separate calls for 0.15, 0.3, 0.45, 0.6
+                    M = 1000,                            # number of simulated clinical trials
+                    alpha = 0.05,                        # two-sided Wald test Type 1 error rate
+                    sigma2obs = 1,                       # variance of observed biomarker
+                    rho = 0.9,                           # fraction of relevant variance in the observed biomarker
+                    biomType = "trichotomous")           # "continuous" by default
 ```
-
-*$P^{lat}_0$ and $P_0$ take on 0.05, 0.1, 0.15, and 0.2, and $P^{lat}_2$ and $P_2$ take on 0.15, 0.3, 0.45, and 0.6
 
 ## Scenario 5 Figures
 ```{r, echo=FALSE, fig.align='center', out.width='65%'}
@@ -417,23 +389,23 @@ knitr::include_graphics(file.path(figDir,"Scen6Table1.png"))
 
 ## *Scenario 6:* Trichotomous, approach 2 | Vary \(\small\, n_{cases}\) {.smaller}
 ```{r, eval=FALSE}
-ans <- computePower(### <b>
-                    numAtRiskTauCases=c(25, 31, 35, 40), 
-                    numAtRiskTauCasesPhase2=c(25, 31, 35, 40), 
-                    numAtRiskTauControls=c(125, 155, 175, 200),
-                    ### </b>
-                    risk0=0.034, 
-                    RRoverall=0.25, 
-                    Plat0=0.2, P0=0.2, 
-                    Plat2=0.6, P2=0.6, 
-                    RRlat0=seq(1, 25, len=100), RRlat1=rep(0.25, 100), 
-                    PlatVElowest=0, VElowestvect=NULL,  
-                    controlCaseRatio=5, 
-                    M=1000, 
-                    alpha=0.05, 
-                    sigma2obs=1,
-                    rhos=0.9,
-                    biomType="trichotomous")
+ans <- computePower(nAtRiskTauCases = c(25, 32, 35, 40),      # n_cases
+                    nAtRiskTauControls=c(3998,3991,3988,3983),# n_controls
+                    nAtRiskTauCasesPhase2 = c(25, 32, 35, 40),# n^S_cases
+                    controlCaseRatio = 5,                     # n^S_controls : n^S_cases ratio
+                    VEoverall = 0.75,                         # overall VE
+                    risk0 = 0.034,                            # cumulative placebo risk between tau and tau_max 
+                    VElat0 = seq(0, VEoverall, len=100),      # grid of VE (V/P) among lower protected
+                    VElat1 = rep(VEoverall, 100),             # grid of VE (V/P) among medium protected
+                    Plat0 = 0.2,                              # prevalence of lower protected
+                    Plat2 = 0.6,                              # prevalence of higher protected
+                    P0 = 0.2,                                 # probability of low biomarker response
+                    P2 = 0.6,                                 # probability of high biomarker response
+                    M = 1000,                                 # number of simulated clinical trials
+                    alpha = 0.05,                             # two-sided Wald test Type 1 error rate
+                    sigma2obs = 1,                            # variance of observed biomarker
+                    rho = 0.9,                                # fraction of relevant variance in observed biomarker
+                    biomType = "trichotomous")                # "continuous" by default
 ```
 
 ## Scenario 6 Figures
@@ -464,23 +436,23 @@ P_0 + P_2 &= 1
 
 ## *Scenario 7:* Binary, approach 2 | Vary \(\small\, n_{cases}\) {.smaller}
 ```{r, eval=FALSE}
-ans <- computePower(### <b>
-                    numAtRiskTauCases=c(25, 31, 35, 40), 
-                    numAtRiskTauCasesPhase2=c(25, 31, 35, 40), 
-                    numAtRiskTauControls=c(125, 155, 175, 200),
-                    ### </b>
-                    risk0=0.034, 
-                    RRoverall=0.25, 
-                    Plat0=0.2, P0=0.2, 
-                    Plat2=0.8, P2=0.8, 
-                    RRlat0=seq(1, 25, len=100), RRlat1=rep(0.25, 100), 
-                    PlatVElowest=0, VElowestvect=NULL,  
-                    controlCaseRatio=5, 
-                    M=1000, 
-                    alpha=0.05, 
-                    sigma2obs=1,
-                    rhos=0.9,
-                    biomType="trichotomous")
+ans <- computePower(nAtRiskTauCases = c(25, 32, 35, 40),      # n_cases
+                    nAtRiskTauControls=c(3998,3991,3988,3983),# n_controls
+                    nAtRiskTauCasesPhase2 = c(25, 32, 35, 40),# n^S_cases
+                    controlCaseRatio = 5,                     # n^S_controls : n^S_cases ratio
+                    VEoverall = 0.75,                         # overall VE
+                    risk0 = 0.034,                            # cumulative placebo risk between tau and tau_max 
+                    VElat0 = seq(0, VEoverall, len=100),      # grid of VE (V/P) among lower protected
+                    VElat1 = rep(VEoverall, 100),             # grid of VE (V/P) among medium protected
+                    Plat0 = 0.2,                              # prevalence of lower protected
+                    Plat2 = 0.8,                              # prevalence of higher protected
+                    P0 = 0.2,                                 # probability of low biomarker response
+                    P2 = 0.8,                                 # probability of high biomarker response
+                    M = 1000,                                 # number of simulated clinical trials
+                    alpha = 0.05,                             # two-sided Wald test Type 1 error rate
+                    sigma2obs = 1,                            # variance of observed biomarker
+                    rho = 0.9,                                # fraction of relevant variance in observed biomarker
+                    biomType = "trichotomous")                # "continuous" by default
 ```
 
 ## Scenario 7 Figures
@@ -557,23 +529,33 @@ knitr::include_graphics(file.path(figDir,"Scen8Table1.png"))
 
 ## *Scenario 8:* Continuous | Vary \(\small\, \rho\) {.smaller}
 ```{r, eval=FALSE}
-ans <- computePower(numAtRiskTauCases=31, 
-                    numAtRiskTauCasesPhase2=31, 
-                    numAtRiskTauControls=4485,
-                    risk0=0.034, 
-                    RRoverall=0.25, 
-                    PlatVElowest=0.2,  # prevalence of VE_lowest
-                    VElowest=seq(0, 1-RRoverall, len=100),  # lowest VE level for true biomarker X* <= nu
-                    controlCaseRatio=5, 
-                    M=1000, 
-                    alpha=0.05, 
-                    sigma2obs=1,
-                    ### <b>
-                    rhos=c(1, 0.9, 0.7, 0.5),
-                    ### </b>
-                    biomType="continuous")
+ans <- computePower(nAtRiskTauCases = 32,                 # n_cases
+                    nAtRiskTauControls = 3991,            # n_controls
+                    nAtRiskTauCasesPhase2 = 32,           # n^S_cases
+                    controlCaseRatio = 5,                 # n^S_controls : n^S_cases ratio
+                    VEoverall = 0.75,                     # overall VE
+                    risk0 = 0.034,                        # cumulative placebo risk between tau and tau_max 
+                    PlatVElowest = 0.2,                   # prevalence of VE_lowest
+                    VElowest = seq(0,1-RRoverall,len=100),# lowest VE level for true biomarker X* <= nu
+                    M = 1000,                             # number of simulated clinical trials
+                    alpha = 0.05,                         # two-sided Wald test Type 1 error rate
+                    sigma2obs = 1,                        # variance of observed biomarker
+                    rho = c(1, 0.9, 0.7, 0.5)             # fraction of relevant variance in the observed biomarker
+                    biomType = "continuous")              # "continuous" by default
 ```
 
+
+```{r, include=FALSE, cache=TRUE, eval=FALSE, echo=FALSE}
+setwd("T:/vaccine/StephanieWu/CoR Power Package In Progress/Scenario9")
+load("ansScen9.RData")
+```
+
+## *Scenario 8:* Vary \(\small\, \rho\) | Continuous \(\small\, S*\), without replacement sampling {.smaller}
+```{r, eval=FALSE, echo=FALSE}
+pwr$power[1, c(1, 25, 50, 75, 100)]
+pwr$RRc[1, c(1, 25, 50, 75, 100)]
+pwr$VElowest[c(1, 25, 50, 75, 100)]
+```
 
 ```{r, echo=FALSE}
 setwd("T:/vaccine/StephanieWu/CoR Power Package In Progress/Scenario9")
@@ -581,12 +563,10 @@ powerscont <- matrix(scan('powerscont5.dat'),nrow=4, byrow=T)
 RRc <- scan('RRs.dat')
 VElowestvect <- scan('VElowestvect.dat')
 ```
-
-## Scenario 8 Output | List of 13 elements: {.smaller}
 <ul>
   <li> `powerstrinary`
 ```{r, echo=FALSE}
-powerstrinary[,1:7]
+powerscont[,1:7]
 ```
   <li> CoR effect size `RRc`
 ```{r, echo=FALSE}
@@ -610,25 +590,22 @@ knitr::include_graphics(file.path(figDir,"powercontinuous_CoR_Scen9.png"))
 knitr::include_graphics(file.path(figDir,"plotVEcurveCoRcontinuous_Scen9.png"))
 ```
 
-## *Scenario 9:* Continuous| Vary \(\small\, P_{lowestVE}^{lat} \) {.smaller}
+## *Scenario 9:* Continuous | Vary \(\small\, P_{lowestVE}^{lat} \) {.smaller}
 ```{r, eval=FALSE}
-ans <- computePower(numAtRiskTauCases=31, 
-                    numAtRiskTauCasesPhase2=31, 
-                    numAtRiskTauControls=4485,
-                    risk0=0.034, 
-                    RRoverall=0.25, 
-                    ### <b>
-                    PlatVElowest=0.05*, 
-                    ### </b>
-                    VElowestvect=seq(0, 1-RRoverall, len=100),  
-                    controlCaseRatio=5, 
-                    M=1000, 
-                    alpha=0.05, 
-                    sigma2obs=1,
-                    rhos=0.9,
-                    biomType="continuous")
+ans <- computePower(nAtRiskTauCases = 32,                 # n_cases
+                    nAtRiskTauControls = 3991,            # n_controls
+                    nAtRiskTauCasesPhase2 = 32,           # n^S_cases
+                    controlCaseRatio = 5,                 # n^S_controls : n^S_cases ratio
+                    VEoverall = 0.75,                     # overall VE
+                    risk0 = 0.034,                        # cumulative placebo risk between tau and tau_max 
+                    PlatVElowest = 0.05,                  # scalar, ie separate calls for 0.05, 0.1, 0.15, 0.2
+                    VElowest = seq(0,1-RRoverall,len=100),# lowest VE level for true biomarker X* <= nu
+                    M = 1000,                             # number of simulated clinical trials
+                    alpha = 0.05,                         # two-sided Wald test Type 1 error rate
+                    sigma2obs = 1,                        # variance of observed biomarker
+                    rho = c(1, 0.9, 0.7, 0.5)             # fraction of relevant variance in the observed biomarker
+                    biomType = "continuous")              # "continuous" by default
 ```
-*$P_{lowestVE}^{lat}$ takes on 0.05, 0.1, 0.15, and 0.2
 
 ## Scenario 9 Figures
 ```{r, echo=FALSE, fig.align='center', out.width='65%'}
@@ -660,27 +637,25 @@ Continuous $S^{\ast}$
 
 ## *Scenario 10:* Trichotomous, approach 1 | Vary cohort sampling probability, p {.smaller}
 ```{r, eval=FALSE}
-ans <- computePower(numAtRiskTauCases=31, 
-                    numAtRiskTauCasesPhase2=31, 
-                    numAtRiskTauControls=4485,
-                    risk0=0.034, 
-                    RRoverall=0.25, 
-                    Plat0=0.2, P0=0.2, 
-                    Plat2=0.6, P2=0.6, 
-                    RRlat0=seq(1, 25, len=100), RRlat1=rep(0.25, 100), 
-                    PlatVElowest=0, VElowestvect=NULL,
-                    M=1000, 
-                    alpha=0.05, 
-                    Spec=1, Sens=1, FP0=0 FN2=0, 
-                    biomType="trichotomous", 
-                    cohort=TRUE, 
-                    ### <b>
-                    p=0.01*)
-                    ### </b>
-                    
+ans <- computePower(nAtRiskTauCases = 32,                # n_cases
+                    nAtRiskTauControls = 3991,           # n_controls
+                    nAtRiskTauCasesPhase2 = 32,          # n^S_cases
+                    VEoverall = 0.75,                    # overall VE
+                    risk0 = 0.034,                       # cumulative placebo risk between tau and tau_max 
+                    VElat0 = seq(0, VEoverall, len=100), # grid of VE (V/P) among lower protected
+                    VElat1 = rep(VEoverall, 100),        # grid of VE (V/P) among medium protected
+                    Plat0 = 0.2,                         # prevalence of lower protected
+                    Plat2 = 0.6,                         # prevalence of higher protected
+                    P0 = 0.2,                            # probability of low biomarker response
+                    P2 = 0.6,                            # probability of high biomarker response
+                    sens = 0.8, spec = 0.8, FP0 = 0, FN2 = 0,
+                    M = 1000,                            # number of simulated clinical trials
+                    alpha = 0.05,                        # two-sided Wald test Type 1 error rate
+                    biomType = "trichotomous",           # "continuous" by default
+                    cohort = TRUE,                       # case-cohort sampling design
+                    p = 0.01,                            # scalar, ie separate calls for 0.01, 0.02, 0.03, 0.05
+                    pDropout = 0.1)                      # probability of dropout between tau and tau_max       
 ```
-
-*$p$ takes on 0.01, 0.02, 0.03, and 0.05
 
 ## Scenario 10 Figures
 ```{r, echo=FALSE, fig.align='center', out.width='65%'}
@@ -690,24 +665,22 @@ knitr::include_graphics(file.path(figDir,"powertrinary_CoR_Scen4.png"))
 
 ## *Scenario 11:* Continuous | Vary cohort sampling probabiliy, p {.smaller}
 ```{r, eval=FALSE}
-ans <- computePower(numAtRiskTauCases=31, 
-                    numAtRiskTauCasesPhase2=31, 
-                    numAtRiskTauControls=4485,
-                    risk0=0.034, 
-                    RRoverall=0.25, 
-                    PlatVElowest=0.05, 
-                    VElowestvect=seq(0, 1-RRoverall, len=100),  
-                    M=1000, 
-                    alpha=0.05, 
-                    sigma2obs=1,
-                    rhos=0.9,
-                    biomType="continuous",
-                    cohort=TRUE, 
-                    ### <b>
-                    p=0.01*)
-                    ### </b>
+ans <- computePower(nAtRiskTauCases = 32,                 # n_cases
+                    nAtRiskTauControls = 3991,            # n_controls
+                    nAtRiskTauCasesPhase2 = 32,           # n^S_cases
+                    VEoverall = 0.75,                     # overall VE
+                    risk0 = 0.034,                        # cumulative placebo risk between tau and tau_max 
+                    PlatVElowest = 0.2,                   # prevalence of VE_lowest
+                    VElowest = seq(0,1-RRoverall,len=100),# lowest VE level for true biomarker X* <= nu
+                    M = 1000,                             # number of simulated clinical trials
+                    alpha = 0.05,                         # two-sided Wald test Type 1 error rate
+                    sigma2obs = 1,                        # variance of observed biomarker
+                    rho = 0.9                             # fraction of relevant variance in the observed biomarker
+                    biomType = "continuous",              # "continuous" by default
+                    cohort = TRUE,                        # case-cohort sampling design
+                    p = 0.01,                             # scalar, ie separate calls for 0.01, 0.02, 0.03, 0.05
+                    pDropout = 0.1)                       # probability of dropout between tau and tau_max
 ```
-*$p$ takes on 0.01, 0.02, 0.03, 0.05
 
 ## *Scenario 11* Figures
 ```{r, echo=FALSE, fig.align='center', out.width='65%'}
