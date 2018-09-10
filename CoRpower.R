@@ -35,9 +35,9 @@
 # H0: RR_t = 1 vs. H1: RR_t < 1
 # based on the case-control sample from vaccine recipients
 
-# Sensitivity, Specificity, false negatives and false positives
-# Sens \equiv P(S(1)=2|X=2) (==1 for S with no measurement error)
-# Spec \equiv P(S(1)=0|X=0) (==1 for S with no measurement error)
+# sensitivity, specificity, false negatives and false positives
+# sens \equiv P(S(1)=2|X=2) (==1 for S with no measurement error)
+# spec \equiv P(S(1)=0|X=0) (==1 for S with no measurement error)
 # FP^0 \equiv P(S(1)=2|X=0) (==0 for S with no measurement error)
 # FN^2 \equiv P(S(1)=0|X=2)  (==0 for S with no measurement error)
 # FP^1 \equiv P(S(1)=2|X=1) (==0 for S with no measurement error)
@@ -104,11 +104,11 @@
 # is used in the computepower() function
 #
 # Following Step 7 in the article, the program for a trichotomous marker accounts for assay noise in one of two ways.
-# The first approach specifies Spec, Sens, FP0, FN2 which determine FP1 and FN1 from equations (8) and (9). Spec, Sens, 
+# The first approach specifies spec, sens, FP0, FN2 which determine FP1 and FN1 from equations (8) and (9). spec, sens, 
 # FP0, and FN2 must all be vectors of the same length.
 #
 # The second approach specifies sigma2obs and rho; this approach assumes the normal measurement error model (4) in the article.
-# Specifying Spec=NULL, FP0=NULL, Sens=NULL, FN2=NULL defaults to approach 2, which is used in the manuscript.
+# specifying spec=NULL, FP0=NULL, sens=NULL, FN2=NULL defaults to approach 2, which is used in the manuscript.
 
 # Output: Power
 
@@ -169,7 +169,7 @@ checkProbabilityViolation <- function(VEoverall,RRlat2,PlatVElowest,VElowest, bi
 }
 
 #############
-# computeSensSpecFPFN is a function for mapping input parameters to Sensitivity and Specificity,
+# computeSensSpecFPFN is a function for mapping input parameters to sensitivity and specificity,
 # FP0, FP1, FN2, FN1 (defined above)
 # S a trichotomous biomarker S = 2 if S* > tauhi for a fixed tauhi and S=0 if S* <= taulo for a fixed taulo,
 # and S = 1 if S* is in between taulo and tauhi.
@@ -183,7 +183,7 @@ checkProbabilityViolation <- function(VEoverall,RRlat2,PlatVElowest,VElowest, bi
 # rho = 1 - sigma2e/sigma2obs = sigma2tr/sigma2ob
 # sigma2tr = Var(X*) rho*sigma2obs
 #
-# This function also applies for a binary biomarker in which case only Sensitivity and Specificity
+# This function also applies for a binary biomarker in which case only sensitivity and specificity
 # are relevant (FP0, FP1, FN2, FN1 are not used in the calculations)
 ##################################################
 
@@ -208,15 +208,15 @@ computeSensSpecFPFN <- function(sigma2obs,rho,Plat0,Plat2,P0,P2) {
   ans <- list()
   
   for(i in 1:length(rho)){
-    Sens <- rep(1,m)
-    Spec <- rep(1,m)
+    sens <- rep(1,m)
+    spec <- rep(1,m)
     FP0 <- rep(0,m)
     FP1 <- rep(0,m)
     FN2 <- rep(0,m)
     FN1 <- rep(0,m)
     tauhisolution <- rep(0,m)
     taulosolution <- rep(0,m)
-    if (rho[i] < 1) {  #*# if rho=1, then Sens=1, Spec=1, FP0=0, FP1=0, FN2=0, FN1=0
+    if (rho[i] < 1) {  #*# if rho=1, then sens=1, spec=1, FP0=0, FP1=0, FN2=0, FN1=0
       # Stochastic integration
       X <- rnorm(20000,0,sqrt(sigma2tr[i]))
       S <- X + rnorm(20000,0,sqrt(sigma2e[i]))
@@ -228,11 +228,11 @@ computeSensSpecFPFN <- function(sigma2obs,rho,Plat0,Plat2,P0,P2) {
       for (l in 1:m) {
         
         # Find the cut points tauhi and taulo by solving the following equations:
-        #   0 = Sensvec*Plat2 + FP1vec*Plat1 + FP0vec*Plat0 - P2  (f2 below; eqn 8 in manuscript)
-        #   0 = Specvec*Plat0 + FN1vec*Plat1 + FN2vec*Plat2 - P0  (f0 below; eqn 7 in manuscript)
+        #   0 = sensvec*Plat2 + FP1vec*Plat1 + FP0vec*Plat0 - P2  (f2 below; eqn 8 in manuscript)
+        #   0 = specvec*Plat0 + FN1vec*Plat1 + FN2vec*Plat2 - P0  (f0 below; eqn 7 in manuscript)
         # where 
-        #   Sensvec <- (sum(S>tauhi & X > thetahiVE[i])/length(S))/Phi
-        #   Specvec <- (sum(S<=taulo & X <= thetaloVE[i])/length(S))/Plo
+        #   sensvec <- (sum(S>tauhi & X > thetahiVE[i])/length(S))/Phi
+        #   specvec <- (sum(S<=taulo & X <= thetaloVE[i])/length(S))/Plo
         # if binary biomarker, 
         #   FP1vec <- 0
         #   FP0vec <- 0
@@ -260,8 +260,8 @@ computeSensSpecFPFN <- function(sigma2obs,rho,Plat0,Plat2,P0,P2) {
         tauhisolution[l] <- tauhisol
         taulosolution[l] <- taulosol
         
-        Sens[l] <- sum(S>tauhisolution[l] & X > thetahiVE[i])/sum(X>thetahiVE[i])
-        Spec[l] <- sum(S<=taulosolution[l] & X <= thetaloVE[i])/sum(X<=thetaloVE[i])
+        sens[l] <- sum(S>tauhisolution[l] & X > thetahiVE[i])/sum(X>thetahiVE[i])
+        spec[l] <- sum(S<=taulosolution[l] & X <= thetaloVE[i])/sum(X<=thetaloVE[i])
         if (Pmed==0) {  #*# if binary biomarker, 0's for FP1, FP0, FN2, FN1
           FP1[l] <- 0
           FP0[l] <- 0
@@ -276,21 +276,21 @@ computeSensSpecFPFN <- function(sigma2obs,rho,Plat0,Plat2,P0,P2) {
       }
     }
     ans[[i]] <- cbind(rep(thetaloVE[i],m),rep(thetahiVE[i],m),rep(Plat0,m),rep(Plat1,m),rep(Plat2,m),P0,P2,
-                      taulosolution,tauhisolution,Sens,Spec,FP0,FP1,FN2,FN1)
+                      taulosolution,tauhisolution,sens,spec,FP0,FP1,FN2,FN1)
   }  
   return(ans)
 }
 
-# check lengths of Sens, Spec, FP0, and FN2 vectors are equal
-checkParamLengthsMatch <- function(Sens, Spec, FP0, FN2){
-  lengths <- sapply(list(Sens,Spec,FP0,FN2), length)
+# check lengths of sens, spec, FP0, and FN2 vectors are equal
+checkParamLengthsMatch <- function(sens, spec, FP0, FN2){
+  lengths <- sapply(list(sens,spec,FP0,FN2), length)
   if(max(lengths) != min(lengths)){
-    stop("Vector lengths differ for Sens, Spec, FP0, FN2")
+    stop("Vector lengths differ for sens, spec, FP0, FN2")
   }
 }
 
 # Computes kernel of D(x, alphalat) (more information in Appendix B), which is the logit term in the zero-equation involving alphalat
-kernel <- function(x, alpha, nus, risk1latnu, sigma2obs){
+computeKernel <- function(x, alpha, nus, risk1latnu, sigma2obs){
   rho <- 1
   piece1 <- exp(alpha*(1 - x/nus[1]))*(risk1latnu^(x/nus[1]))
   piece2 <- (1-risk1latnu)^(x/nus[1]) + piece1
@@ -301,7 +301,7 @@ kernel <- function(x, alpha, nus, risk1latnu, sigma2obs){
 
 # Equation whose root gives alphalat. Labeled U(alphalat) in Appendix B and based on eqn 13 in the manuscript
 alphaLatEqn <- function(alpha, nus, risk1latnu, sigma2obs, VEoverall, PlatVElowest, risk0){
-  logitterm <- integrate(kernel, lower=nus[1], upper=6, alpha=alpha, nus=nus, risk1latnu=risk1latnu, sigma2obs=sigma2obs)$value
+  logitterm <- integrate(computeKernel, lower=nus[1], upper=6, alpha=alpha, nus=nus, risk1latnu=risk1latnu, sigma2obs=sigma2obs)$value
   ans <- 1-VEoverall - (PlatVElowest*risk1latnu + logitterm)/risk0
   return(ans)
 }
@@ -338,23 +338,23 @@ adjustProb <- function(prob) {
   return(prob) 
 }
 
-# Given specifications for Spec, Sens, FP0, FN2, FP1, FN1, and a logical value indicating if the 
+# Given specifications for spec, sens, FP0, FN2, FP1, FN1, and a logical value indicating if the 
 # biomarker is binary or not, the function returns a vector composed of biomarker levels (S=0,1,2),
 # where each subject is assigned a specific level
-assignBiomarkerLevels <- function(SpecSens, binary, N0, N1, N2){
-  Spec <- SpecSens[1]
-  Sens <- SpecSens[2]
-  FP0 <- SpecSens[3]
-  FN2 <- SpecSens[4]
-  FP1 <- SpecSens[5]
-  FN1 <- SpecSens[6]
+assignBiomarkerLevels <- function(specSens, binary, N0, N1, N2){
+  spec <- specSens[1]
+  sens <- specSens[2]
+  FP0 <- specSens[3]
+  FN2 <- specSens[4]
+  FP1 <- specSens[5]
+  FN1 <- specSens[6]
   if(binary==TRUE){
-    Svalues <- cbind(rmultinom(N0,1,adjustProb(c(Spec,1-FP0-Spec,FP0))),
-                     rmultinom(N2,1,adjustProb(c(FN2,1-FN2-Sens,Sens))))
+    Svalues <- cbind(rmultinom(N0,1,adjustProb(c(spec,1-FP0-spec,FP0))),
+                     rmultinom(N2,1,adjustProb(c(FN2,1-FN2-sens,sens))))
   } else{
-    Svalues <- cbind(rmultinom(N0,1,adjustProb(c(Spec,1-FP0-Spec,FP0))),
+    Svalues <- cbind(rmultinom(N0,1,adjustProb(c(spec,1-FP0-spec,FP0))),
                      rmultinom(N1,1,adjustProb(c(FN1,1-FP1-FN1,FP1))),
-                     rmultinom(N2,1,adjustProb(c(FN2,1-FN2-Sens,Sens))))
+                     rmultinom(N2,1,adjustProb(c(FN2,1-FN2-sens,sens))))
   }
   rownames(Svalues) <- c("S=0","S=1","S=2")
   Svalues <- ifelse(Svalues[1,]==1,0,ifelse(Svalues[2,]==1,1,2))
@@ -362,7 +362,7 @@ assignBiomarkerLevels <- function(SpecSens, binary, N0, N1, N2){
 }
 
 # Select subset of subjects with biomarker measured (R_i=1) according to case-cohort or case-control sampling design
-BiomSubset <- function(Y, N, nCasesPhase2, controlCaseRatio, p, cohort, pDropout){
+biomSubset <- function(Y, N, nCasesPhase2, controlCaseRatio, p, cohort, pDropout){
   
   if (cohort==TRUE) {  # case-cohort sampling design
     
@@ -410,10 +410,10 @@ BiomSubset <- function(Y, N, nCasesPhase2, controlCaseRatio, p, cohort, pDropout
 #' @param P0 For a trichotomous biomarker (or binary as a special case), probability that the measured/observed biomarker takes the lowest (low) value.  If unspecified, this parameter is set to \code{Plat0}.
 #' @param P2 For a trichotomous biomarker (or binary as a special case), probability that the measured/observed biomarker takes the highest (high) value.  If unspecified, this parameter is set to \code{Plat2}.
 #' @param PlatVElowest For a continuous biomarker, the percentage of vaccine recipients with the lowest value of VE.
-#' @param Sens For a trichotomous biomarker (or binary as a special case), simulated using 'approach 1', a vector of length 4 with values for the specificity of the measured/observed biomarker. Specifying \code{Spec=NULL}, \code{FP0=NULL}, \code{Sens=NULL}, and \code{FN2=NULL} indicates that approach 2 is used.
-#' @param Spec For a trichotomous biomarker (or binary as a special case), simulated using 'approach 1', a vector of length 4 with values for the sensitivity of the measured biomarker. Specifying \code{Spec=NULL}, \code{FP0=NULL}, \code{Sens=NULL}, and \code{FN2=NULL} indicates that approach 2 is used.
-#' @param FP0 For a trichotomous biomarker (or binary as a special case), simulated using 'approach 1', a vector of length 4 with values for the first false positive rate (FP^1) of the measured/observed biomarker. Specifying \code{Spec=NULL}, \code{FP0=NULL}, \code{Sens=NULL}, and \code{FN2=NULL} indicates that approach 2 is used.
-#' @param FN2 For a trichotomous biomarker (or binary as a special case), simulated using 'approach 1', a vector of length 4 with values for the first false negative rate (FN^2) of the measured/observed biomarker. Specifying \code{Spec=NULL}, \code{FP0=NULL}, \code{Sens=NULL}, and \code{FN2=NULL} indicates that approach 2 is used.
+#' @param sens For a trichotomous biomarker (or binary as a special case), simulated using 'approach 1', a vector of length 4 with values for the specificity of the measured/observed biomarker. specifying \code{spec=NULL}, \code{FP0=NULL}, \code{sens=NULL}, and \code{FN2=NULL} indicates that approach 2 is used.
+#' @param spec For a trichotomous biomarker (or binary as a special case), simulated using 'approach 1', a vector of length 4 with values for the sensitivity of the measured biomarker. specifying \code{spec=NULL}, \code{FP0=NULL}, \code{sens=NULL}, and \code{FN2=NULL} indicates that approach 2 is used.
+#' @param FP0 For a trichotomous biomarker (or binary as a special case), simulated using 'approach 1', a vector of length 4 with values for the first false positive rate (FP^1) of the measured/observed biomarker. specifying \code{spec=NULL}, \code{FP0=NULL}, \code{sens=NULL}, and \code{FN2=NULL} indicates that approach 2 is used.
+#' @param FN2 For a trichotomous biomarker (or binary as a special case), simulated using 'approach 1', a vector of length 4 with values for the first false negative rate (FN^2) of the measured/observed biomarker. specifying \code{spec=NULL}, \code{FP0=NULL}, \code{sens=NULL}, and \code{FN2=NULL} indicates that approach 2 is used.
 #' @param M Number of simulated clinical trials.
 #' @param alpha Two-sided type-I error rate for CoR hypothesis tests.
 #' @param sigma2obs For a continuous biomarker, or for a trichotomous or binary biomarker simulated using `approach 2', the variance of the continuous measured/observed biomarker.
@@ -437,11 +437,11 @@ BiomSubset <- function(Y, N, nCasesPhase2, controlCaseRatio, p, cohort, pDropout
 #' is what the function uses to obtain \code{RRlat2}.
 #'
 #' Following Step 7 in the manuscript, the measurement error in a trichotomous (or binary) biomarker is accounted for in one of two ways.
-#' Approach 1 specifies \code{Spec}, \code{Sens}, \code{FP0}, and \code{FN2} which determine
+#' Approach 1 specifies \code{spec}, \code{sens}, \code{FP0}, and \code{FN2} which determine
 #' \code{FP1} and \code{FN1} from equations (7) and (8).  Four values are required for each input parameter, to allow the evaluation of biomarkers with different levels of measurement error.
 #'
 #' Approach 2 for a trichotomous (or binary) biomarker specifies \code{sigma2obs} and \code{rho}; this approach assumes the normal measurement error model (4) in the manuscript.  
-#' Specifying \code{Spec=NULL}, \code{FP0=NULL}, \code{Sens=NULL}, and \code{FN2=NULL}
+#' specifying \code{spec=NULL}, \code{FP0=NULL}, \code{sens=NULL}, and \code{FN2=NULL}
 #' defaults to approach 2, which is what is used in illustrations in the manuscript.
 #'
 #' For a continuous biomarker, \code{VElowest}, \code{sigma2obs} and \code{rho} must be specified.  Setting \code{VElowest = NULL}
@@ -465,12 +465,12 @@ BiomSubset <- function(Y, N, nCasesPhase2, controlCaseRatio, p, cohort, pDropout
 #'
 #' ## Parameters used for the trichotomous or binary biomarker calculations, Approach 1
 #' ## For no measurement error scenario, set
-#' ## Spec[1]=1, FP0[1]=0, Sens[1]=1, FN2[1]=0
+#' ## spec[1]=1, FP0[1]=0, sens[1]=1, FN2[1]=0
 #' ## Note the other elements of at least one of these four parameter vectors need
 #' ## to be set to a different value to tell the program to use Approach 1
-#' Spec <- c(1, 0.9, 0.8, 0.7)
+#' spec <- c(1, 0.9, 0.8, 0.7)
 #' FP0 <- rep(0,4)
-#' Sens <- c(1, 0.9, 0.8, 0.7)
+#' sens <- c(1, 0.9, 0.8, 0.7)
 #' FN2 <- rep(0,4)
 #' RRlat1 <- rep(0,100) # will be turned into NA in computepower() for binary case
 #' RRlat0 <- seq(1,RRoverall,len=100) # 100 data points for the power curve
@@ -488,9 +488,9 @@ BiomSubset <- function(Y, N, nCasesPhase2, controlCaseRatio, p, cohort, pDropout
 #' #################################################
 #'
 #' ## Binary biomarker, Approach 1 ##
-#' Spec <- c(1, 0.9, 0.8, 0.7)
+#' spec <- c(1, 0.9, 0.8, 0.7)
 #' FP0 <- rep(0,4)
-#' Sens <- c(1, 0.9, 0.8, 0.7)
+#' sens <- c(1, 0.9, 0.8, 0.7)
 #' FN2 <- rep(0,4)
 #' RRlat1 <- rep(0,100) # will be turned into NA in computepower() for binary case
 #' RRlat0 <- seq(1,RRoverall,len=100) # 100 data points for the power curve
@@ -508,13 +508,13 @@ BiomSubset <- function(Y, N, nCasesPhase2, controlCaseRatio, p, cohort, pDropout
 #' controlCaseRatio <- 5
 #' ans <- computepower(nAtRiskTauCases, nAtRiskTauCasesPhase2, nAtRiskTauControls,
 #' risk0, RRoverall, Plat0,Plat2, P0,P2, RRlat0,RRlat1, PlatVElowest=0,VElowest=NULL,
-#' controlCaseRatio, M, alpha=0.05, sigma2obs, rho, Spec, FP0, Sens, FN2)
+#' controlCaseRatio, M, alpha=0.05, sigma2obs, rho, spec, FP0, sens, FN2)
 #'
 #'
 #'## Trichotomous biomarker, Approach 1 ##
-#' Spec <- c(1, 0.9, 0.8, 0.7)
+#' spec <- c(1, 0.9, 0.8, 0.7)
 #' FP0 <- rep(0,4)
-#' Sens <- c(1, 0.9, 0.8, 0.7)
+#' sens <- c(1, 0.9, 0.8, 0.7)
 #' FN2 <- rep(0,4)
 #' RRlat1 <- rep(0,100) # will be turned into NA in computepower() for binary case
 #' RRlat0 <- seq(1,RRoverall,len=100) # 100 data points for the power curve
@@ -531,11 +531,11 @@ BiomSubset <- function(Y, N, nCasesPhase2, controlCaseRatio, p, cohort, pDropout
 #' controlCaseRatio <- 5
 #' ans <- computepower(nAtRiskTauCases, nAtRiskTauCasesPhase2, nAtRiskTauControls,
 #' risk0, RRoverall, Plat0,Plat2, P0,P2, RRlat0,RRlat1, PlatVElowest=0,
-#' VElowest=NULL, controlCaseRatio, M, alpha=0.05, sigma2obs, rho, Spec, FP0, Sens, FN2)
+#' VElowest=NULL, controlCaseRatio, M, alpha=0.05, sigma2obs, rho, spec, FP0, sens, FN2)
 #'
 #'
 #' ## Binary biomarker, Approach 2 ##
-#' Spec <- Sens <- FP0 <- FN2 <- NULL
+#' spec <- sens <- FP0 <- FN2 <- NULL
 #'
 #' RRlat1 <- rep(0,100) # will be turned into NA in computepower() for binary case
 #' RRlat0 <- seq(1,RRoverall,len=100) # 100 data points for the power curve
@@ -556,11 +556,11 @@ BiomSubset <- function(Y, N, nCasesPhase2, controlCaseRatio, p, cohort, pDropout
 #'
 #' ans <- computepower(nAtRiskTauCases, nAtRiskTauCasesPhase2, nAtRiskTauControls, risk0,
 #' RRoverall, Plat0,Plat2, P0,P2, RRlat0,RRlat1, PlatVElowest=0,VElowest=NULL, controlCaseRatio,
-#' M, alpha=0.05, sigma2obs, rho, Spec, FP0, Sens, FN2)
+#' M, alpha=0.05, sigma2obs, rho, spec, FP0, sens, FN2)
 #'
 #'
 #' ## Trichotomous biomarker, Approach 2 ##
-#' Spec <- Sens <- FP0 <- FN2 <- NULL
+#' spec <- sens <- FP0 <- FN2 <- NULL
 #'
 #' RRlat1 <- rep(0,100) # will be turned into NA in computepower() for binary case
 #' RRlat0 <- seq(1,RRoverall,len=100) # 100 data points for the power curve
@@ -577,7 +577,7 @@ BiomSubset <- function(Y, N, nCasesPhase2, controlCaseRatio, p, cohort, pDropout
 #' controlCaseRatio <- 5
 #' ans <- computepower(nAtRiskTauCases, nAtRiskTauCasesPhase2, nAtRiskTauControls,
 #' risk0, RRoverall, Plat0,Plat2, P0,P2, RRlat0,RRlat1, PlatVElowest=0,VElowest=NULL,
-#' controlCaseRatio, M, alpha=0.05, sigma2obs, rho, Spec, FP0, Sens, FN2)
+#' controlCaseRatio, M, alpha=0.05, sigma2obs, rho, spec, FP0, sens, FN2)
 #'
 #'
 #' ## Continuous biomarker ##
@@ -605,9 +605,9 @@ BiomSubset <- function(Y, N, nCasesPhase2, controlCaseRatio, p, cohort, pDropout
 #' #######################
 #'
 #' ## trichotomous biomarker Approach 1
-#' Spec <- c(1, 0.9, 0.8, 0.7)
+#' spec <- c(1, 0.9, 0.8, 0.7)
 #' FP0 <- rep(0,4)
-#' Sens <- c(1, 0.9, 0.8, 0.7)
+#' sens <- c(1, 0.9, 0.8, 0.7)
 #' FN2 <- rep(0,4)
 #' RRlat1 <- rep(0,100) # will be turned into NA in computepower() for binary case
 #' RRlat0 <- seq(1,RRoverall,len=100) # 100 data points for the power curve
@@ -623,7 +623,7 @@ BiomSubset <- function(Y, N, nCasesPhase2, controlCaseRatio, p, cohort, pDropout
 #' controlCaseRatio <- 5
 #' ans <- computepower(nAtRiskTauCases, nAtRiskTauCasesPhase2, nAtRiskTauControls,
 #' risk0, RRoverall, Plat0,Plat2, P0,P2, RRlat0,RRlat1, PlatVElowest=0,
-#' VElowest=NULL, controlCaseRatio, M, alpha=0.05, sigma2obs=NULL, rho=NULL, Spec, FP0, Sens, FN2)
+#' VElowest=NULL, controlCaseRatio, M, alpha=0.05, sigma2obs=NULL, rho=NULL, spec, FP0, sens, FN2)
 
 #' ## plot power vs. CoR risk ratio in vaccine group (hi vs. lo)  (Figure 4)
 #' ## file name = paste("powerstrinary",P2,P1,controlCaseRatio,".dat")
@@ -756,7 +756,7 @@ BiomSubset <- function(Y, N, nCasesPhase2, controlCaseRatio, p, cohort, pDropout
 #' @import survival
 #' @import osDesign
 #' @export
-computepower <- function(nAtRiskTauCases, nAtRiskTauControls, nAtRiskTauCasesPhase2,
+computePower <- function(nAtRiskTauCases, nAtRiskTauControls, nAtRiskTauCasesPhase2,
                          controlCaseRatio=5,
                          VEoverall, risk0, 
                          VElat0=seq(0, VEoverall, len=20), VElat1=rep(VEoverall, 20),
@@ -764,7 +764,7 @@ computepower <- function(nAtRiskTauCases, nAtRiskTauControls, nAtRiskTauCasesPha
                          Plat0=0.2, Plat2=0.6,
                          P0=Plat0, P2=Plat2,
                          PlatVElowest=NULL, 
-                         Spec=NULL, FP0=NULL, Sens=NULL, FN2=NULL,
+                         spec=NULL, FP0=NULL, sens=NULL, FN2=NULL,
                          M=100,
                          alpha=0.05,
                          sigma2obs=1, rho=1,
@@ -824,43 +824,43 @@ computepower <- function(nAtRiskTauCases, nAtRiskTauControls, nAtRiskTauCasesPha
     
     # Compute VElat2:
     
-    Approach2 <- (all(is.null(Spec), is.null(Sens), is.null(FP0), is.null(FN2)))
+    Approach2 <- (all(is.null(spec), is.null(sens), is.null(FP0), is.null(FN2)))
     
     if (Approach2) {  # Default choice
       
-      # Compute Sens, Spec, FP0, FP1, FN2, FN1
+      # Compute sens, spec, FP0, FP1, FN2, FN1
       
       ans <- computeSensSpecFPFN(sigma2obs,rho,Plat0,Plat2,P0,P2)
-      Sens <- unlist(lapply(ans, function(x) x[[1,10]])) 
-      Spec <- unlist(lapply(ans, function(x) x[[1,11]]))
+      sens <- unlist(lapply(ans, function(x) x[[1,10]])) 
+      spec <- unlist(lapply(ans, function(x) x[[1,11]]))
       FP0 <- unlist(lapply(ans, function(x) x[[1,12]])) 
       FP1 <- unlist(lapply(ans, function(x) x[[1,13]])) 
       FN2 <- unlist(lapply(ans, function(x) x[[1,14]]))
       FN1 <- unlist(lapply(ans, function(x) x[[1,15]])) 
       
       
-      # dataframe of rho, Sens, Spec, etc.
+      # dataframe of rho, sens, spec, etc.
       # used to create Table 1: mapping of sigma2obs and rho to the sens, spec, etc. parameters
-      table1 <- as.data.frame(round(cbind(rho, Plat0, P0, Plat2, P2, Sens, Spec, FP0, FN2, FP1, FN1),3))
+      table1 <- as.data.frame(round(cbind(rho, Plat0, P0, Plat2, P2, sens, spec, FP0, FN2, FP1, FN1),3))
       
     }
     
     # Approach 1 in the manuscript:
-    if (!Approach2) { #*# use given Sens, Spec, FP0, and FN2 params
+    if (!Approach2) { #*# use given sens, spec, FP0, and FN2 params
       
-      # check lengths of Sens, Spec, FP0, and FN2 vectors are equal
-      checkParamLengthsMatch(Sens,Spec,FP0,FN2)
+      # check lengths of sens, spec, FP0, and FN2 vectors are equal
+      checkParamLengthsMatch(sens,spec,FP0,FN2)
       
       # Apply formula (7) in the manuscript
-      FN1 <- (P0 - Spec*Plat0 - FN2*Plat2)/Plat1   #*#P0, Plat0, Plat2 given params
+      FN1 <- (P0 - spec*Plat0 - FN2*Plat2)/Plat1   #*#P0, Plat0, Plat2 given params
       # Apply formula (8) in the manuscript
-      FP1 <- (P2 - Sens*Plat2 - FP0*Plat0)/Plat1
+      FP1 <- (P2 - sens*Plat2 - FP0*Plat0)/Plat1
       
       # Check if an error in the ranges of values due to an out of
       # bounds input parameter
       
       if (any(FN1 < 0 | FN1 > 1 | FP1 < 0 | FP1 > 1)){
-        stop("Approach 1 was used and one of the parameters Sens, Spec, FP0, FN2 is out of range")
+        stop("Approach 1 was used and one of the parameters sens, spec, FP0, FN2 is out of range")
       }
     }
     
@@ -878,10 +878,10 @@ computepower <- function(nAtRiskTauCases, nAtRiskTauControls, nAtRiskTauCasesPha
     
     probX0_cond_S2 <- FP0*Plat0/P2
     probX1_cond_S2 <- FP1*Plat1/P2
-    probX2_cond_S2 <- Sens*Plat2/P2
+    probX2_cond_S2 <- sens*Plat2/P2
     # use outer product to get matrix with nrow=length(rho), ncol=length(RRlat0)
     risk1_2 <- (probX0_cond_S2 %o% RRlat0 + probX1_cond_S2 %o% RRlat1 + probX2_cond_S2 %o% RRlat2 )*risk0  
-    probX0_cond_S0 <- Spec*Plat0/P0
+    probX0_cond_S0 <- spec*Plat0/P0
     probX1_cond_S0 <- FN1*Plat1/P0
     probX2_cond_S0 <- FN2*Plat2/P0
     risk1_0 <- (probX0_cond_S0 %o% RRlat0 + probX1_cond_S0 %o% RRlat1 + probX2_cond_S0 %o% RRlat2)*risk0
@@ -960,19 +960,19 @@ computepower <- function(nAtRiskTauCases, nAtRiskTauControls, nAtRiskTauCasesPha
           # Simulate the trinary surrogate with 0,1,2 = lo,med,hi
           # Formulas (12) and (13) in the manuscript:
           
-          # Given specifications for Spec, FP0, Sens, and FN2 and a logical value indicating if the 
+          # Given specifications for spec, FP0, sens, and FN2 and a logical value indicating if the 
           # biomarker is binary or not, the function returns a vector composed of biomarker levels (S=0,1,2),
           # where each subject is assigned a specific level
-          SpecSens <- cbind(Spec,Sens,FP0,FN2,FP1,FN1)
+          specSens <- cbind(spec,sens,FP0,FN2,FP1,FN1)
           
           if (biomType=="binary") { # binary case only
-            S <- t(apply(SpecSens, 1, function(x) assignBiomarkerLevels(x, binary=TRUE, N0, N1, N2))) # each row is a set of Sens, Spec, etc. parameters
+            S <- t(apply(specSens, 1, function(x) assignBiomarkerLevels(x, binary=TRUE, N0, N1, N2))) # each row is a set of sens, spec, etc. parameters
           } else { # trichotomous
-            S <- t(apply(SpecSens, 1, function(x) assignBiomarkerLevels(x, binary=FALSE, N0, N1, N2))) # each row is a set of Sens, Spec, etc. parameters
+            S <- t(apply(specSens, 1, function(x) assignBiomarkerLevels(x, binary=FALSE, N0, N1, N2))) # each row is a set of sens, spec, etc. parameters
           }
           
           # Select subset of subjects with biomarker measured (R_i=1) according to case-cohort or case-control sampling design
-          keepinds <- BiomSubset(Y, N[k], nCasesPhase2[k], controlCaseRatio, p, cohort, pDropout)
+          keepinds <- biomSubset(Y, N[k], nCasesPhase2[k], controlCaseRatio, p, cohort, pDropout)
           
           # Those with biomarker data:
           Ycc <- Y[keepinds]
@@ -1045,19 +1045,19 @@ computepower <- function(nAtRiskTauCases, nAtRiskTauControls, nAtRiskTauCasesPha
     RRt <- risk1_2/risk1_0
     
     ans <- list("power"=power, "RRt"=RRt, "risk1_2"=risk1_2, "risk1_0"=risk1_0, "VElat2"=VElat2, "VElat0"=VElat0, "Plat2"=Plat2, "Plat0"=Plat0, 
-                "P2"=P2, "P0"=P0, "alphaLat"=alphaLat, "betaLat"=betaLat, "Sens"=Sens, "Spec"=Spec, "FP0"=FP0, "FN2"=FN2)
+                "P2"=P2, "P0"=P0, "alphaLat"=alphaLat, "betaLat"=betaLat, "sens"=sens, "spec"=spec, "FP0"=FP0, "FN2"=FN2)
     
-        write(RRlat2,file="RRlat2.dat",ncolumns=1,append=FALSE)
-        write(RRlat0,file="RRlat0.dat",ncolumns=1,append=FALSE)
-        write(powerstrinary,file=paste("powerstrinary",P2,P0,controlCaseRatio,".dat",sep=""),ncolumns=nrow(powerstrinary),append=FALSE)
-        write(P2,file="P2.dat")
-        # Print out the CoR effect sizes
-        write(risk1_0,file=paste("vaccineriskslo",P2,P0,controlCaseRatio,".dat",sep=""),ncolumns=length(rho),append=FALSE)
-        write(risk1_2,file=paste("vaccineriskshi",P2,P0,controlCaseRatio,".dat",sep=""),ncolumns=length(rho),append=FALSE)
-        # write out alpha intercept as logit(Y=1|s=0) for trinary/binary case
-        write(c(t(logit(risk1_0))), file="trinaryalpha.dat",ncolumns=1,append=FALSE)
-        # write out beta coefficient as the log odds ratio: logit(Y=1|S=2)-logit(Y=1|s=0) for trinary/binary case
-        write(c(t(logit(risk1_2)-logit(risk1_0))), file="trinarybeta.dat",ncolumns=1,append=FALSE)
+    write(RRlat2,file="RRlat2.dat",ncolumns=1,append=FALSE)
+    write(RRlat0,file="RRlat0.dat",ncolumns=1,append=FALSE)
+    write(power,file=paste("powerstrinary",P2,P0,controlCaseRatio,".dat",sep=""),ncolumns=nrow(powerstrinary),append=FALSE)
+    write(P2,file="P2.dat")
+    # Print out the CoR effect sizes
+    write(risk1_0,file=paste("vaccineriskslo",P2,P0,controlCaseRatio,".dat",sep=""),ncolumns=length(rho),append=FALSE)
+    write(risk1_2,file=paste("vaccineriskshi",P2,P0,controlCaseRatio,".dat",sep=""),ncolumns=length(rho),append=FALSE)
+    # write out alpha intercept as logit(Y=1|s=0) for trinary/binary case
+    write(c(t(logit(risk1_0))), file="trinaryalpha.dat",ncolumns=1,append=FALSE)
+    # write out beta coefficient as the log odds ratio: logit(Y=1|S=2)-logit(Y=1|s=0) for trinary/binary case
+    write(c(t(logit(risk1_2)-logit(risk1_0))), file="trinarybeta.dat",ncolumns=1,append=FALSE)
     
   } else if (biomType=="continuous") {  
     
@@ -1157,7 +1157,7 @@ computepower <- function(nAtRiskTauCases, nAtRiskTauControls, nAtRiskTauCasesPha
             S <- X + error
             
             # Select subset of subjects with biomarker measured (R_i=1) according to case-cohort or case-control sampling design
-            keepinds <- BiomSubset(Y, N[k], nCasesPhase2, controlCaseRatio, p, cohort)
+            keepinds <- biomSubset(Y, N[k], nCasesPhase2, controlCaseRatio, p, cohort)
             
             # Those with biomarker data:
             Ycc <- Y[keepinds]
@@ -1212,7 +1212,7 @@ computepower <- function(nAtRiskTauCases, nAtRiskTauControls, nAtRiskTauCasesPha
             S <- X + error
             
             # Select subset of subjects with biomarker measured (R_i=1) according to case-cohort or case-control sampling design
-            keepinds <- BiomSubset(Y, N, nCasesPhase2, controlCaseRatio, p, cohort)
+            keepinds <- biomSubset(Y, N, nCasesPhase2, controlCaseRatio, p, cohort)
             
             # Those with biomarker data:
             Ycc <- Y[keepinds]
@@ -1233,17 +1233,17 @@ computepower <- function(nAtRiskTauCases, nAtRiskTauControls, nAtRiskTauCasesPha
     
     ans <- list("power"=power, "RRc"=RRc, "betaLat"=truebetas, "PlatVElowest"=PlatVElowest, "VElowest"=VElowest, "sigma2obs"=sigma2obs)
     
-        # RRs the relative risks that are the effect sizes RR_c that
-        # need to be on the x-axis of powerplots
-        write(exp(truebetas),file="RRs.dat",ncolumns=1,append=FALSE)
-        write(powerscont,file=paste("powerscont",controlCaseRatio,".dat",sep=""),ncolumns=nrow(powerscont),append=FALSE)
-        write(PlatVElowest,file="PlatVElowest.dat")
-        write(VElowest,file="VElowest.dat",ncolumns=1,append=FALSE)
-        write(truebetas,file="truebetas.dat")
+    # RRs the relative risks that are the effect sizes RR_c that
+    # need to be on the x-axis of powerplots
+    write(exp(truebetas),file="RRs.dat",ncolumns=1,append=FALSE)
+    write(power,file=paste("powerscont",controlCaseRatio,".dat",sep=""),ncolumns=nrow(powerscont),append=FALSE)
+    write(PlatVElowest,file="PlatVElowest.dat")
+    write(VElowest,file="VElowest.dat",ncolumns=1,append=FALSE)
+    write(truebetas,file="truebetas.dat")
   }
   
-      # VEoverall <- 1-RRoverall
-      # ans <- c(ans, list(N), list(nCases), list(nCasesPhase2), VEoverall, alpha, list(rho), controlCaseRatio)
+  # VEoverall <- 1-RRoverall
+  # ans <- c(ans, list(N), list(nCases), list(nCasesPhase2), VEoverall, alpha, list(rho), controlCaseRatio)
   ans$N <- N
   ans$nCases <- nCases
   ans$nCasesPhase2 <- nCasesPhase2
@@ -1251,17 +1251,17 @@ computepower <- function(nAtRiskTauCases, nAtRiskTauControls, nAtRiskTauCasesPha
   ans$alpha <- alpha
   ans$rho <- rho
   ans$controlCaseRatio <- controlCaseRatio
-        write(N,file="sampsizeALL.dat")
-        write(nCases,file="numbeventsALL.dat")
-        write(nCasesPhase2,file="numbeventsPhase2.dat")
-        write(1-RRoverall,file="VEoverallCoRpower.dat")
-        write(alpha,file="alpha.dat")
-        write(rho,file="rho.dat",ncolumns=1,append=FALSE)
-        write(controlCaseRatio,file="controlCaseRatio.dat")
+  write(N,file="sampsizeALL.dat")
+  write(nCases,file="numbeventsALL.dat")
+  write(nCasesPhase2,file="numbeventsPhase2.dat")
+  write(1-RRoverall,file="VEoverallCoRpower.dat")
+  write(alpha,file="alpha.dat")
+  write(rho,file="rho.dat",ncolumns=1,append=FALSE)
+  write(controlCaseRatio,file="controlCaseRatio.dat")
   if(!is.null(saveDir) & !is.null(saveFile)) {
     save(ans, file=paste0(file.path(saveDir, saveFile),".RData"))
   }
-
+  
   return(ans)
   
 }
