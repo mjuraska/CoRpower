@@ -2,7 +2,7 @@
 title: "R Package `CoRpower`: Power and Sample Size Calculations for Correlates of Risk"
 subtitle: "Based on Gilbert, Janes, Huang (2016, *Stat Med*)"
 author: "Michal Juraska"
-date: "September 24-26, 2018"
+date: "September 24--26, 2018"
 output: 
   ioslides_presentation: 
     widescreen: true
@@ -516,7 +516,7 @@ knitr::include_graphics(file.path(figDir,"Scen8Table1.png"))
   \[
   \begin{align}
   VE^{lat}_{x^{\ast}} &= VE_{lowest},\quad x^{\ast} \leq \nu\\
-  VE^{lat}_{x^{\ast}} &= 1-\frac{\mathop{\mathrm{logit}}^{-1}\!(\alpha^{lat}+\beta^{lat}x^{\ast})}{risk_0}\,,\quad x^{\ast} \geq \nu
+  VE^{lat}_{x^{\ast}} &= 1-\frac{\mathop{\mathrm{logit}}^{-1}(\alpha^{lat}+\beta^{lat}x^{\ast})}{risk_0}\,,\quad x^{\ast} \geq \nu
   \end{align}
   \]
   yield $\alpha^{lat}$ and $\beta^{lat}$
@@ -713,3 +713,28 @@ ans <- computePower(numAtRiskTauCases=31,
 ```{r, echo=FALSE, fig.align='center', out.width='65%'}
 knitr::include_graphics(file.path(figDir,"powercontinuous_CoR_Scen11.png"))
 ```
+
+## Key R functions to design and conduct a CoR power analysis, and display analysis results:
+<br><br><br>
+<div style="float: left; width: 33%;">
+</div>
+<div style="float: right; width: 67%;">
+    - `computePower`
+    - `...`
+</div>
+
+##     
+<br><br><br>
+<div class="centered">
+R package `CoRpower` soon to appear on CRAN
+<br><br>
+
+Currently downloadable at:
+
+https://github.com/smwu/CoRpower
+<br><br>
+
+Implementation of
+
+Gilbert, Janes, Huang (2016, *Stat Med*)
+</div>
