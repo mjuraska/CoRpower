@@ -129,12 +129,12 @@ checkSamplingDesign <- function(cohort, p, controlCaseRatio) {
 
 # checks that biomarker type and input parameters match, throwing an error if the biomarker type is binary
 # but P0 + P2 != 1, or if the biomarker type is continuous but VElowest is NULL
-checkBiomarkerType <- function(biomType, P0, P2, VElowest) {
+checkBiomarkerType <- function(biomType, P0, P2, VElowest, PlatVElowest) {
   if((biomType=="binary") & (P0+P2 != 1)){
     stop("Binary biomarker was specified but P0 and P2 do not add up to 1")
   }
-  if((biomType=="continuous") & is.null(VElowest)){
-    stop("Continuous biomarker was specified but VElowest is NULL")
+  if((biomType=="continuous") & (is.null(VElowest) | is.null(PlatVElowest))) {
+    stop("Continuous biomarker was specified but VElowest and PlatVElowest are not specified")
   } 
 }
 
@@ -362,7 +362,7 @@ assignBiomarkerLevels <- function(SpecSens, binary, N0, N1, N2){
 }
 
 # Select subset of subjects with biomarker measured (R_i=1) according to case-cohort or case-control sampling design
-BiomSubset <- function(Y, N, nCasesPhase2, controlCaseRatio, p, cohort){
+BiomSubset <- function(Y, N, nCasesPhase2, controlCaseRatio, p, cohort, pDropout){
   
   if (cohort==TRUE) {  # case-cohort sampling design
     
@@ -756,21 +756,21 @@ BiomSubset <- function(Y, N, nCasesPhase2, controlCaseRatio, p, cohort){
 #' @import survival
 #' @import osDesign
 #' @export
-computepower <- function(nAtRiskTauCases, nAtRiskTauCasesPhase2, nAtRiskTauControls,
-                         risk0, VEoverall,
-                         Plat0=0.1, Plat2=0.5,
-                         P0=Plat0, P2=Plat2,
-                         VElat0=seq(0, VEoverall, len=20), VElat1=rep(VEoverall, 20),
-                         PlatVElowest, VElowest,
+computepower <- function(nAtRiskTauCases, nAtRiskTauControls, nAtRiskTauCasesPhase2,
                          controlCaseRatio=5,
+                         VEoverall, risk0, 
+                         VElat0=seq(0, VEoverall, len=20), VElat1=rep(VEoverall, 20),
+                         VElowest=NULL,
+                         Plat0=0.2, Plat2=0.6,
+                         P0=Plat0, P2=Plat2,
+                         PlatVElowest=NULL, 
+                         Spec=NULL, FP0=NULL, Sens=NULL, FN2=NULL,
                          M=100,
                          alpha=0.05,
-                         sigma2obs=1,
-                         rho=1,
-                         Spec=NULL, FP0=NULL, Sens=NULL, FN2=NULL,
-                         tpsMethod=c("PL", "ML","WL"),
+                         sigma2obs=1, rho=1,
                          biomType=c("continuous", "trichotomous", "binary"),
                          cohort=FALSE, p=NULL, pDropout=NULL,
+                         tpsMethod=c("PL", "ML","WL"),
                          saveDir=NULL, saveFile=NULL) {
   
   # sigma2tr is the variance of the true biomarker X
@@ -790,7 +790,7 @@ computepower <- function(nAtRiskTauCases, nAtRiskTauCasesPhase2, nAtRiskTauContr
   # check sampling design input parameters are specified and valid
   checkSamplingDesign(cohort, p, controlCaseRatio)
   # check biomarker type and input parameters match
-  checkBiomarkerType(biomType, P0, P2, VElowest)
+  checkBiomarkerType(biomType, P0, P2, VElowest, PlatVElowest)
   
   # check sample size parameters are valid
   sampleLengths <- sapply(list(nAtRiskTauCases, nAtRiskTauCasesPhase2, nAtRiskTauControls), length)
@@ -972,7 +972,7 @@ computepower <- function(nAtRiskTauCases, nAtRiskTauCasesPhase2, nAtRiskTauContr
           }
           
           # Select subset of subjects with biomarker measured (R_i=1) according to case-cohort or case-control sampling design
-          keepinds <- BiomSubset(Y, N[k], nCasesPhase2[k], controlCaseRatio, p, cohort)
+          keepinds <- BiomSubset(Y, N[k], nCasesPhase2[k], controlCaseRatio, p, cohort, pDropout)
           
           # Those with biomarker data:
           Ycc <- Y[keepinds]
@@ -1035,29 +1035,29 @@ computepower <- function(nAtRiskTauCases, nAtRiskTauCasesPhase2, nAtRiskTauContr
       }  
     }  
     # power calculations
-    powerstrinary <- powerstrinary/M
+    power <- powerstrinary/M
     
     # write out alpha intercept as logit(Y=1|s=0) for trinary/binary case
-    trinaryalpha <- c(logit(risk1_0))
+    alphaLat <- c(logit(risk1_0))
     # write out beta coefficient as the log odds ratio: logit(Y=1|S=2)-logit(Y=1|s=0) for trinary/binary case
-    trinarybeta <- c(logit(risk1_2)-logit(risk1_0))
+    betaLat <- c(logit(risk1_2)-logit(risk1_0))
     # CoR effect sizes
     RRt <- risk1_2/risk1_0
     
-    ans <- list("powerstrinary"=powerstrinary, "RRt"=RRt, "risk1_2"=risk1_2, "risk1_0"=risk1_0, "RRlat2"=RRlat2, "RRlat0"=RRlat0, "Plat2"=Plat2, "Plat0"=Plat0, 
-                "P2"=P2, "P0"=P0, "trinaryalpha"=trinaryalpha, "trinarybeta"=trinarybeta, "Sens"=Sens, "Spec"=Spec, "FP0"=FP0, "FN2"=FN2)
+    ans <- list("power"=power, "RRt"=RRt, "risk1_2"=risk1_2, "risk1_0"=risk1_0, "VElat2"=VElat2, "VElat0"=VElat0, "Plat2"=Plat2, "Plat0"=Plat0, 
+                "P2"=P2, "P0"=P0, "alphaLat"=alphaLat, "betaLat"=betaLat, "Sens"=Sens, "Spec"=Spec, "FP0"=FP0, "FN2"=FN2)
     
-        # write(RRlat2,file="RRlat2.dat",ncolumns=1,append=FALSE)
-        # write(RRlat0,file="RRlat0.dat",ncolumns=1,append=FALSE)
-        # write(powerstrinary,file=paste("powerstrinary",P2,P0,controlCaseRatio,".dat",sep=""),ncolumns=nrow(powerstrinary),append=FALSE)
-        # write(P2,file="P2.dat")
-        # # Print out the CoR effect sizes
-        # write(risk1_0,file=paste("vaccineriskslo",P2,P0,controlCaseRatio,".dat",sep=""),ncolumns=length(rho),append=FALSE)
-        # write(risk1_2,file=paste("vaccineriskshi",P2,P0,controlCaseRatio,".dat",sep=""),ncolumns=length(rho),append=FALSE)
-        # # write out alpha intercept as logit(Y=1|s=0) for trinary/binary case
-        # write(c(t(logit(risk1_0))), file="trinaryalpha.dat",ncolumns=1,append=FALSE)
-        # # write out beta coefficient as the log odds ratio: logit(Y=1|S=2)-logit(Y=1|s=0) for trinary/binary case
-        # write(c(t(logit(risk1_2)-logit(risk1_0))), file="trinarybeta.dat",ncolumns=1,append=FALSE)
+        write(RRlat2,file="RRlat2.dat",ncolumns=1,append=FALSE)
+        write(RRlat0,file="RRlat0.dat",ncolumns=1,append=FALSE)
+        write(powerstrinary,file=paste("powerstrinary",P2,P0,controlCaseRatio,".dat",sep=""),ncolumns=nrow(powerstrinary),append=FALSE)
+        write(P2,file="P2.dat")
+        # Print out the CoR effect sizes
+        write(risk1_0,file=paste("vaccineriskslo",P2,P0,controlCaseRatio,".dat",sep=""),ncolumns=length(rho),append=FALSE)
+        write(risk1_2,file=paste("vaccineriskshi",P2,P0,controlCaseRatio,".dat",sep=""),ncolumns=length(rho),append=FALSE)
+        # write out alpha intercept as logit(Y=1|s=0) for trinary/binary case
+        write(c(t(logit(risk1_0))), file="trinaryalpha.dat",ncolumns=1,append=FALSE)
+        # write out beta coefficient as the log odds ratio: logit(Y=1|S=2)-logit(Y=1|s=0) for trinary/binary case
+        write(c(t(logit(risk1_2)-logit(risk1_0))), file="trinarybeta.dat",ncolumns=1,append=FALSE)
     
   } else if (biomType=="continuous") {  
     
@@ -1226,20 +1226,20 @@ computepower <- function(nAtRiskTauCases, nAtRiskTauCasesPhase2, nAtRiskTauContr
       }
     } 
     # power calculations
-    powerscont <- powerscont/M
+    power <- powerscont/M
     
-    # RRs the relative risks that are the effect sizes RR_c that need to be on the x-axis of powerplots
-    RRs <- exp(truebetas)
+    # RRc the relative risks that are the effect sizes RR_c that need to be on the x-axis of powerplots
+    RRc <- exp(truebetas)
     
-    ans <- list("powerscont"=powerscont, "RRs"=RRs, "truebetas"=truebetas, "PlatVElowest"=PlatVElowest, "VElowest"=VElowest, "sigma2obs"=sigma2obs)
+    ans <- list("power"=power, "RRc"=RRc, "betaLat"=truebetas, "PlatVElowest"=PlatVElowest, "VElowest"=VElowest, "sigma2obs"=sigma2obs)
     
-        # # RRs the relative risks that are the effect sizes RR_c that
-        # # need to be on the x-axis of powerplots
-        # write(exp(truebetas),file="RRs.dat",ncolumns=1,append=FALSE)
-        # write(powerscont,file=paste("powerscont",controlCaseRatio,".dat",sep=""),ncolumns=nrow(powerscont),append=FALSE)
-        # write(PlatVElowest,file="PlatVElowest.dat")
-        # write(VElowest,file="VElowest.dat",ncolumns=1,append=FALSE)
-        # write(truebetas,file="truebetas.dat")
+        # RRs the relative risks that are the effect sizes RR_c that
+        # need to be on the x-axis of powerplots
+        write(exp(truebetas),file="RRs.dat",ncolumns=1,append=FALSE)
+        write(powerscont,file=paste("powerscont",controlCaseRatio,".dat",sep=""),ncolumns=nrow(powerscont),append=FALSE)
+        write(PlatVElowest,file="PlatVElowest.dat")
+        write(VElowest,file="VElowest.dat",ncolumns=1,append=FALSE)
+        write(truebetas,file="truebetas.dat")
   }
   
       # VEoverall <- 1-RRoverall
@@ -1251,13 +1251,13 @@ computepower <- function(nAtRiskTauCases, nAtRiskTauCasesPhase2, nAtRiskTauContr
   ans$alpha <- alpha
   ans$rho <- rho
   ans$controlCaseRatio <- controlCaseRatio
-        # write(N,file="sampsizeALL.dat")
-        # write(nCases,file="numbeventsALL.dat")
-        # write(nCasesPhase2,file="numbeventsPhase2.dat")
-        # write(1-RRoverall,file="VEoverallCoRpower.dat")
-        # write(alpha,file="alpha.dat")
-        # write(rho,file="rho.dat",ncolumns=1,append=FALSE)
-        # write(controlCaseRatio,file="controlCaseRatio.dat")
+        write(N,file="sampsizeALL.dat")
+        write(nCases,file="numbeventsALL.dat")
+        write(nCasesPhase2,file="numbeventsPhase2.dat")
+        write(1-RRoverall,file="VEoverallCoRpower.dat")
+        write(alpha,file="alpha.dat")
+        write(rho,file="rho.dat",ncolumns=1,append=FALSE)
+        write(controlCaseRatio,file="controlCaseRatio.dat")
   if(!is.null(saveDir) & !is.null(saveFile)) {
     save(ans, file=paste0(file.path(saveDir, saveFile),".RData"))
   }
