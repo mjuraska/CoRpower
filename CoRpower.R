@@ -757,7 +757,7 @@ biomSubset <- function(Y, N, nCasesPhase2, controlCaseRatio, p, cohort, pDropout
 #' @import osDesign
 #' @export
 computePower <- function(nAtRiskTauCases, nAtRiskTauControls, nAtRiskTauCasesPhase2,
-                         controlCaseRatio=5,
+                         controlCaseRatio=NULL,
                          VEoverall, risk0, 
                          VElat0=seq(0, VEoverall, len=20), VElat1=rep(VEoverall, 20),
                          VElowest=NULL,
@@ -1044,7 +1044,7 @@ computePower <- function(nAtRiskTauCases, nAtRiskTauControls, nAtRiskTauCasesPha
     # CoR effect sizes
     RRt <- risk1_2/risk1_0
     
-    ans <- list("power"=power, "RRt"=RRt, "risk1_2"=risk1_2, "risk1_0"=risk1_0, "VElat2"=VElat2, "VElat0"=VElat0, "Plat2"=Plat2, "Plat0"=Plat0, 
+    pwr <- list("power"=power, "RRt"=RRt, "risk1_2"=risk1_2, "risk1_0"=risk1_0, "VElat2"=VElat2, "VElat0"=VElat0, "Plat2"=Plat2, "Plat0"=Plat0, 
                 "P2"=P2, "P0"=P0, "alphaLat"=alphaLat, "betaLat"=betaLat, "sens"=sens, "spec"=spec, "FP0"=FP0, "FN2"=FN2)
     
     write(RRlat2,file="RRlat2.dat",ncolumns=1,append=FALSE)
@@ -1231,7 +1231,7 @@ computePower <- function(nAtRiskTauCases, nAtRiskTauControls, nAtRiskTauCasesPha
     # RRc the relative risks that are the effect sizes RR_c that need to be on the x-axis of powerplots
     RRc <- exp(truebetas)
     
-    ans <- list("power"=power, "RRc"=RRc, "betaLat"=truebetas, "PlatVElowest"=PlatVElowest, "VElowest"=VElowest, "sigma2obs"=sigma2obs)
+    pwr <- list("power"=power, "RRc"=RRc, "betaLat"=truebetas, "PlatVElowest"=PlatVElowest, "VElowest"=VElowest, "sigma2obs"=sigma2obs)
     
     # RRs the relative risks that are the effect sizes RR_c that
     # need to be on the x-axis of powerplots
@@ -1244,13 +1244,13 @@ computePower <- function(nAtRiskTauCases, nAtRiskTauControls, nAtRiskTauCasesPha
   
   # VEoverall <- 1-RRoverall
   # ans <- c(ans, list(N), list(nCases), list(nCasesPhase2), VEoverall, alpha, list(rho), controlCaseRatio)
-  ans$N <- N
-  ans$nCases <- nCases
-  ans$nCasesPhase2 <- nCasesPhase2
-  ans$VEoverall <- 1-RRoverall
-  ans$alpha <- alpha
-  ans$rho <- rho
-  ans$controlCaseRatio <- controlCaseRatio
+  pwr$N <- N
+  pwr$nCases <- nCases
+  pwr$nCasesPhase2 <- nCasesPhase2
+  pwr$VEoverall <- 1-RRoverall
+  pwr$alpha <- alpha
+  pwr$rho <- rho
+  pwr$controlCaseRatio <- controlCaseRatio
   write(N,file="sampsizeALL.dat")
   write(nCases,file="numbeventsALL.dat")
   write(nCasesPhase2,file="numbeventsPhase2.dat")
@@ -1259,9 +1259,9 @@ computePower <- function(nAtRiskTauCases, nAtRiskTauControls, nAtRiskTauCasesPha
   write(rho,file="rho.dat",ncolumns=1,append=FALSE)
   write(controlCaseRatio,file="controlCaseRatio.dat")
   if(!is.null(saveDir) & !is.null(saveFile)) {
-    save(ans, file=paste0(file.path(saveDir, saveFile),".RData"))
+    save(pwr, file=paste0(file.path(saveDir, saveFile),".RData"))
   }
   
-  return(ans)
+  return(pwr)
   
 }
