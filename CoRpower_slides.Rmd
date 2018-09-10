@@ -230,22 +230,22 @@ Assuming the standard survival analysis framework,
 ## *Scenario 1:* vary control:case ratio (Approach 1) | Trichotomous \(\small\, S\), without replacement sampling {.smaller}
 ```{r, eval=FALSE}
 library(CoRpower)
-pwr <- computepower(nAtRiskTauCases = 32,             # n_cases
-                    nAtRiskTauControls = 3991,        # n_controls
-                    nAtRiskTauCasesPhase2 = 32,       # num^S_cases
-                    controlCaseRatio = 5,             # scalar, ie separate 'computepower' calls for 5, 3, 1
-                    RRoverall = 0.25,                 # 1 - overall VE
-                    risk0 = 0.034,                    # cumulative placebo risk between tau and tau_max 
-                    RRlat0 = seq(1, 0.25, len = 100), # grid of relative risk (V/P) among lower protected
-                    RRlat1 = rep(0.25, 100),          # grid of relative risk (V/P) among medium protected
-                    Plat0 = 0.2,                      # prevalence of lower protected
-                    Plat2 = 0.6,                      # prevalence of higher protected
-                    P0 = 0.2,                         # probability of low biomarker response
-                    P2 = 0.6,                         # probability of high biomarker response
+pwr <- computepower(nAtRiskTauCases = 32,                # n_cases
+                    nAtRiskTauControls = 3991,           # n_controls
+                    nAtRiskTauCasesPhase2 = 32,          # num^S_cases
+                    controlCaseRatio = 5,                # scalar, ie separate 'computepower' calls for 5, 3, 1
+                    VEoverall = 0.25,                    # overall VE
+                    risk0 = 0.034,                       # cumulative placebo risk between tau and tau_max 
+                    VElat0 = seq(0, VEoverall, len=100), # grid of VE (V/P) among lower protected
+                    VElat1 = rep(VEoverall, 100),        # grid of VE (V/P) among medium protected
+                    Plat0 = 0.2,                         # prevalence of lower protected
+                    Plat2 = 0.6,                         # prevalence of higher protected
+                    P0 = 0.2,                            # probability of low biomarker response
+                    P2 = 0.6,                            # probability of high biomarker response
                     Sens = 0.8, Spec = 0.8, FP0 = 0, FN2 = 0,
-                    M = 1000,                         # number of simulated clinical trials
-                    alpha = 0.05,                     # two-sided Wald test Type 1 error rate
-                    biomType = "trichotomous")        # "continuous" by default
+                    M = 1000,                            # number of simulated clinical trials
+                    alpha = 0.05,                        # two-sided Wald test Type 1 error rate
+                    biomType = "trichotomous")           # "continuous" by default
 ```
 
 
@@ -291,7 +291,7 @@ pwr <- computepower(nAtRiskTauCases = 31,             # n_cases
                     nAtRiskTauControls = 4485,        # n_controls
                     nAtRiskTauCasesPhase2 = 31,       # num^S_cases
                     controlCaseRatio = 5,             # ratio of controls to cases
-                    RRoverall = 0.25,                 # 1 - overall VE
+                    VEoverall = 0.75,                 # overall VE
                     risk0 = 0.029,                    # cumulative placebo risk between tau and tau_max 
                     RRlat0 = seq(1, 0.25, len = 100), # grid of relative risk (V/P) among lower protected
                     RRlat1 = rep(0.25, 100),          # grid of relative risk (V/P) among medium protected
@@ -440,7 +440,7 @@ knitr::include_graphics(file.path(figDir,"powertrinary_CoR_Scen6.png"))
 ```
 
 ## Scenario 5 Table
-```{r, echo=FALSE, fig.align='center', out.width='90%'}
+```{r, echo=FALSE, fig.align='center', out.width='90%', out.height='30%'}
 knitr::include_graphics(file.path(figDir,"Scen6Table1.png"))
 ```
 
