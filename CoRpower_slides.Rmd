@@ -232,7 +232,7 @@ Assuming the standard survival analysis framework,
 library(CoRpower)
 pwr <- computepower(nAtRiskTauCases = 32,                # n_cases
                     nAtRiskTauControls = 3991,           # n_controls
-                    nAtRiskTauCasesPhase2 = 32,          # num^S_cases
+                    nAtRiskTauCasesPhase2 = 32,          # n^S_cases
                     controlCaseRatio = 5,                # scalar, ie separate 'computepower' calls for 5, 3, 1
                     VEoverall = 0.25,                    # overall VE
                     risk0 = 0.034,                       # cumulative placebo risk between tau and tau_max 
@@ -285,12 +285,12 @@ Other components: `risk1_2`, `risk1_0`, `RRlat0`, `Plat2`, `Plat0`, `P2`, `P0`, 
 knitr::include_graphics(file.path(figDir,"powertrinary_CoR_Scen1.png"))
 ```
 
-## *Scenario 2:* Trichotomous, approach 1 | Vary \(\small\, Sens \) and \(\small\, Spec\) {.smaller}
+## *Scenario 2:* vary \(\small\, Sens\) and \(\small\, Spec\) (Approach 1) | Trichotomous \(\small\, S\), without replacement sampling {.smaller}
 ```{r, eval=FALSE}
-pwr <- computepower(nAtRiskTauCases = 31,             # n_cases
-                    nAtRiskTauControls = 4485,        # n_controls
-                    nAtRiskTauCasesPhase2 = 31,       # num^S_cases
-                    controlCaseRatio = 5,             # ratio of controls to cases
+pwr <- computepower(nAtRiskTauCases = 32,             # n_cases
+                    nAtRiskTauControls = 3991,        # n_controls
+                    nAtRiskTauCasesPhase2 = 32,       # n^S_cases
+                    controlCaseRatio = 5,             # n^S_controls : n^S_cases ratio
                     VEoverall = 0.75,                 # overall VE
                     risk0 = 0.029,                    # cumulative placebo risk between tau and tau_max 
                     RRlat0 = seq(1, 0.25, len = 100), # grid of relative risk (V/P) among lower protected
@@ -306,32 +306,32 @@ pwr <- computepower(nAtRiskTauCases = 31,             # n_cases
                     biomType = "trichotomous")        # "continuous" by default
 ```
 
-## Scenario 2 Figures
-```{r, echo=FALSE, fig.align='center', out.width='65%'}
+## *Scenario 2:* vary \(\small\, Sens\) and \(\small\, Spec\) (Approach 1)
+```{r, echo=FALSE, fig.align='center', out.width='67%'}
 knitr::include_graphics(file.path(figDir,"powertrinary_CoR_Scen3.png"))
 ```
 
-## *Scenario 3:* Trichotomous, approach 1 | Vary \(\small\, P^{lat}_0, P_0, P^{lat}_2, P_2\) {.smaller}
+## *Scenario 3:* vary \(\small\, P^{lat}_0, P^{lat}_2, P_0, P_2\) (Approach 1) | Trichotomous \(\small\, S\), without replacement sampling {.smaller}
 ```{r, eval=FALSE}
-pwr <- computepower(nAtRiskTauCases = 31,             # n_cases
-                    nAtRiskTauControls = 4485,        # n_controls
-                    nAtRiskTauCasesPhase2 = 31,       # num^S_cases
-                    controlCaseRatio = 5,             # ratio of controls to cases
+pwr <- computepower(nAtRiskTauCases = 32,             # n_cases
+                    nAtRiskTauControls = 3991,        # n_controls
+                    nAtRiskTauCasesPhase2 = 32,       # n^S_cases
+                    controlCaseRatio = 5,             # n^S_controls : n^S_cases ratio
                     RRoverall = 0.25,                 # 1 - overall VE
                     risk0 = 0.029,                    # cumulative placebo risk between tau and tau_max 
                     RRlat0 = seq(1, 0.25, len = 100), # grid of relative risk (V/P) among lower protected
                     RRlat1 = rep(0.25, 100),          # grid of relative risk (V/P) among medium protected
-                    Plat0 = 0.05,                     # scalar, ie separate 'computepower' calls for 0.05, 0.1, 0.15, 0.2
-                    Plat2 = 0.15,                     # scalar, ie separate 'computepower' calls for 0.15, 0.3, 0.45, 0.6
-                    P0 = 0.05,                        # scalar, ie separate 'computepower' calls for 0.05, 0.1, 0.15, 0.2
-                    P2 = 0.15,                        # scalar, ie separate 'computepower' calls for 0.15, 0.3, 0.45, 0.6
+                    Plat0 = 0.05,                     # scalar, ie separate calls for 0.05, 0.1, 0.15, 0.2
+                    Plat2 = 0.15,                     # scalar, ie separate calls for 0.15, 0.3, 0.45, 0.6
+                    P0 = 0.05,                        # scalar, ie separate calls for 0.05, 0.1, 0.15, 0.2
+                    P2 = 0.15,                        # scalar, ie separate calls for 0.15, 0.3, 0.45, 0.6
                     Sens = 0.8, Spec = 0.8, FP0 = 0, FN2 = 0,
                     M = 1000,                         # number of simulated clinical trials
                     alpha = 0.05,                     # two-sided Wald test Type 1 error rate
                     biomType = "trichotomous")        # "continuous" by default
 ```
 
-## Scenario 3 Figures
+## *Scenario 3:* vary \(\small\, P^{lat}_0, P^{lat}_2, P_0, P_2\) (Approach 1)
 ```{r, echo=FALSE, fig.align='center', out.width='65%'}
 knitr::include_graphics(file.path(figDir,"powertrinary_CoR_Scen2.png"))
 ```
