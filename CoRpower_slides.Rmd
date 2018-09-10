@@ -2,7 +2,7 @@
 title: "R Package `CoRpower`: Power and Sample Size Calculations for Correlates of Risk"
 subtitle: "Based on Gilbert, Janes, Huang (2016, *Stat Med*)"
 author: "Michal Juraska"
-date: "September 24--26, 2018"
+date: "September 24-26, 2018"
 output: 
   ioslides_presentation: 
     widescreen: true
@@ -230,11 +230,11 @@ Assuming the standard survival analysis framework,
 ## *Scenario 1:* vary control:case ratio (Approach 1) | Trichotomous \(\small\, S\), without replacement sampling {.smaller}
 ```{r, eval=FALSE}
 library(CoRpower)
-pwr <- computepower(nAtRiskTauCases = 32,                # n_cases
+pwr <- computePower(nAtRiskTauCases = 32,                # n_cases
                     nAtRiskTauControls = 3991,           # n_controls
                     nAtRiskTauCasesPhase2 = 32,          # n^S_cases
-                    controlCaseRatio = 5,                # scalar, ie separate 'computepower' calls for 5, 3, 1
-                    VEoverall = 0.25,                    # overall VE
+                    controlCaseRatio = 5,                # scalar, ie separate 'computePower' calls for 5, 3, 1
+                    VEoverall = 0.75,                    # overall VE
                     risk0 = 0.034,                       # cumulative placebo risk between tau and tau_max 
                     VElat0 = seq(0, VEoverall, len=100), # grid of VE (V/P) among lower protected
                     VElat1 = rep(VEoverall, 100),        # grid of VE (V/P) among medium protected
@@ -287,23 +287,23 @@ knitr::include_graphics(file.path(figDir,"powertrinary_CoR_Scen1.png"))
 
 ## *Scenario 2:* vary \(\small\, Sens\) and \(\small\, Spec\) (Approach 1) | Trichotomous \(\small\, S\), without replacement sampling {.smaller}
 ```{r, eval=FALSE}
-pwr <- computepower(nAtRiskTauCases = 32,             # n_cases
-                    nAtRiskTauControls = 3991,        # n_controls
-                    nAtRiskTauCasesPhase2 = 32,       # n^S_cases
-                    controlCaseRatio = 5,             # n^S_controls : n^S_cases ratio
-                    VEoverall = 0.75,                 # overall VE
-                    risk0 = 0.029,                    # cumulative placebo risk between tau and tau_max 
-                    RRlat0 = seq(1, 0.25, len = 100), # grid of relative risk (V/P) among lower protected
-                    RRlat1 = rep(0.25, 100),          # grid of relative risk (V/P) among medium protected
-                    Plat0 = 0.2,                      # prevalence of lower protected
-                    Plat2 = 0.6,                      # prevalence of higher protected
-                    P0 = 0.2,                         # probability of low biomarker response
-                    P2 = 0.6,                         # probability of high biomarker response
+pwr <- computePower(nAtRiskTauCases = 32,                # n_cases
+                    nAtRiskTauControls = 3991,           # n_controls
+                    nAtRiskTauCasesPhase2 = 32,          # n^S_cases
+                    controlCaseRatio = 5,                # n^S_controls : n^S_cases ratio
+                    VEoverall = 0.75,                    # overall VE
+                    risk0 = 0.034,                       # cumulative placebo risk between tau and tau_max 
+                    VElat0 = seq(0, VEoverall, len=100), # grid of VE (V/P) among lower protected
+                    VElat1 = rep(VEoverall, 100),        # grid of VE (V/P) among medium protected
+                    Plat0 = 0.2,                         # prevalence of lower protected
+                    Plat2 = 0.6,                         # prevalence of higher protected
+                    P0 = 0.2,                            # probability of low biomarker response
+                    P2 = 0.6,                            # probability of high biomarker response
                     Sens = c(1, 0.9, 0.8, 0.7), Spec = c(1, 0.9, 0.8, 0.7), 
                     FP0 = 0, FN2 = 0,
-                    M = 1000,                         # number of simulated clinical trials
-                    alpha = 0.05,                     # two-sided Wald test Type 1 error rate
-                    biomType = "trichotomous")        # "continuous" by default
+                    M = 1000,                            # number of simulated clinical trials
+                    alpha = 0.05,                        # two-sided Wald test Type 1 error rate
+                    biomType = "trichotomous")           # "continuous" by default
 ```
 
 ## *Scenario 2:* vary \(\small\, Sens\) and \(\small\, Spec\) (Approach 1)
@@ -313,22 +313,22 @@ knitr::include_graphics(file.path(figDir,"powertrinary_CoR_Scen3.png"))
 
 ## *Scenario 3:* vary \(\small\, P^{lat}_0, P^{lat}_2, P_0, P_2\) (Approach 1) | Trichotomous \(\small\, S\), without replacement sampling {.smaller}
 ```{r, eval=FALSE}
-pwr <- computepower(nAtRiskTauCases = 32,             # n_cases
-                    nAtRiskTauControls = 3991,        # n_controls
-                    nAtRiskTauCasesPhase2 = 32,       # n^S_cases
-                    controlCaseRatio = 5,             # n^S_controls : n^S_cases ratio
-                    RRoverall = 0.25,                 # 1 - overall VE
-                    risk0 = 0.029,                    # cumulative placebo risk between tau and tau_max 
-                    RRlat0 = seq(1, 0.25, len = 100), # grid of relative risk (V/P) among lower protected
-                    RRlat1 = rep(0.25, 100),          # grid of relative risk (V/P) among medium protected
-                    Plat0 = 0.05,                     # scalar, ie separate calls for 0.05, 0.1, 0.15, 0.2
-                    Plat2 = 0.15,                     # scalar, ie separate calls for 0.15, 0.3, 0.45, 0.6
-                    P0 = 0.05,                        # scalar, ie separate calls for 0.05, 0.1, 0.15, 0.2
-                    P2 = 0.15,                        # scalar, ie separate calls for 0.15, 0.3, 0.45, 0.6
+pwr <- computePower(nAtRiskTauCases = 32,                # n_cases
+                    nAtRiskTauControls = 3991,           # n_controls
+                    nAtRiskTauCasesPhase2 = 32,          # n^S_cases
+                    controlCaseRatio = 5,                # n^S_controls : n^S_cases ratio
+                    VEoverall = 0.75,                    # overall VE
+                    risk0 = 0.034,                       # cumulative placebo risk between tau and tau_max 
+                    VElat0 = seq(0, VEoverall, len=100), # grid of VE (V/P) among lower protected
+                    VElat1 = rep(VEoverall, 100),        # grid of VE (V/P) among medium protected
+                    Plat0 = 0.05,                        # scalar, ie separate calls for 0.05, 0.1, 0.15, 0.2
+                    Plat2 = 0.15,                        # scalar, ie separate calls for 0.15, 0.3, 0.45, 0.6
+                    P0 = 0.05,                           # scalar, ie separate calls for 0.05, 0.1, 0.15, 0.2
+                    P2 = 0.15,                           # scalar, ie separate calls for 0.15, 0.3, 0.45, 0.6
                     Sens = 0.8, Spec = 0.8, FP0 = 0, FN2 = 0,
-                    M = 1000,                         # number of simulated clinical trials
-                    alpha = 0.05,                     # two-sided Wald test Type 1 error rate
-                    biomType = "trichotomous")        # "continuous" by default
+                    M = 1000,                            # number of simulated clinical trials
+                    alpha = 0.05,                        # two-sided Wald test Type 1 error rate
+                    biomType = "trichotomous")           # "continuous" by default
 ```
 
 ## *Scenario 3:* vary \(\small\, P^{lat}_0, P^{lat}_2, P_0, P_2\) (Approach 1)
@@ -338,23 +338,23 @@ knitr::include_graphics(file.path(figDir,"powertrinary_CoR_Scen2.png"))
 
 ## *Scenario 4:* Trichotomous, approach 2 | Vary \(\small\, \rho \) {.smaller}
 ```{r, eval=FALSE}
-ans <- computepower(numAtRiskTauCases=31, 
-                    numAtRiskTauCasesPhase2=31, 
-                    numAtRiskTauControls=4485,
-                    risk0=0.034, 
-                    RRoverall=0.25, 
-                    Plat0=0.2, P0=0.2, 
-                    Plat2=0.6, P2=0.6, 
-                    RRlat0=seq(1, 25, len=100), RRlat1=rep(0.25, 100), 
-                    PlatVElowest=0, VElowestvect=NULL,
-                    controlCaseRatio=5, 
-                    M=1000, 
-                    alpha=0.05, 
-                    sigma2obs=1,  # variance of observed biomarker
-                    ### <b>
-                    rhos=c(1, 0.9, 0.7, 0.5),  # fraction of relevant variability in the observed biomarker
-                    ### </b>
-                    biomType="trichotomous")
+ans <- computePower(nAtRiskTauCases = 32,                # n_cases
+                    nAtRiskTauControls = 3991,           # n_controls
+                    nAtRiskTauCasesPhase2 = 32,          # n^S_cases
+                    controlCaseRatio = 5,                # n^S_controls : n^S_cases ratio
+                    VEoverall = 0.75,                    # overall VE
+                    risk0 = 0.034,                       # cumulative placebo risk between tau and tau_max 
+                    VElat0 = seq(0, VEoverall, len=100), # grid of VE (V/P) among lower protected
+                    VElat1 = rep(VEoverall, 100),        # grid of VE (V/P) among medium protected
+                    Plat0 = 0.2,                         # scalar, ie separate calls for 0.05, 0.1, 0.15, 0.2
+                    Plat2 = 0.6,                         # scalar, ie separate calls for 0.15, 0.3, 0.45, 0.6
+                    P0 = 0.2,                            # scalar, ie separate calls for 0.05, 0.1, 0.15, 0.2
+                    P2 = 0.6,                            # scalar, ie separate calls for 0.15, 0.3, 0.45, 0.6
+                    M = 1000,                            # number of simulated clinical trials
+                    alpha = 0.05,                        # two-sided Wald test Type 1 error rate
+                    sigma2obs=1,                         # variance of observed biomarker
+                    rhos=c(1, 0.9, 0.7, 0.5),            # fraction of relevant variability in the observed biomarker
+                    biomType = "trichotomous")           # "continuous" by default
 ```
 
 ```{r, echo=FALSE}
@@ -366,44 +366,14 @@ RRt <- risk1_2/risk1_0
 RRlat2 <- RRlat2 <- scan('RRlat2.dat')
 ```
 
-## Scenario 4 Output | List of 23 elements: {.smaller}
-
-<div style="float: left; width: 70%;">
-<ul>
-  <li>`powerstrinary`
-```{r, echo=FALSE}
-powerstrinary[,1:5]
-```
-  <li>CoR effect size `RRt`
-```{r, echo=FALSE}
-RRt[,1:5]
-```
-  <li>`RRlat2` 
-```{r, echo=FALSE} 
-RRlat2[1:5]
-```
-</div>
-<div style="float: right; width: 30%;">
-<br>
-<ul>
-  <li> `risk1_2`, `risk1_0`, 
-  <br>
-  <li> `RRlat0`, `VEoverall`,
-  <br>
-  <li> `Plat2`, `Plat0`, `P2`, `P0`, 
-  <br>
-  <li> `trinaryalpha`, `trinarybeta`, 
-  <br>
-  <li> `Sens`, `Spec`, `FP0`, `FN2`, 
-  <br>
-  <li> `N`, `nCases`, `nCasesPhase2`, 
-  <br>
-  <li> `alpha`, `rhos`, `controlCaseRatio`
-</ul>
-
 ## Scenario 4 Figures
 ```{r, echo=FALSE, fig.align='center', out.width='65%'}
 knitr::include_graphics(file.path(figDir,"powertrinary_CoR_Scen5.png"))
+```
+
+## Scenario 4 Figures
+```{r, echo=FALSE, fig.align='center', out.width='65%'}
+knitr::include_graphics(file.path(figDir,"RRcomparison_CoR_Scen5.png"))
 ```
 
 ## Scenario 4 Table
@@ -413,7 +383,7 @@ knitr::include_graphics(file.path(figDir,"Scen5Table1.png"))
 
 ## *Scenario 5:* Trichotomous, approach 2 | Vary \(\small\, P^{lat}_0, P_0, P^{lat}_2, P_2\) {.smaller}
 ```{r, eval=FALSE}
-ans <- computepower(numAtRiskTauCases=31, 
+ans <- computePower(numAtRiskTauCases=31, 
                     numAtRiskTauCasesPhase2=31, 
                     numAtRiskTauControls=4485,
                     risk0=0.034, 
@@ -447,7 +417,7 @@ knitr::include_graphics(file.path(figDir,"Scen6Table1.png"))
 
 ## *Scenario 6:* Trichotomous, approach 2 | Vary \(\small\, n_{cases}\) {.smaller}
 ```{r, eval=FALSE}
-ans <- computepower(### <b>
+ans <- computePower(### <b>
                     numAtRiskTauCases=c(25, 31, 35, 40), 
                     numAtRiskTauCasesPhase2=c(25, 31, 35, 40), 
                     numAtRiskTauControls=c(125, 155, 175, 200),
@@ -494,7 +464,7 @@ P_0 + P_2 &= 1
 
 ## *Scenario 7:* Binary, approach 2 | Vary \(\small\, n_{cases}\) {.smaller}
 ```{r, eval=FALSE}
-ans <- computepower(### <b>
+ans <- computePower(### <b>
                     numAtRiskTauCases=c(25, 31, 35, 40), 
                     numAtRiskTauCasesPhase2=c(25, 31, 35, 40), 
                     numAtRiskTauControls=c(125, 155, 175, 200),
@@ -546,7 +516,7 @@ knitr::include_graphics(file.path(figDir,"Scen8Table1.png"))
   \[
   \begin{align}
   VE^{lat}_{x^{\ast}} &= VE_{lowest},\quad x^{\ast} \leq \nu\\
-  VE^{lat}_{x^{\ast}} &= 1-\frac{\mathop{\mathrm{logit}}^{-1}(\alpha^{lat}+\beta^{lat}x^{\ast})}{risk_0}\,,\quad x^{\ast} \geq \nu
+  VE^{lat}_{x^{\ast}} &= 1-\frac{\mathop{\mathrm{logit}}^{-1}\!(\alpha^{lat}+\beta^{lat}x^{\ast})}{risk_0}\,,\quad x^{\ast} \geq \nu
   \end{align}
   \]
   yield $\alpha^{lat}$ and $\beta^{lat}$
@@ -587,7 +557,7 @@ knitr::include_graphics(file.path(figDir,"Scen8Table1.png"))
 
 ## *Scenario 8:* Continuous | Vary \(\small\, \rho\) {.smaller}
 ```{r, eval=FALSE}
-ans <- computepower(numAtRiskTauCases=31, 
+ans <- computePower(numAtRiskTauCases=31, 
                     numAtRiskTauCasesPhase2=31, 
                     numAtRiskTauControls=4485,
                     risk0=0.034, 
@@ -642,7 +612,7 @@ knitr::include_graphics(file.path(figDir,"plotVEcurveCoRcontinuous_Scen9.png"))
 
 ## *Scenario 9:* Continuous| Vary \(\small\, P_{lowestVE}^{lat} \) {.smaller}
 ```{r, eval=FALSE}
-ans <- computepower(numAtRiskTauCases=31, 
+ans <- computePower(numAtRiskTauCases=31, 
                     numAtRiskTauCasesPhase2=31, 
                     numAtRiskTauControls=4485,
                     risk0=0.034, 
@@ -690,7 +660,7 @@ Continuous $S^{\ast}$
 
 ## *Scenario 10:* Trichotomous, approach 1 | Vary cohort sampling probability, p {.smaller}
 ```{r, eval=FALSE}
-ans <- computepower(numAtRiskTauCases=31, 
+ans <- computePower(numAtRiskTauCases=31, 
                     numAtRiskTauCasesPhase2=31, 
                     numAtRiskTauControls=4485,
                     risk0=0.034, 
@@ -720,7 +690,7 @@ knitr::include_graphics(file.path(figDir,"powertrinary_CoR_Scen4.png"))
 
 ## *Scenario 11:* Continuous | Vary cohort sampling probabiliy, p {.smaller}
 ```{r, eval=FALSE}
-ans <- computepower(numAtRiskTauCases=31, 
+ans <- computePower(numAtRiskTauCases=31, 
                     numAtRiskTauCasesPhase2=31, 
                     numAtRiskTauControls=4485,
                     risk0=0.034, 
@@ -743,28 +713,3 @@ ans <- computepower(numAtRiskTauCases=31,
 ```{r, echo=FALSE, fig.align='center', out.width='65%'}
 knitr::include_graphics(file.path(figDir,"powercontinuous_CoR_Scen11.png"))
 ```
-
-## Key R functions to design and conduct a CoR power analysis, and display analysis results:
-<br><br><br>
-<div style="float: left; width: 33%;">
-</div>
-<div style="float: right; width: 67%;">
-- `computePower`
-- `...`
-</div>
-
-##    
-<br><br><br>
-<div class="centered">
-R package `CoRpower` soon to appear on CRAN
-<br><br>
-
-Currently downloadable at:
-
-https://github.com/smwu/CoRpower
-<br><br>
-
-Implementation of
-
-Gilbert, Janes, Huang (2016, *Stat Med*)
-</div>
