@@ -542,14 +542,13 @@ ans <- computePower(nAtRiskTauCases = 32,                 # n_cases
                     biomType = "continuous")              # "continuous" by default
 ```
 
-```{r setup}
-knitr::opts_knit$set(root.dir = "T:/vaccine/StephanieWu/CoR Power Package In Progress/Scenario9")
-```
-```{r, include=FALSE, cache=TRUE}
+```{r, echo=FALSE, cache=TRUE}
+setwd("T:/vaccine/StephanieWu/CoR Power Package In Progress/Scenario9")
 load("ansScen9.RData")
+pwr <- pwr
 ```
 
-## *Scenario 8:* Vary \(\small\, \rho\) | Continuous \(\small\, S^{\ast}\), without replacement sampling {.smaller}
+## *Scenario 8:* vary \(\small\, \rho\) | Continuous \(\small\, S^{\ast}\), without replacement sampling {.smaller}
 ```{r}
 pwr$power[1, c(1, 25, 50, 75, 100)]
 pwr$RRc[c(1, 25, 50, 75, 100)]
@@ -613,7 +612,7 @@ Continuous $S^{\ast}$
 
 - *Scenario 11:* vary $p$
 
-## *Scenario 10:* vary cohort sampling probability \(\small\, p \) (Approach 1) | Trichotomous \(\small\, S \), Bernoulli sampling {.smaller}
+## *Scenario 10:* vary \(\small\, p \) (Approach 1) | Trichotomous \(\small\, S \), Bernoulli sampling {.smaller}
 ```{r, eval=FALSE}
 ans <- computePower(nAtRiskTauCases = 32,                # n_cases
                     nAtRiskTauControls = 3991,           # n_controls
@@ -635,13 +634,13 @@ ans <- computePower(nAtRiskTauCases = 32,                # n_cases
                     pDropout = 0.1)                      # probability of dropout between tau and tau_max       
 ```
 
-## *Scenario 10:* vary cohort sampling probability \(\small\, p \) (Approach 1)
+## *Scenario 10:* vary \(\small\, p \) (Approach 1)
 ```{r, echo=FALSE, fig.align='center', out.width='65%'}
 knitr::include_graphics(file.path(figDir,"powertrinary_CoR_Scen4.png"))
 ```
 
 
-## *Scenario 11:* vary cohort sampling probability \(\small\, p \) | Continuous \(\small\, S^{\ast}\), Bernoulli sampling {.smaller}
+## *Scenario 11:* vary \(\small\, p \) | Continuous \(\small\, S^{\ast}\), Bernoulli sampling {.smaller}
 ```{r, eval=FALSE}
 ans <- computePower(nAtRiskTauCases = 32,                 # n_cases
                     nAtRiskTauControls = 3991,            # n_controls
@@ -660,7 +659,7 @@ ans <- computePower(nAtRiskTauCases = 32,                 # n_cases
                     pDropout = 0.1)                       # probability of dropout between tau and tau_max
 ```
 
-## *Scenario 11:* vary cohort sampling probability \(\small\, p \)
+## *Scenario 11:* vary \(\small\, p \)
 ```{r, echo=FALSE, fig.align='center', out.width='65%'}
 knitr::include_graphics(file.path(figDir,"powercontinuous_CoR_Scen11.png"))
 ```
