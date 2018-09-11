@@ -251,7 +251,6 @@ pwr <- computePower(nAtRiskTauCases = 32,                # n_cases
 ```{r, include=FALSE, cache=TRUE}
 setwd("T:/vaccine/StephanieWu/CoR Power Package In Progress/Scenario1/K3")
 load("ansScen1.RData")
-pwr <- ans
 ```
 
 ## *Scenario 1:* vary control:case ratio (Approach 1) | Trichotomous \(\small\, S\), without replacement sampling {.smaller}
@@ -261,7 +260,7 @@ pwr$power[1, c(1, 25, 50, 75, 100)]
 pwr$RRt[1, c(1, 25, 50, 75, 100)]
 pwr$VElat2[c(1, 25, 50, 75, 100)]
 ```
-Other components: `risk1_2`, `risk1_0`, `RRlat0`, `Plat2`, `Plat0`, `P2`, `P0`, `trinaryalpha`, `trinarybeta`, `Sens`, `Spec`, `FP0`, `FN2`, `N`, `nCases`, `nCasesPhase2`, `VEoverall`, `alpha`, `rhos`, `controlCaseRatio`
+Other components: `risk1_2`, `risk1_0`, `VElat0`, `Plat2`, `Plat0`, `P2`, `P0`, `alphaLat`, `betaLat`, `sens`, `spec`, `FP0`, `FN2`, `N`, `nCases`, `nCasesPhase2`, `VEoverall`, `alpha`, `rho`, `controlCaseRatio`
 
 ## *Scenario 1:* vary control:case ratio (Approach 1)
 ```{r, echo=FALSE, fig.align='center', out.width='65%'}
@@ -544,41 +543,21 @@ ans <- computePower(nAtRiskTauCases = 32,                 # n_cases
                     biomType = "continuous")              # "continuous" by default
 ```
 
-
-```{r, include=FALSE, cache=TRUE, eval=FALSE, echo=FALSE}
-setwd("T:/vaccine/StephanieWu/CoR Power Package In Progress/Scenario9")
+```{r setup}
+knitr::opts_knit$set(root.dir = "T:/vaccine/StephanieWu/CoR Power Package In Progress/Scenario9")
+```
+```{r, include=FALSE, cache=TRUE}
 load("ansScen9.RData")
 ```
 
 ## *Scenario 8:* Vary \(\small\, \rho\) | Continuous \(\small\, S*\), without replacement sampling {.smaller}
-```{r, eval=FALSE, echo=FALSE}
+```{r}
 pwr$power[1, c(1, 25, 50, 75, 100)]
-pwr$RRc[1, c(1, 25, 50, 75, 100)]
+pwr$RRc[c(1, 25, 50, 75, 100)]
 pwr$VElowest[c(1, 25, 50, 75, 100)]
 ```
 
-```{r, echo=FALSE}
-setwd("T:/vaccine/StephanieWu/CoR Power Package In Progress/Scenario9")
-powerscont <- matrix(scan('powerscont5.dat'),nrow=4, byrow=T)
-RRc <- scan('RRs.dat')
-VElowestvect <- scan('VElowestvect.dat')
-```
-<ul>
-  <li> `powerstrinary`
-```{r, echo=FALSE}
-powerscont[,1:7]
-```
-  <li> CoR effect size `RRc`
-```{r, echo=FALSE}
-RRc[1:5]
-```
-  <li> `VElowestvect` 
-```{r, echo=FALSE} 
-VElowestvect[1:5]
-```
-  <li> `truebetas`, `PlatVElowest`, `N`, `nCases`, `nCasesPhase2`, `VEoverall`, `alpha`, `rhos`, `controlCaseRatio`
-</ul>
-
+Other components: `betaLat`, `PlatVElowest`, `N`, `nCases`, `nCasesPhase2`, `VEoverall`, `alpha`, `rho`, `controlCaseRatio`
 
 ## Scenario 8 Figures
 ```{r, echo=FALSE, fig.align='center', out.width='65%'}
