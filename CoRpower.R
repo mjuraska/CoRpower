@@ -1157,7 +1157,7 @@ computePower <- function(nAtRiskTauCases, nAtRiskTauControls, nAtRiskTauCasesPha
             S <- X + error
             
             # Select subset of subjects with biomarker measured (R_i=1) according to case-cohort or case-control sampling design
-            keepinds <- biomSubset(Y, N[k], nCasesPhase2, controlCaseRatio, p, cohort)
+            keepinds <- biomSubset(Y, N[k], nCasesPhase2, controlCaseRatio, p, cohort, pDropout)
             
             # Those with biomarker data:
             Ycc <- Y[keepinds]
@@ -1212,7 +1212,7 @@ computePower <- function(nAtRiskTauCases, nAtRiskTauControls, nAtRiskTauCasesPha
             S <- X + error
             
             # Select subset of subjects with biomarker measured (R_i=1) according to case-cohort or case-control sampling design
-            keepinds <- biomSubset(Y, N, nCasesPhase2, controlCaseRatio, p, cohort)
+            keepinds <- biomSubset(Y, N, nCasesPhase2, controlCaseRatio, p, cohort, pDropout)
             
             # Those with biomarker data:
             Ycc <- Y[keepinds]
