@@ -1,5 +1,4 @@
-# Main programs computepower() and computepower.n()
-# for correlate of risk (CoR) power calculations and
+# Main program computepower() for correlate of risk (CoR) power calculations and
 # sample size calculations as described in Gilbert, Janes, and Huang (2015)
 #
 # September, 2014
@@ -60,11 +59,6 @@
 # nAtRiskTauControls  All controls in the vaccine group at-risk at tau and not diseased at the end of follow-up taumax
 #                             (regardless of whether the biomarker is measured)
 # nAtRiskTauCasesPhase2  As above and also have the biomarker measured (i.e., in Phase 2)
-#
-# For computepower.n() vectors are inputted to repeat power calculations at multiple sample sizes
-#     nAtRiskTauCasesVectALL
-#     nAtRiskTauControlsVectALL
-#     nAtRiskTauCasesVectPhase2
 
 # sigma2obs  observed variance of the continuous marker S*
 # rho       vector of rho, the proportion of between vaccine recipient variability of S* that is
