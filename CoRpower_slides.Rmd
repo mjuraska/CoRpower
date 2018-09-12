@@ -262,6 +262,24 @@ pwr$VElat2[c(1, 25, 50, 75, 100)]
 ```
 Other components: `risk1_2`, `risk1_0`, `VElat0`, `Plat2`, `Plat0`, `P2`, `P0`, `alphaLat`, `betaLat`, `sens`, `spec`, `FP0`, `FN2`, `rho`, `N`, `nCases`, `nCasesPhase2`, `controlCaseRatio`, `VEoverall`, `alpha`, 
 
+## *Scenario 1:* vary control:case ratio (Approach 1) {.smaller}
+Can store `computePower` output in an .RData file by specifying:
+<br>
+<br>
+<ul>
+  <li> `saveDir`: file directory
+  <li> `saveFile`: file name
+<br>
+Then, use saved output for plotting:
+
+```{r, eval=FALSE}
+plotPowerTrinary(dataDir = c("~/Scen1/1", "~/Scen1/K2", "~/Scen1/K3"), # input directories 
+                 dataFile = c("pwr1","pwr2","pwr3"),                   # input files (.RData files)
+                 variableName = "controlCaseRatio",                    # name of varying parameter
+                 variableValues = c(5, 3, 1),                          # values of varying parameter
+                 legendText=NULL)                                      # option to specify legend text
+```
+
 ## *Scenario 1:* vary control:case ratio (Approach 1)
 ```{r, echo=FALSE, fig.align='center', out.width='65%'}
 knitr::include_graphics(file.path(figDir,"powertrinary_CoR_Scen1.png"))
@@ -347,6 +365,15 @@ knitr::include_graphics(file.path(figDir,"Scen5Table1.png"))
 ## *Scenario 4:* vary \(\small\, \rho \) (Approach 2)
 ```{r, echo=FALSE, fig.align='center', out.width='65%'}
 knitr::include_graphics(file.path(figDir,"powertrinary_CoR_Scen5.png"))
+```
+
+## *Scenario 4:* vary \(\small\, \rho \) (Approach 2) {.smaller}
+```{r, eval=FALSE}
+plotRRcomparison(dataDir = "~/Scen4",                   # input directory 
+                 dataFile = "pwr",                      # input file (.RData file)
+                 variableName = "rho",                  # name of varying parameter
+                 variableValues = c(1, 0.9, 0.7, 0.5),  # values of varying parameter
+                 legendText=NULL)                       # option to specify legend text
 ```
 
 ## *Scenario 4:* vary \(\small\, \rho \) (Approach 2)
@@ -554,9 +581,28 @@ pwr$VElowest[c(1, 25, 50, 75, 100)]
 
 Other components: `betaLat`, `PlatVElowest`, `N`, `nCases`, `nCasesPhase2`, `VEoverall`, `alpha`, `rho`, `controlCaseRatio`
 
+## *Scenario 8:* vary \(\small\, \rho \) | Continuous \(\small\, S^{\ast}\), without replacement sampling {.smaller}
+```{r, eval=FALSE}
+plotVEcurveContinuous(dataDir = "~/Scen8",                   # input directory 
+                      dataFile = "pwr",                      # input file (.RData file)
+                      variableName = "rho",                  # name of varying parameter
+                      variableValues = c(1, 0.9, 0.7, 0.5),  # values of varying parameter
+                      legendText=NULL,                       # option to specify legend text
+                      risk0)                                 # placebo risk between tau and tau_max
+```
+
 ## *Scenario 8:* vary \(\small\, \rho \) | Continuous \(\small\, S^{\ast}\), without replacement sampling
 ```{r, echo=FALSE, fig.align='center', out.width='65%'}
 knitr::include_graphics(file.path(figDir,"plotVEcurveCoRcontinuous_Scen9.png"))
+```
+
+## *Scenario 8:* vary \(\small\, \rho \) {.smaller}
+```{r, eval=FALSE}
+plotPowerContinuous(dataDir = "~/Scen8",                # input directory 
+                 dataFile = "pwr",                      # input file (.RData file)
+                 variableName = "rho",                  # name of varying parameter
+                 variableValues = c(1, 0.9, 0.7, 0.5),  # values of varying parameter
+                 legendText=NULL)                       # option to specify legend text
 ```
 
 ## *Scenario 8:* vary \(\small\, \rho \)
@@ -667,7 +713,12 @@ knitr::include_graphics(file.path(figDir,"powercontinuous_CoR_Scen11.png"))
 </div>
 <div style="float: right; width: 67%;">
     - `computePower`
-    - `...`
+    - `computeN`
+    - `computenCases`
+    - `plotPowerTrinary`
+    - `plotPowerContinuous`
+    - `plotVEcurveContinuous`
+    - `plotRRcomparison`
 </div>
 
 ##     
