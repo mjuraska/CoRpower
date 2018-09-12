@@ -262,22 +262,21 @@ pwr$VElat2[c(1, 25, 50, 75, 100)]
 ```
 Other components: `risk1_2`, `risk1_0`, `VElat0`, `Plat2`, `Plat0`, `P2`, `P0`, `alphaLat`, `betaLat`, `sens`, `spec`, `FP0`, `FN2`, `rho`, `N`, `nCases`, `nCasesPhase2`, `controlCaseRatio`, `VEoverall`, `alpha`, 
 
-## *Scenario 1:* vary control:case ratio (Approach 1) {.smaller}
-Can store `computePower` output in an .RData file by specifying:
-<br>
-<br>
-<ul>
-  <li> `saveDir`: file directory
-  <li> `saveFile`: file name
-<br>
-Then, use saved output for plotting:
-
+## *Scenario 1:* vary control:case ratio (Approach 1) | Trichotomous \(\small\, S\), without replacement sampling {.smaller}
+### Plotting of power curves
 ```{r, eval=FALSE}
-plotPowerTrinary(dataDir = c("~/Scen1/1", "~/Scen1/K2", "~/Scen1/K3"), # input directories 
-                 dataFile = c("pwr1","pwr2","pwr3"),                   # input files (.RData files)
-                 variableName = "controlCaseRatio",                    # name of varying parameter
-                 variableValues = c(5, 3, 1),                          # values of varying parameter
-                 legendText=NULL)                                      # option to specify legend text
+plotPowerTrinary(outComputePower = list(pwr5to1, pwr3to1, pwr1to1), # output lists from 'computePower'
+                 legendPar = "Control:Case",                        # varying parameter in the legend
+                 legendVal = c("5:1", "3:1", "1:1"))                # values of 'legendPar'
+```
+
+Alternatively,
+```{r, eval=FALSE}
+computePower(..., saveDir = "myDir", saveFile = "myFile.RData")
+plotPowerTrinary(outComputePower = c("myFile1", "myFile2", "myFile3"), # files with 'computePower' output
+                 outDir = rep("~/myDir", 3),                           # path to each myFilex.RData
+                 legendPar = "Control:Case",                           # varying parameter in the legend
+                 legendVal = c("5:1", "3:1", "1:1"))                   # values of 'legendPar'
 ```
 
 ## *Scenario 1:* vary control:case ratio (Approach 1)
