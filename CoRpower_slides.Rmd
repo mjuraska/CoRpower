@@ -33,6 +33,7 @@ figDir <- "T:/vaccine/StephanieWu/CoR Power Package In Progress/Figures"
 - Assume a randomized vaccine vs. placebo/control vaccine efficacy trial
 - $N=$ number of vaccine recipients observed to be at risk at $\tau$
 - $n_{cases}$ ($n_{controls}$) $=$ number of observed cases (controls) between $\tau$ and $\tau_{\mathrm{max}}$, where cases have $\Delta Y = 1$ and controls have $\Delta (1-Y) = 1$
+    - $n_{cases} + n_{controls} \leq N$
 - $n^S_{cases}$ ($n^S_{controls}$) $=$ number of observed cases (controls) between $\tau$ and $\tau_{\mathrm{max}}$ with measured $S$ (or $S^{\ast}$)
 
 <br>
@@ -178,7 +179,7 @@ RR_t = \frac{\sum_{x=0}^2 RR^{lat}_x P(X=x|S=2)}{\sum_{x=0}^2 RR^{lat}_x P(X=x|S
 <li> Simulate $M$ data sets under the true parameter values:
   <ol type="a">
   *Full data*
-  <li> $N_x = N \times P^{lat}_x$
+  <li> $N_x = (n_{controls} + n_{cases}) P^{lat}_x$
   <li> $\left(n_{cases}(0),n_{cases}(1),n_{cases}(2)\right) \sim \mathsf{Mult}(n_{cases},(p_0,p_1,p_2))$, where $p_k=P(X=k|Y=1,Y^{\tau}=0,Z=1)$
   <li> For each of the $N_x$ subjects, generate $S_i$ by a draw from $\mathsf{Mult}(1,(p_0,p_1,p_2))$, where $p_k=P(S=k|X=x)$ </li>
   *Observed data*
@@ -211,6 +212,7 @@ Assuming the standard survival analysis framework,
 
 - $N = N_{rand} \times P(T>\tau, C>\tau \mid Z=1) \approx 4,023$
 - $n_{cases} = N \times P(T\leq \tau_{\mathrm{max}}, T\leq C \mid T>\tau, C>\tau, Z=1) \approx 32$
+- $n_{ontrols} = N \times P(T > \tau_{\mathrm{max}}, C > \tau_{\mathrm{max}} \mid T>\tau, C>\tau, Z=1) \approx 3,585$
 - $n^S_{cases} = n_{cases}$
 - $n^S_{controls} = K n^S_{cases}$
 
@@ -231,7 +233,7 @@ Assuming the standard survival analysis framework,
 ```{r, eval=FALSE}
 library(CoRpower)
 pwr <- computePower(nAtRiskTauCases = 32,                # n_cases
-                    nAtRiskTauControls = 3991,           # n_controls
+                    nAtRiskTauControls = 3585,           # n_controls
                     nAtRiskTauCasesPhase2 = 32,          # n^S_cases
                     controlCaseRatio = 5,                # scalar, i.e., separate calls for 5, 3, 1
                     VEoverall = 0.75,                    # overall VE
@@ -265,9 +267,8 @@ Other components: `risk1_2`, `risk1_0`, `VElat0`, `Plat2`, `Plat0`, `P2`, `P0`, 
 ## *Scenario 1:* vary control:case ratio (Approach 1) | Trichotomous \(\small\, S\), without replacement sampling {.smaller}
 ### Plotting of power curves
 ```{r, eval=FALSE}
-plotPowerTrinary(outComputePower = list(pwr5to1, pwr3to1, pwr1to1), # output lists from 'computePower'
-                 legendPar = "Control:Case",                        # varying parameter in the legend
-                 legendVal = c("5:1", "3:1", "1:1"))                # values of 'legendPar'
+plotPowerTrinary(outComputePower = list(pwr5to1, pwr3to1, pwr1to1),    # output lists from 'computePower'
+                 legendText = paste0("Control:Case = ", c("5:1", "3:1", "1:1")))
 ```
 
 Alternatively,
@@ -275,8 +276,7 @@ Alternatively,
 computePower(..., saveDir = "myDir", saveFile = "myFile.RData")
 plotPowerTrinary(outComputePower = c("myFile1", "myFile2", "myFile3"), # files with 'computePower' output
                  outDir = rep("~/myDir", 3),                           # path to each myFilex.RData
-                 legendPar = "Control:Case",                           # varying parameter in the legend
-                 legendVal = c("5:1", "3:1", "1:1"))                   # values of 'legendPar'
+                 legendText = paste0("Control:Case = ", c("5:1", "3:1", "1:1")))
 ```
 
 ## *Scenario 1:* vary control:case ratio (Approach 1)
@@ -287,7 +287,7 @@ knitr::include_graphics(file.path(figDir,"powertrinary_CoR_Scen1.png"))
 ## *Scenario 2:* vary \(\small\, Sens\) and \(\small\, Spec\) (Approach 1) | Trichotomous \(\small\, S\), without replacement sampling {.smaller}
 ```{r, eval=FALSE}
 pwr <- computePower(nAtRiskTauCases = 32,                # n_cases
-                    nAtRiskTauControls = 3991,           # n_controls
+                    nAtRiskTauControls = 3585,           # n_controls
                     nAtRiskTauCasesPhase2 = 32,          # n^S_cases
                     controlCaseRatio = 5,                # n^S_controls : n^S_cases ratio
                     VEoverall = 0.75,                    # overall VE
@@ -313,7 +313,7 @@ knitr::include_graphics(file.path(figDir,"powertrinary_CoR_Scen3.png"))
 ## *Scenario 3:* vary \(\small\, P^{lat}_0, P^{lat}_2, P_0, P_2\) (Approach 1) | Trichotomous \(\small\, S\), without replacement sampling {.smaller}
 ```{r, eval=FALSE}
 pwr <- computePower(nAtRiskTauCases = 32,                # n_cases
-                    nAtRiskTauControls = 3991,           # n_controls
+                    nAtRiskTauControls = 3585,           # n_controls
                     nAtRiskTauCasesPhase2 = 32,          # n^S_cases
                     controlCaseRatio = 5,                # n^S_controls : n^S_cases ratio
                     VEoverall = 0.75,                    # overall VE
@@ -338,7 +338,7 @@ knitr::include_graphics(file.path(figDir,"powertrinary_CoR_Scen2.png"))
 ## *Scenario 4:* vary \(\small\, \rho \) (Approach 2) | Trichotomous \(\small\, S\), without replacement sampling {.smaller}
 ```{r, eval=FALSE}
 pwr <- computePower(nAtRiskTauCases = 32,                # n_cases
-                    nAtRiskTauControls = 3991,           # n_controls
+                    nAtRiskTauControls = 3585,           # n_controls
                     nAtRiskTauCasesPhase2 = 32,          # n^S_cases
                     controlCaseRatio = 5,                # n^S_controls : n^S_cases ratio
                     VEoverall = 0.75,                    # overall VE
@@ -383,7 +383,7 @@ knitr::include_graphics(file.path(figDir,"RRcomparison_CoR_Scen5.png"))
 ## *Scenario 5:* vary \(\small\, P^{lat}_0, P_0, P^{lat}_2, P_2 \) (Approach 2) | Trichotomous \(\small\, S\), without replacement sampling {.smaller}
 ```{r, eval=FALSE}
 pwr <- computePower(nAtRiskTauCases = 32,                # n_cases
-                    nAtRiskTauControls = 3991,           # n_controls
+                    nAtRiskTauControls = 3585,           # n_controls
                     nAtRiskTauCasesPhase2 = 32,          # n^S_cases
                     controlCaseRatio = 5,                # n^S_controls : n^S_cases ratio
                     VEoverall = 0.75,                    # overall VE
@@ -414,7 +414,7 @@ knitr::include_graphics(file.path(figDir,"powertrinary_CoR_Scen6.png"))
 ## *Scenario 6:* vary \(\small\, n_{cases}\) (Approach 2) | Trichotomous \(\small\, S\), without replacement sampling {.smaller}
 ```{r, eval=FALSE}
 pwr <- computePower(nAtRiskTauCases = c(25, 32, 35, 40),            # n_cases
-                    nAtRiskTauControls = c(3998, 3991, 3988, 3983), # n_controls
+                    nAtRiskTauControls = c(3998, 3585, 3988, 3983), # n_controls
                     nAtRiskTauCasesPhase2 = c(25, 32, 35, 40),      # n^S_cases
                     controlCaseRatio = 5,                           # n^S_controls : n^S_cases ratio
                     VEoverall = 0.75,                    # overall VE
@@ -459,7 +459,7 @@ P_0 + P_2 &= 1
 ## *Scenario 7:* vary \(\small\, n_{cases}\) (Approach 2) | Binary \(\small\, S\), without replacement sampling {.smaller}
 ```{r, eval=FALSE}
 pwr <- computePower(nAtRiskTauCases = c(25, 32, 35, 40),            # n_cases
-                    nAtRiskTauControls = c(3998, 3991, 3988, 3983), # n_controls
+                    nAtRiskTauControls = c(3998, 3585, 3988, 3983), # n_controls
                     nAtRiskTauCasesPhase2 = c(25, 32, 35, 40),      # n^S_cases
                     controlCaseRatio = 5,                           # n^S_controls : n^S_cases ratio
                     VEoverall = 0.75,                    # overall VE
@@ -551,7 +551,7 @@ knitr::include_graphics(file.path(figDir,"powertrinary_CoR_Scen8.png"))
 ## *Scenario 8:* vary \(\small\, \rho \) | Continuous \(\small\, S^{\ast}\), without replacement sampling {.smaller}
 ```{r, eval=FALSE}
 pwr <- computePower(nAtRiskTauCases = 32,               # n_cases
-                    nAtRiskTauControls = 3991,          # n_controls
+                    nAtRiskTauControls = 3585,          # n_controls
                     nAtRiskTauCasesPhase2 = 32,         # n^S_cases
                     controlCaseRatio = 5,               # n^S_controls : n^S_cases ratio
                     VEoverall = 0.75,                   # overall VE
@@ -612,7 +612,7 @@ knitr::include_graphics(file.path(figDir,"powercontinuous_CoR_Scen9.png"))
 ## *Scenario 9:* vary \(\small\, P_{lowestVE}^{lat} \) | Continuous \(\small\, S^{\ast}\), without replacement sampling {.smaller}
 ```{r, eval=FALSE}
 pwr <- computePower(nAtRiskTauCases = 32,               # n_cases
-                    nAtRiskTauControls = 3991,          # n_controls
+                    nAtRiskTauControls = 3585,          # n_controls
                     nAtRiskTauCasesPhase2 = 32,         # n^S_cases
                     controlCaseRatio = 5,               # n^S_controls : n^S_cases ratio
                     VEoverall = 0.75,                   # overall VE
@@ -657,11 +657,10 @@ Continuous $S^{\ast}$
 ## *Scenario 10:* vary \(\small\, p \) (Approach 1) | Trichotomous \(\small\, S \), Bernoulli sampling {.smaller}
 ```{r, eval=FALSE}
 pwr <- computePower(nAtRiskTauCases = 32,             # n_cases
-                    nAtRiskTauControls = 3991,        # n_controls
+                    nAtRiskTauControls = 3585,        # n_controls
                     nAtRiskTauCasesPhase2 = 32,       # n^S_cases
                     cohort = TRUE,                    # FALSE by default
                     p = 0.01,                         # scalar, ie separate calls for 0.01, 0.02, 0.03, 0.05
-                    pDropout = 0.1,                   # probability of dropout between tau and tau_max
                     VEoverall = 0.75,                 # overall VE
                     risk0 = 0.034,                    # cumulative placebo risk between tau and tau_max 
                     VElat0 = seq(0, VEoverall, len=100), # grid of VE (V/P) among lower protected
@@ -685,11 +684,10 @@ knitr::include_graphics(file.path(figDir,"powertrinary_CoR_Scen4.png"))
 ## *Scenario 11:* vary \(\small\, p \) | Continuous \(\small\, S^{\ast}\), Bernoulli sampling {.smaller}
 ```{r, eval=FALSE}
 pwr <- computePower(nAtRiskTauCases = 32,             # n_cases
-                    nAtRiskTauControls = 3991,        # n_controls
+                    nAtRiskTauControls = 3585,        # n_controls
                     nAtRiskTauCasesPhase2 = 32,       # n^S_cases
                     cohort = TRUE,                    # FALSE by default
                     p = 0.01,                         # scalar, ie separate calls for 0.01, 0.02, 0.03, 0.05
-                    pDropout = 0.1,                   # probability of dropout between tau and tau_max
                     VEoverall = 0.75,                 # overall VE
                     risk0 = 0.034,                    # cumulative placebo risk between tau and tau_max 
                     PlatVElowest = 0.2,               # prevalence of VE_lowest
@@ -711,17 +709,17 @@ knitr::include_graphics(file.path(figDir,"powercontinuous_CoR_Scen11.png"))
 <div style="float: left; width: 33%;">
 </div>
 <div style="float: right; width: 67%;">
-    - `computePower`
-    - `computeN`
-    - `computenCases`
-    - `plotPowerTrinary`
-    - `plotPowerContinuous`
-    - `plotVEcurveContinuous`
-    - `plotRRcomparison`
+- `computeN`
+- `computePower`
+- `plotPowerTrinary`
+- `plotRRgradVE`
+- `plotPowerContinuous`
+- `plotVElatContinuous`
+    
 </div>
 
 ##     
-<br><br><br>
+<br><br>
 <div class="centered">
 R package `CoRpower` soon to appear on CRAN
 <br><br>
@@ -731,7 +729,10 @@ Currently downloadable at:
 https://github.com/smwu/CoRpower
 <br><br>
 
-Implementation of
+Implementation of Gilbert, Janes, Huang (2016, *Stat Med*)
+<br><br>
 
-Gilbert, Janes, Huang (2016, *Stat Med*)
+Code and slide contributions:
+
+Stephanie Wu
 </div>
