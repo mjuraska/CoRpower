@@ -1,10 +1,22 @@
-dataDir <- c("T:/vaccine/StephanieWu/CoR Power Package In Progress/Scenario1/K1", "T:/vaccine/StephanieWu/CoR Power Package In Progress/Scenario1/K2", "T:/vaccine/StephanieWu/CoR Power Package In Progress/Scenario1/K3")
-dataFile <- c("ansScen1", "ansScen1", "ansScen1")
-variableName <- "controlCaseRatio"
-variableValues <- c(5,3,1)
+outDir <- c("T:/vaccine/StephanieWu/CoR Power Package In Progress/Scenario1/K1", "T:/vaccine/StephanieWu/CoR Power Package In Progress/Scenario1/K2", "T:/vaccine/StephanieWu/CoR Power Package In Progress/Scenario1/K3")
+outComputePower <- c("ansScen1", "ansScen1", "ansScen1")
+legendText <- paste0("controls:cases = ", c("5:1","3:1","1:1"))
+plotPowerTrinary(outComputePower, outDir=outDir,legendText = legendText)
 
-plotPowerTrinary <- function(dataDir, dataFile, variableName, variableValues, legendText=NULL) {
-  load(paste0(file.path(dataDir[1], dataFile[1]),".RData"))
+outComputePower <- list(pwr1,pwr2,pwr3)
+plotPowerTrinary(outComputePower=outComputePower, legendText=legendText)
+
+plotPowerTrinary <- function(outComputePower, outDir=NULL, legendText) {
+  if(is.list(outComputePower)) {
+    pwr <- outComputePower[[1]] 
+  } else if(is.character(outComputePower) & is.null(outDir)) {
+    stop("outComputePower is a character vector so outDir needs to be specified")
+  } else if(is.character(outComputePower)) {
+    load(paste0(file.path(outDir[1], outComputePower[1]),".RData"))
+  } else {
+    stop("outComputePower must be of type list or character")
+  }
+  
   power <- pwr$power
   RRt <- pwr$RRt
   VElat0 <- pwr$VElat0
@@ -12,9 +24,13 @@ plotPowerTrinary <- function(dataDir, dataFile, variableName, variableValues, le
   VElat1 <- rep(pwr$VEoverall, length(VElat0))
   alpha <- pwr$alpha
   
-  if(length(dataDir)>1) {
-    for(i in 2:length(dataDir)) {
-      load(paste0(file.path(dataDir[i], dataFile[i]),".RData"))
+  if(length(outComputePower)>1) {
+    for(i in 2:length(outComputePower)) {
+      if(is.list(outComputePower)) {
+        pwr <- outComputePower[[i]]
+      } else {
+        load(paste0(file.path(outDir[i], outComputePower[i]),".RData"))
+      }  
       addPower <- pwr$power
       power <- rbind(power, addPower)
     }
@@ -50,13 +66,6 @@ plotPowerTrinary <- function(dataDir, dataFile, variableName, variableValues, le
   }
   
   abline(h=alpha/2,lty=3)
-  
-  if(is.null(legendText)) {
-    legendText <- character(length(variableValues))
-    for(i in 1:length(variableValues)) {
-      legendText[i] <- paste0(variableName, " = ", variableValues[i])
-    }
-  }
   
   legend(x="topright",legend=legendText, lty=1:ncol(power),col=colors[1:ncol(power)],lwd=2,cex=1.2)
   

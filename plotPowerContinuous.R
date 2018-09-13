@@ -1,20 +1,34 @@
-dataDir <- "T:/vaccine/StephanieWu/CoR Power Package In Progress/Scenario9"
-dataFile <- "ansScen9"
-variableName <- "rho"
-variableValues <- c(1,0.9, 0.7, 0.5)
+outDir <- c("T:/vaccine/StephanieWu/CoR Power Package In Progress/Scenario9")
+outComputePower <- c("ansScen9")
+legendText <- paste0("rho = ", c(1, 0.9, 0.7, 0.5))  # must be specified in the same order as input parameters for computePower function
+plotPowerContinuous(outComputePower, outDir=outDir,legendText = legendText)
 
+outComputePower <- list(pwr)
+plotPowerContinuous(outComputePower=outComputePower, legendText=legendText)
 
-# if varying Plat2 and Plat0, must specify own legendText
-plotPowerContinuous <- function(dataDir, dataFile, variableName, variableValues, legendText=NULL) {
-  load(paste0(file.path(dataDir[1], dataFile[1]),".RData"))
+plotPowerContinuous <- function(outComputePower, outDir=NULL, legendText) {
+  if(is.list(outComputePower)) {
+    pwr <- outComputePower[[1]] 
+  } else if(is.character(outComputePower) & is.null(outDir)) {
+    stop("outComputePower is a character vector so outDir needs to be specified")
+  } else if(is.character(outComputePower)) {
+    load(paste0(file.path(outDir[1], outComputePower[1]),".RData"))
+  } else {
+    stop("outComputePower must be of type list or character")
+  }
+  
   power <- pwr$power
   RRc <- pwr$RRc
   rho <- pwr$rho
   alpha <- pwr$alpha
   
-  if(length(dataDir)>1) {
-    for(i in 2:length(dataDir)) {
-      load(paste0(file.path(dataDir[i], dataFile[i]),".RData"))
+  if(length(outComputePower)>1) {
+    for(i in 2:length(outComputePower)) {
+      if(is.list(outComputePower)) {
+        pwr <- outComputePower[[i]]
+      } else {
+        load(paste0(file.path(outDir[i], outComputePower[i]),".RData"))
+      }  
       addPower <- pwr$power
       power <- rbind(power, addPower)
     }
@@ -36,13 +50,6 @@ plotPowerContinuous <- function(dataDir, dataFile, variableName, variableValues,
   }
   
   abline(h=alpha/2,lty=3)
-  
-  if(is.null(legendText)) {
-    legendText <- character(length(variableValues))
-    for(i in 1:length(variableValues)) {
-      legendText[i] <- paste0(variableName, " = ", variableValues[i])
-    }
-  }
   
   legend(x="topright", legend=legendText, lty=1:ncol(power), col=colors[1:ncol(power)], lwd=2, cex=1.2)
   
