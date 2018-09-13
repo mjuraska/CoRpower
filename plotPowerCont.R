@@ -1,18 +1,25 @@
-outDir <- c("T:/vaccine/StephanieWu/CoR Power Package In Progress/Scenario9")
-outComputePower <- c("ansScen9")
-legendText <- paste0("rho = ", c(1, 0.9, 0.7, 0.5))  # must be specified in the same order as input parameters for computePower function
-plotPowerContinuous(outComputePower, outDir=outDir,legendText = legendText)
+#' @examples
+#' 
+#' outDir <- c("T:/vaccine/StephanieWu/CoR Power Package In Progress/Scenario9")
+#' outComputePower <- c("ansScen9")
+#' legendText <- paste0("rho = ", c(1, 0.9, 0.7, 0.5))  # must be specified in the same order as input parameters for computePower function
+#' plotPowerCont(outComputePower, outDir=outDir,legendText = legendText)
 
-outComputePower <- list(pwr)
-plotPowerContinuous(outComputePower=outComputePower, legendText=legendText)
+#' outComputePower <- pwr
+#' plotPowerCont(outComputePower=outComputePower, legendText=legendText)
 
-plotPowerContinuous <- function(outComputePower, outDir=NULL, legendText) {
-  if(is.list(outComputePower)) {
-    pwr <- outComputePower[[1]] 
-  } else if(is.character(outComputePower) & is.null(outDir)) {
+plotPowerCont <- function(outComputePower, outDir=NULL, legendText) {
+  
+  multiple <- TRUE
+  if(any(sapply(outComputePower, is.list))) {  # check if list of lists
+    pwr <- outComputePower[[1]]  # load first output list
+  } else if(is.list(outComputePower)) {  # check if single list
+    pwr <- outComputePower  
+    multiple <- FALSE
+  } else if(is.character(outComputePower) & is.null(outDir)) {  # check outDir is specified
     stop("outComputePower is a character vector so outDir needs to be specified")
-  } else if(is.character(outComputePower)) {
-    load(paste0(file.path(outDir[1], outComputePower[1]),".RData"))
+  } else if(is.character(outComputePower)) {  # check if character
+    load(paste0(file.path(outDir[1], outComputePower[1]),".RData"))  # load first output list
   } else {
     stop("outComputePower must be of type list or character")
   }
@@ -22,7 +29,7 @@ plotPowerContinuous <- function(outComputePower, outDir=NULL, legendText) {
   rho <- pwr$rho
   alpha <- pwr$alpha
   
-  if(length(outComputePower)>1) {
+  if(multiple==TRUE) {
     for(i in 2:length(outComputePower)) {
       if(is.list(outComputePower)) {
         pwr <- outComputePower[[i]]

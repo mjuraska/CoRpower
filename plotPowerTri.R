@@ -1,18 +1,28 @@
-outDir <- c("T:/vaccine/StephanieWu/CoR Power Package In Progress/Scenario1/K1", "T:/vaccine/StephanieWu/CoR Power Package In Progress/Scenario1/K2", "T:/vaccine/StephanieWu/CoR Power Package In Progress/Scenario1/K3")
-outComputePower <- c("ansScen1", "ansScen1", "ansScen1")
-legendText <- paste0("controls:cases = ", c("5:1","3:1","1:1"))
-plotPowerTrinary(outComputePower, outDir=outDir,legendText = legendText)
+#'
+#'
+#'
+#' @examples
+#'
+#' outDir <- c("T:/vaccine/StephanieWu/CoR Power Package In Progress/Scenario1/K1", "T:/vaccine/StephanieWu/CoR Power Package In Progress/Scenario1/K2", "T:/vaccine/StephanieWu/CoR Power Package In Progress/Scenario1/K3")
+#' outComputePower <- c("ansScen1", "ansScen1", "ansScen1")
+#' legendText <- paste0("controls:cases = ", c("5:1","3:1","1:1"))
+#' plotPowerTri(outComputePower, outDir=outDir,legendText = legendText)
 
-outComputePower <- list(pwr1,pwr2,pwr3)
-plotPowerTrinary(outComputePower=outComputePower, legendText=legendText)
+#' outComputePower <- list(pwr1,pwr2,pwr3)
+#' plotPowerTri(outComputePower=outComputePower, legendText=legendText)
 
-plotPowerTrinary <- function(outComputePower, outDir=NULL, legendText) {
-  if(is.list(outComputePower)) {
-    pwr <- outComputePower[[1]] 
-  } else if(is.character(outComputePower) & is.null(outDir)) {
+plotPowerTri <- function(outComputePower, outDir=NULL, legendText) {
+  
+  multiple <- TRUE
+  if(any(sapply(outComputePower, is.list))) {  # check if list of lists
+    pwr <- outComputePower[[1]]  # load first output list
+  } else if(is.list(outComputePower)) {  # check if single list
+    pwr <- outComputePower  
+    multiple <- FALSE
+  } else if(is.character(outComputePower) & is.null(outDir)) {  # check outDir is specified
     stop("outComputePower is a character vector so outDir needs to be specified")
-  } else if(is.character(outComputePower)) {
-    load(paste0(file.path(outDir[1], outComputePower[1]),".RData"))
+  } else if(is.character(outComputePower)) {  # check if character
+    load(paste0(file.path(outDir[1], outComputePower[1]),".RData"))  # load first output list
   } else {
     stop("outComputePower must be of type list or character")
   }
@@ -24,7 +34,7 @@ plotPowerTrinary <- function(outComputePower, outDir=NULL, legendText) {
   VElat1 <- rep(pwr$VEoverall, length(VElat0))
   alpha <- pwr$alpha
   
-  if(length(outComputePower)>1) {
+  if(multiple==TRUE) {
     for(i in 2:length(outComputePower)) {
       if(is.list(outComputePower)) {
         pwr <- outComputePower[[i]]

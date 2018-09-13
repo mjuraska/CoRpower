@@ -1236,6 +1236,7 @@ computePower <- function(nCases, nControls, nCasesWithS,
   pwr$alpha <- alpha
   pwr$rho <- rho
   pwr$controlCaseRatio <- controlCaseRatio
+  pwr$risk0 <- risk0
   write(Ncomplete,file="sampsizeALL.dat")
   write(nCases,file="numbeventsALL.dat")
   write(nCasesWithS,file="numbeventsPhase2.dat")

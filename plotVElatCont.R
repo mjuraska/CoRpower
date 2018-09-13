@@ -1,19 +1,21 @@
-outDir <- "T:/vaccine/StephanieWu/CoR Power Package In Progress/Scenario9"  
-outComputePower <- "ansScen9"
-risk0 <- 0.034
-plotVElatContinuous(outComputePower, outDir=outDir, risk0 = risk0)
+#' @examples
+#' 
+#' outDir <- "T:/vaccine/StephanieWu/CoR Power Package In Progress/Scenario9"  
+#' outComputePower <- "ansScen9"
+#' plotVElatCont(outComputePower=outComputePower, outDir=outDir)
+#' 
+#' outComputePower <- pwr
+#' plotVElatCont(outComputePower = outComputePower)
 
-outComputePower <- list(pwr)
-plotVElatContinuous(outComputePower = outComputePower, risk0 = risk0)
-
-# outComputePower must be of length 1
+# outComputePower must be 1 list
 # outDir must be of length 1
 # rho = 1
 # legend is determined by function
-plotVElatContinuous <- function(outComputePower, outDir=NULL, risk0, legendText) {
-  
-  if(is.list(outComputePower)) {
-    pwr <- outComputePower[[1]] 
+plotVElatCont <- function(outComputePower, outDir=NULL) {
+  if(any(sapply(outComputePower, is.list)) | length(outDir)>1) {
+    stop("outComputePower must be a single list, not a list of lists, and outDir must be of length 1")
+  } else if(is.list(outComputePower)) {
+    pwr <- outComputePower
   } else if(is.character(outComputePower) & is.null(outDir)) {
     stop("outComputePower is a character vector so outDir needs to be specified")
   } else if(is.character(outComputePower)) {
@@ -31,6 +33,7 @@ plotVElatContinuous <- function(outComputePower, outDir=NULL, risk0, legendText)
   VEoverall <- pwr$VEoverall
   betaLat <- pwr$betaLat
   alphaLat <- pwr$alphaLat
+  risk0 <- pwr$risk0
   
   rho <- 1
   nu <- sqrt(rho*sigma2obs)*qnorm(PlatVElowest)

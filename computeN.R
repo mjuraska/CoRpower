@@ -1,55 +1,53 @@
-#' Sample size calculations for assessing biomarkers as correlates of risk (CoRs) accounting for measurement
-#' error and treatment efficacy
+#' Sample size calculations for assessing biomarkers as correlates of risk (CoRs) 
 #'
-#' Performs sample size/power calculations for assessing biomarkers as correlates of risk (CoRs) accounting for measurement error and treatment efficacy [Gilbert, Janes, and Huang (2015).
-#'
-#' @param tau Month at which immune responses are measured (beginning of follow-up for the endpoint)
-#' @param taumax Month at which follow-up for the endpoint ends
-#' @param VEoverall Overal cumulative VE between month tau and month taumax
-#' @param NvEnrolled Number enrolled in the subunit vaccine group
-#' @param risk0 Cumulative failure rate in the hypothetical placebo arm between Month tau and taumax
-#' @param dropOutRate Cumulative dropout rate between month 0 and taumax
-#' @param fracImmunog Fraction of enrolled cases selected for the immunogenicity subset
+#' Calculates projected sample sizes at design stage of trial assessing biomarkers as correlates of risk (CoRs) [Gilbert, Janes, and Huang (2015).
+#' 
+#' @param Nrand Number of participants randomized to vaccine arm
+#' @param tau Biomarker sampling timepoint
+#' @param taumax End of follow-up time period
+#' @param VEtauToTaumax VE between 'tau' and 'taumax'
+#' @param VE0toTau VE between 0 and 'tau'
+#' @param risk0 Placebo-group endpoint risk between 'tau' and 'taumax'
+#' @param dropoutRisk Dropout risk between 0 and 'taumax'
+#' @param propCasesWithS Proportion of cases with measured S
 #' 
 #' @details
-#' This function performs simulations to calculate the power for testing whether a trichotomous or continuous biomarker
-#' is a correlate of risk (CoR).
+#' This function calculates projected sample sizes and accounts for dropout and incomplete sample storage. 
 #'
 #' @return List with the following elements: 
-#'   N - the number of subjects in the vaccine group at risk at month tau
-#'   nCases (nCases in manuscript): Number of subjects in the vaccine group at-risk at tau with the clinical event (cases) by taumax.
-#    nControls (nControls in manusript): Number of subjects in the vaccine group at-risk at tau without the clinical event (controls) by taumax.
-#    nCasesWithS (nCasesPhase2): Number of subjects in the vaccine group at-risk at tau with the clinical event (cases) by taumax and with the biomarker measured
+#'   N: the number of subjects in the vaccine group at risk at month tau
+#'   nCases: Number of subjects in the vaccine group at-risk at tau with the clinical event (cases) by taumax.
+#    nControls: Number of subjects in the vaccine group at-risk at tau without the clinical event (controls) by taumax.
+#    nCasesWithS: Number of subjects in the vaccine group at-risk at tau with the clinical event (cases) by taumax and with the biomarker measured
 #'     
 #'
 #' @examples
-#' tau <- 3.5
-#' taumax <- 24
-#' VEoverall <- 0.75
-#' NvEnrolled <- 4100
-#' risk0 <- 0.034
-#' dropOutRate <- 0.1
-#' fracImmunog <- 1.0
-#' computeN(tau, taumax, VEoverall, NvEnrolled, risk0, dropOutRate, fracImmunog)
+#' Nrand = 4100,          
+#' tau = 3.5,             
+#' taumax = 24,           
+#' VEtauToTaumax = 0.75, 
+#' VE0toTau = 0.75/2,    
+#' risk0 = 0.034,         
+#' dropoutRisk = 0.1,     
+#' propCasesWithS = 1)    
+#' computeN(Nrand, tau, taumax, VEtauToTaumax, VE0toTau, risk0, dropoutRisk, propCasesWithS
 #' 
 #'
 #' @import survival
 #' @import osDesign
 #' @export
-computeN <- function(tau, taumax, VEoverall, NvEnrolled, risk0, dropOutRate, fracImmunog) {
+computeN <- function(Nrand, tau, taumax, VEtauToTaumax, VE0toTau, risk0, dropoutRisk, propCasesWithS) {
   
   # With T the failure time, C the censoring time, X = min(T,C), and 
   # Z vaccination status (vaccine or hypothetical placebo), we have
   # RRoverall = P(tau < T <= taumax|Z=1)/P(tau < T <= taumax|Z=0) 
-  RRoverall <- 1 - VEoverall
+  RRoverall <- 1 - VEtauToTaumax
   
   # Cumulative failure rate in the hypothetical placebo arm between Month 0 and 24:
   risk0Mo0toTaumax <- risk0*(1 + tau/taumax)
   
   # Specify VE in the early period between enrollment and time tau 
-  # Specify it half way between 0 and VEoverall:
-  VEoverall0toTau <- VEoverall/2
-  RRoverall0toTau <- 1 - VEoverall0toTau  
+  RRoverall0toTau <- 1 - VE0toTau
   
   # Use the following assumptions:
   # 1. The failure time T and the censoring time C are independent.
@@ -60,13 +58,13 @@ computeN <- function(tau, taumax, VEoverall, NvEnrolled, risk0, dropOutRate, fra
   
   # Calculate thetat and thetac on a monthly time-scale:
   thetat <- -log(1-risk0Mo0toTaumax)/taumax
-  thetac <- -log(1-dropOutRate)/taumax
+  thetac <- -log(1-dropoutRisk)/taumax
   
   # Calculate the number of subjects in the vaccine group at risk at month tau  
   # Logic: = Number enrolled * P(X > tau|Z=1)
-  #        =    NvEnrolled   * [1-RRoverall0totau*P(T <= tau|Z=0)]*P(C > tau)
-  #        =    NvEnrolled   * [1-RRoverall0totau*(1-exp(-thetat*tau))]*exp(-thetac*tau)
-  N <- NvEnrolled*(1-RRoverall0toTau*pexp(tau,thetat))*(1-pexp(tau,thetac))
+  #        =    Nrand   * [1-RRoverall0totau*P(T <= tau|Z=0)]*P(C > tau)
+  #        =    Nrand   * [1-RRoverall0totau*(1-exp(-thetat*tau))]*exp(-thetac*tau)
+  N <- Nrand*(1-RRoverall0toTau*pexp(tau,thetat))*(1-pexp(tau,thetac))
   # where pexp(t,theta) is the cumulative distribution function of an exponential random
   # variable with rate parameter theta.
   
@@ -108,14 +106,14 @@ computeN <- function(tau, taumax, VEoverall, NvEnrolled, risk0, dropOutRate, fra
   # Number of subjects in the vaccine group at-risk at tau without the clinical event (controls) by taumax.
   # Calculated the same as for term3 except using taumax instead of tau
   # nControls is notation in the paper. nControls is notation used in R program computepower
-  nControls <- round(NvEnrolled*(1-RRoverall*pexp(taumax,thetat))*(1-pexp(taumax,thetac)))
+  nControls <- round(Nrand*(1-RRoverall*pexp(taumax,thetat))*(1-pexp(taumax,thetac)))
   
   # Number of subjects in the vaccine group at-risk at tau with the clinical event (cases) by taumax 
   # and with the biomarker measured (i.e., in Phase 2).
   # nCasesWithS is notation used in R program computepower
-  nCasesWithS <- round(fracImmunog*nCases)
+  nCasesWithS <- round(propCasesWithS*nCases)
   
-  return(list(N = N, nCases = nCases, nControls = nControls, nCasesWithS = nCasesWithS))
+  return(list(N = round(N), nCases = nCases, nControls = nControls, nCasesWithS = nCasesWithS))
 }
 
 

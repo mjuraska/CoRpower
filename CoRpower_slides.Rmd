@@ -282,7 +282,7 @@ pwr$power[1, c(1, 25, 50, 75, 100)]
 pwr$RRt[1, c(1, 25, 50, 75, 100)]
 pwr$VElat2[c(1, 25, 50, 75, 100)]
 ```
-Other components: `risk1_2`, `risk1_0`, `VElat0`, `Plat2`, `Plat0`, `P2`, `P0`, `alphaLat`, `betaLat`, `sens`, `spec`, `FP0`, `FN2`, `rho`, `N`, `nCases`, `nCasesPhase2`, `controlCaseRatio`, `VEoverall`, `alpha`, 
+Other components: `risk1_2`, `risk1_0`, `VElat0`, `Plat2`, `Plat0`, `P2`, `P0`, `alphaLat`, `betaLat`, `sens`, `spec`, `FP0`, `FN2`, `rho`, `N`, `nCases`, `nCasesPhase2`, `controlCaseRatio`, `VEoverall`, `risk0`, `alpha`, 
 
 ## *Scenario 1:* vary control:case ratio (Approach 1)
 ```{r, echo=FALSE, fig.align='center', out.width='65%'}
@@ -292,16 +292,16 @@ knitr::include_graphics(file.path(figDir,"powertrinary_CoR_Scen1.png"))
 ## *Scenario 1:* vary control:case ratio (Approach 1) | Trichotomous \(\small\, S\), without replacement sampling {.smaller}
 ### Plotting of power curves
 ```{r, eval=FALSE}
-plotPowerTrinary(outComputePower = list(pwr5to1, pwr3to1, pwr1to1),    # output lists from 'computePower'
-                 legendText = paste0("Control:Case = ", c("5:1", "3:1", "1:1")))
+plotPowerTri(outComputePower = list(pwr5to1, pwr3to1, pwr1to1),    # output lists from 'computePower'
+             legendText = paste0("Control:Case = ", c("5:1", "3:1", "1:1")))
 ```
 
 Alternatively,
 ```{r, eval=FALSE}
 computePower(..., saveDir = "myDir", saveFile = "myFile.RData")
-plotPowerTrinary(outComputePower = c("myFile1", "myFile2", "myFile3"), # files with 'computePower' output
-                 outDir = rep("~/myDir", 3),                           # path to each myFilex.RData
-                 legendText = paste0("Control:Case = ", c("5:1", "3:1", "1:1")))
+plotPowerTri(outComputePower = c("myFile1", "myFile2", "myFile3"), # files with 'computePower' output
+             outDir = rep("~/myDir", 3),                           # path to each myFilex.RData
+             legendText = paste0("Control:Case = ", c("5:1", "3:1", "1:1")))
 ```
 
 ## *Scenario 2:* vary \(\small\, Sens\) and \(\small\, Spec\) (Approach 1) | Trichotomous \(\small\, S\), without replacement sampling {.smaller}
@@ -440,7 +440,7 @@ knitr::include_graphics(file.path(figDir,"powertrinary_CoR_Scen6.png"))
 ## *Scenario 6:* vary \(\small\, n_{cases}\) (Approach 2) | Trichotomous \(\small\, S\), without replacement sampling {.smaller}
 ```{r, eval=FALSE}
 pwr <- computePower(nCases = c(25, 32, 35, 40),             
-                    nControls = c(3998, 3654, 3988, 3983),  
+                    nControls = c(3661, 3654, 3651, 3646),  
                     nCasesWithS = c(25, 32, 35, 40),       
                     controlCaseRatio = 5,                # n^S_controls : n^S_cases ratio
                     VEoverall = 0.75,                    # overall VE
@@ -485,7 +485,7 @@ P_0 + P_2 &= 1
 ## *Scenario 7:* vary \(\small\, n_{cases}\) (Approach 2) | Binary \(\small\, S\), without replacement sampling {.smaller}
 ```{r, eval=FALSE}
 pwr <- computePower(nCases = c(25, 32, 35, 40),             
-                    nControls = c(3998, 3654, 3988, 3983),  
+                    nControls = c(3661, 3654, 3651, 3646),  
                     nCasesWithS = c(25, 32, 35, 40),       
                     controlCaseRatio = 5,                # n^S_controls : n^S_cases ratio
                     VEoverall = 0.75,                    # overall VE
@@ -604,7 +604,7 @@ pwr$RRc[c(1, 25, 50, 75, 100)]
 pwr$VElowest[c(1, 25, 50, 75, 100)]
 ```
 
-Other components: `betaLat`, `alphaLat`, `PlatVElowest`, `N`, `nCases`, `nCasesPhase2`, `controlCaseRatio`, `VEoverall`, `alpha`, `rho`,
+Other components: `betaLat`, `alphaLat`, `PlatVElowest`, `N`, `nCases`, `nCasesPhase2`, `controlCaseRatio`, `VEoverall`, `risk0`, `alpha`, `rho`,
 
 ## *Scenario 8:* vary \(\small\, \rho \) | Continuous \(\small\, S^{\ast}\), without replacement sampling
 ```{r, echo=FALSE, fig.align='center', out.width='65%'}
@@ -614,18 +614,14 @@ knitr::include_graphics(file.path(figDir,"plotVEcurveCoRcontinuous_Scen9.png"))
 ## *Scenario 8:* vary \(\small\, \rho \) | Continuous \(\small\, S^{\ast}\), without replacement sampling {.smaller}
 ### Plotting of $VE^{lat}_{x^{\ast}}$ curves
 ```{r, eval=FALSE}
-plotVElatContinuous(outComputePower = list(pwr),  # output list from 'computePower'
-                    risk0 = 0.034,                # cumulative placebo risk between tau and tau_max
-                    legendText = paste0("rho = ", c(1, 0.9, 0.7, 0.5)))
+plotVElatCont(outComputePower = pwr)  # output list from 'computePower'
 ```
 
 Alternatively,
 ```{r, eval=FALSE}
 computePower(..., saveDir = "myDir", saveFile = "myFile.RData")
-plotVElatContinuous(outComputePower = "myFile",   # file with 'computePower' output
-                    outDir = "~/myDir",           # path to myFile.RData
-                    risk0 = 0.034,                # cumulative placebo risk between tau and tau_max
-                    legendText = paste0("rho = ", c(1, 0.9, 0.7, 0.5)))
+plotVElatCont(outComputePower = "myFile",   # file with 'computePower' output
+              outDir = "~/myDir")           # path to myFile.RData
 ```
 
 ## *Scenario 8:* vary \(\small\, \rho \)
@@ -636,16 +632,16 @@ knitr::include_graphics(file.path(figDir,"powercontinuous_CoR_Scen9.png"))
 ## *Scenario 8:* vary \(\small\, \rho \) {.smaller}
 ### Plotting of power curves
 ```{r, eval=FALSE}
-plotPowerContinuous(outComputePower = pwr,          # output list from 'computePower'
-                    legendText = paste0("rho = ", c(1, 0.9, 0.7, 0.5)))
+plotPowerCont(outComputePower = pwr,          # output list from 'computePower'
+              legendText = paste0("rho = ", c(1, 0.9, 0.7, 0.5)))
 ```
 
 Alternatively,
 ```{r, eval=FALSE}
 computePower(..., saveDir = "myDir", saveFile = "myFile.RData")
-plotPowerContinuous(outComputePower = "myFile",     # file with 'computePower' output
-                    outDir = "~/myDir",             # path to myFile.RData
-                    legendText = paste0("rho = ", c(1, 0.9, 0.7, 0.5)))
+plotPowerCont(outComputePower = "myFile",     # file with 'computePower' output
+              outDir = "~/myDir",             # path to myFile.RData
+              legendText = paste0("rho = ", c(1, 0.9, 0.7, 0.5)))
 ```
 
 ## *Scenario 9:* vary \(\small\, P_{lowestVE}^{lat} \) | Continuous \(\small\, S^{\ast}\), without replacement sampling {.smaller}
@@ -750,10 +746,10 @@ knitr::include_graphics(file.path(figDir,"powercontinuous_CoR_Scen11.png"))
 <div style="float: right; width: 67%;">
 - `computeN`
 - `computePower`
-- `plotPowerTrinary`
+- `plotPowerTri`
 - `plotRRgradVE`
-- `plotPowerContinuous`
-- `plotVElatContinuous`
+- `plotPowerCont`
+- `plotVElatCont`
     
 </div>
 
