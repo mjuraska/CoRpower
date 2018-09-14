@@ -170,7 +170,7 @@ RR_t \quad \textrm{vs.} \quad RR^{lat}_2\big/ RR^{lat}_0,
 \]
 where
 \[
-RR_t = \frac{\sum_{x=0}^2 RR^{lat}_x P(X=x|S=2)}{\sum_{x=0}^2 RR^{lat}_x P(X=x|S=0)}
+RR_t := \frac{risk_1(2)}{risk_1(0)} = \frac{\sum_{x=0}^2 RR^{lat}_x P(X=x|S=2)}{\sum_{x=0}^2 RR^{lat}_x P(X=x|S=0)}
 \]
 - For $\rho < 1$, $RR_t$ closer to 1 than $RR^{lat}_2\big/ RR^{lat}_0$
 
@@ -205,16 +205,57 @@ RR_t = \frac{\sum_{x=0}^2 RR^{lat}_x P(X=x|S=2)}{\sum_{x=0}^2 RR^{lat}_x P(X=x|S
 - Samples for measurement of $S$ at $\tau=$ 3.5 months stored in all vaccine recipients
 - Cumulative endpoint rate between $\tau$ and $\tau_{\mathrm{max}}$ in placebo group $=3.4\%$ $(=risk_0)$
 - $VE_{\tau-\tau_{\mathrm{max}}}=75\%$, $\quad VE_{0-\tau}=VE_{\tau-\tau_{\mathrm{max}}}/2$
-- Cumulative dropout rate between 0 and $\tau_{\mathrm{max}}=10\%$
+- Cumulative dropout rate between 0 and $\tau_{\mathrm{max}}$ in both groups $=10\%$
 
 ## Illustration: calculation of input parameters
-Assuming the standard survival analysis framework,
+### Assumptions
+<br><br>
+<ol type="i">
+<li> Failure time $T$ and censoring time $C$ are independent
+<li> $T\mid Z=0 \sim \mathsf{Exp}(\lambda_T)$ and $C\mid Z=0 \sim \mathsf{Exp}(\lambda_C)$
+<li> $RR_{\tau-\tau_{\mathrm{max}}} = \frac{P(\tau < T \leq t\mid Z=1)}{P(\tau < T \leq t\mid Z=0)}$ for all $t \in (\tau,\tau_{\mathrm{max}}]$
+</ol>
 
-- $N = N_{rand} \times P(T>\tau, C>\tau \mid Z=1) \approx 4,023$
-- $n_{cases} = N \times P(T\leq \tau_{\mathrm{max}}, T\leq C \mid T>\tau, C>\tau, Z=1) \approx 32$
-- $n_{ontrols} = N \times P(T > \tau_{\mathrm{max}}, C > \tau_{\mathrm{max}} \mid T>\tau, C>\tau, Z=1) \approx 3,654$
-- $n^S_{cases} = n_{cases}$
-- $n^S_{controls} = K n^S_{cases}$
+## Illustration: calculation of input parameters
+Number of vaccine recipients observed to be at risk at $\tau$
+\[
+\begin{align}
+N &= N_{rand}\, P(T>\tau, C>\tau \mid Z=1)\\
+&= N_{rand}\, P(T>\tau \mid Z=1)\, P(C>\tau \mid Z=1)\\
+&= N_{rand}\, \{1 - RR_{0-\tau}\, P(T \leq \tau \mid Z=0)\}\, P(C>\tau \mid Z=1)\\
+&\approx 4,023
+\end{align}
+\]
+
+## Illustration: calculation of input parameters
+Number of observed cases between $\tau$ and $\tau_{\mathrm{max}}$
+\[
+\begin{align}
+n_{cases} &= N\, P(T\leq \tau_{\mathrm{max}}, T\leq C \mid T>\tau, C>\tau, Z=1)\\
+&= N\, P(T\leq \min(C,\tau_{\mathrm{max}}) \mid T>\tau, C>\tau, Z=1)\\
+&= N\, \frac{\int_{\tau}^{\infty}P(\tau < T \leq \min(c,\tau_{\mathrm{max}})\mid Z=1)f_C(c)\mathop{\mathrm{d}}\!c}{P(T>\tau, C>\tau \mid Z=1)}\\
+&= N\, \bigg\{\int_{\tau}^{\tau_{\mathrm{max}}}P(\tau < T \leq c\mid Z=1)f_C(c)\mathop{\mathrm{d}}\!c +\\ 
+&\quad+ P(\tau < T \leq \tau_{\mathrm{max}}\mid Z=1)\, P(C>\tau_{\mathrm{max}})\bigg\}\Big/ \\ 
+&\quad\Big/ P(T>\tau, C>\tau \mid Z=1)\\
+&\approx 32
+\end{align}
+\]
+
+## Illustration: calculation of input parameters
+Number of observed controls between $\tau$ and $\tau_{\mathrm{max}}$
+\[
+\begin{align}
+n_{controls} &= N \, P(T > \tau_{\mathrm{max}}, C > \tau_{\mathrm{max}} \mid T>\tau, C>\tau, Z=1)\\
+&\approx 3,654
+\end{align}
+\]
+Number of observed cases (controls) between $\tau$ and $\tau_{\mathrm{max}}$ with measured $S$
+\[
+\begin{align}
+n^S_{cases} &= n_{cases}\\
+n^S_{controls} &= K n^S_{cases}
+\end{align}
+\]
 
 ## Illustration: calculation of input parameters {.smaller}
 ```{r, include=FALSE}
@@ -233,7 +274,7 @@ computeN(Nrand = 4100,          # participants randomized to vaccine arm
          VE0toTau = 0.75/2,     # VE between 0 and 'tau'
          risk0 = 0.034,         # placebo-group endpoint risk between 'tau' and 'taumax'
          dropoutRisk = 0.1,     # dropout risk between 0 and 'taumax'
-         propCasesWithS = 1)    # proportion of cases with measured S
+         propCasesWithS = 1)    # proportion of observed cases with measured S
 ```
 
 ## Illustration: `CoRpower` for trichotomous \(\, S\) | Without replacement sampling
@@ -677,7 +718,9 @@ knitr::include_graphics(file.path(figDir,"powercontinuous_CoR_Scen10.png"))
     - all cases with $Y^{\tau}=0$
 - Implications:
     - $n_{cases} = n^S_{cases}$
-    - $n^S_{controls}$ replaced by $p$, i.e., the number of controls sampled into the subcohort for measurement of $S$ (or $S^{\ast}$) is a random variable
+    - $n^S_{controls}$ replaced by $p$
+    
+    $\Rightarrow$ unlike in case-controls designs, the number of controls sampled into the subcohort for measurement of $S$ (or $S^{\ast}$) is a random variable
 
 ## Illustration: `CoRpower` for trichotomous \(\, S\) and continuous \(\, S^{\ast}\) | Bernoulli sampling
 Trichotomous $S$ (Approach 1)
