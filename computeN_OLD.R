@@ -40,7 +40,7 @@ computeN <- function(Nrand, tau, taumax, VEtauToTaumax, VE0toTau, risk0, dropout
   
   # With T the failure time, C the censoring time, X = min(T,C), and 
   # Z vaccination status (vaccine or hypothetical placebo), we have
-  # RRoverall = P(T <= taumax|T > tau, Z=1)/P(T <= taumax|T > tau, Z=0) 
+  # RRoverall = P(tau < T <= taumax|Z=1)/P(tau < T <= taumax|Z=0) 
   RRoverall <- 1 - VEtauToTaumax
   
   # Cumulative failure rate in the hypothetical placebo arm between Month 0 and 24:
@@ -93,10 +93,10 @@ computeN <- function(Nrand, tau, taumax, VEtauToTaumax, VE0toTau, risk0, dropout
   #              = [1-RRoverall0toTau*pexp(tau,thetat)][1-pexp(tau,thetac)].
   
   # Putting it together
-  term1 <- RRoverall*(1-RRoverall0toTau*pexp(tau, thetat))*((pexp(taumax,thetac)-pexp(tau,thetac))
-                      - (thetac/((thetac+thetat)*exp(-thetat*tau)))*(pexp(taumax,thetac+thetat)-pexp(tau,thetac+thetat)))
+  term1 <- RRoverall*(exp(-thetat*tau)*(pexp(taumax,thetac)-pexp(tau,thetac))
+                      - (thetac/(thetac+thetat))*(pexp(taumax,thetac+thetat)-pexp(tau,thetac+thetat)))
   
-  term2 <- RRoverall*(1-RRoverall0toTau*pexp(tau, thetat))*((pexp(taumax,thetat)-pexp(tau,thetat))/exp(-thetat*tau))*(1-pexp(taumax,thetac))
+  term2 <- RRoverall*(pexp(taumax,thetat)-pexp(tau,thetat))*(1-pexp(taumax,thetac))
   term3 <- (1-RRoverall0toTau*pexp(tau,thetat))*(1-pexp(tau,thetac))
   
   # Number of subjects in the vaccine group at-risk at tau with the clinical event (cases) by taumax.
