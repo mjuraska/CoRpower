@@ -213,7 +213,7 @@ RR_t := \frac{risk_1(2)}{risk_1(0)} = \frac{\sum_{x=0}^2 RR^{lat}_x P(X=x|S=2)}{
 <ol type="i">
 <li> Failure time $T$ and censoring time $C$ are independent
 <li> $T\mid Z=0 \sim \mathsf{Exp}(\lambda_T)$ and $C\mid Z=0 \sim \mathsf{Exp}(\lambda_C)$
-<li> $RR_{\tau-\tau_{\mathrm{max}}} = \frac{P(\tau < T \leq t\mid Z=1)}{P(\tau < T \leq t\mid Z=0)}$ for all $t \in (\tau,\tau_{\mathrm{max}}]$
+<li> $RR_{\tau-\tau_{\mathrm{max}}} := \frac{P(T \leq \tau_{\mathrm{max}} \mid T>\tau, Z=1)}{P(T \leq \tau_{\mathrm{max}} \mid T>\tau, Z=0)} = \frac{P(T \leq t\mid T>\tau, Z=1)}{P(T \leq t\mid T>\tau, Z=0)}$ for all $t \in (\tau,\tau_{\mathrm{max}}]$
 </ol>
 
 ## Illustration: calculation of input parameters
@@ -718,9 +718,7 @@ knitr::include_graphics(file.path(figDir,"powercontinuous_CoR_Scen10.png"))
     - all cases with $Y^{\tau}=0$
 - Implications:
     - $n_{cases} = n^S_{cases}$
-    - $n^S_{controls}$ replaced by $p$
-    
-    $\Rightarrow$ unlike in case-controls designs, the number of controls sampled into the subcohort for measurement of $S$ (or $S^{\ast}$) is a random variable
+    - design parameter $n^S_{controls}$ replaced by probability $p$ because $n^S_{controls}$ is a random variable in case-cohort designs
 
 ## Illustration: `CoRpower` for trichotomous \(\, S\) and continuous \(\, S^{\ast}\) | Bernoulli sampling
 Trichotomous $S$ (Approach 1)
