@@ -1,0 +1,14 @@
+Package: CoRpower
+Type: Package
+Title: Computes CoR power and sample size calculations
+Version: 1.0
+Date: 2015-10-07
+Author: Peter Gilbert, Holly Janes, Yunda Huang
+Maintainer: Holly Janes <hjanes@fredhutch.org>
+Description: Computes correlate of risk (CoR) power and sample size calculations as described in Gilbert, Janes, and Huang (2015). Plotting functions are provided for visualizing results.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Imports: survival, osDesign
+RoxygenNote: 6.1.0
+NeedsCompilation: no
+Packaged: 2018-07-10 06:13:01 UTC; yunda

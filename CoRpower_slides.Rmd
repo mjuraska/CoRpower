@@ -259,7 +259,7 @@ n^S_{controls} &= K n^S_{cases}
 
 ## Illustration: calculation of input parameters {.smaller}
 ```{r, include=FALSE}
-source("T:/vaccine/StephanieWu/CoR Power Package In Progress/CoRpower/computeN.R")
+source("T:/vaccine/StephanieWu/CoR Power Package In Progress/CoRpower/CoRpower/R/computeN.R")
 ```
 
 ```{r, eval=FALSE}
