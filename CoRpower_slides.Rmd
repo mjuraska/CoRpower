@@ -226,6 +226,10 @@ N &= N_{rand}\, P(T>\tau, C>\tau \mid Z=1)\\
 &\approx 4,023
 \end{align}
 \]
+where
+\[
+RR_{0-\tau} := \frac{P(T \leq \tau \mid Z=1)}{P(T \leq \tau \mid Z=0)}
+\]
 
 ## Illustration: calculation of input parameters
 Number of observed cases between $\tau$ and $\tau_{\mathrm{max}}$
@@ -796,7 +800,7 @@ knitr::include_graphics(file.path(figDir,"powercontinuous_CoR_Scen11.png"))
 ##     
 <br><br>
 <div class="centered">
-R package `CoRpower` soon to appear on CRAN
+R package `CoRpower` to be submitted to CRAN this week
 <br><br>
 
 Currently downloadable at:
