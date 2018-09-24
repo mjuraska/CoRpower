@@ -7,7 +7,7 @@
 plotVElatCont(outComputePower, outDir = NULL)
 }
 \arguments{
-\item{outComputePower}{List containing output from \code{\link{computePower}}, or character string specifying the file containing \code{\link{computePower}} output. Must be a one list or character string.}
+\item{outComputePower}{List containing output from \code{\link{computePower}}, or character string specifying the file containing \code{\link{computePower}} output. Must be one list or character string.}
 
 \item{outDir}{Character string specifying path to output file, necessary if \code{outComputePower} is a character string. Default is \code{NULL}. Must be one character string; cannot take a character vector.}
 }

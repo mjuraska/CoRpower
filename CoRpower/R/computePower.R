@@ -90,19 +90,6 @@
 
 # Determined from the above fixed values: P^{lat}_{1}, VE^{lat}_{2}
 
-# This program considers the scenario RRlat1 = RRoverall, which yields the formula
-# VEoverall = (Plat0*VElat0 + Plat2*VElat2)/(Plat0 + Plat2)
-# For fixed values of Plat0 and Plat2, this links VElat0 to VElat2 by the
-# formula VElat2 = (VEoverall*(Plat0+Plat2) - Plat0*VElat0)/Plat2, which
-# is used in the computePower() function
-#
-# Following Step 7 in the article, the program for a trichotomous marker accounts for assay noise in one of two ways.
-# The first approach specifies spec, sens, FP0, FN2 which determine FP1 and FN1 from equations (8) and (9). spec, sens,
-# FP0, and FN2 must all be vectors of the same length.
-#
-# The second approach specifies sigma2obs and rho; this approach assumes the normal measurement error model (4) in the article.
-# specifying spec=NULL, FP0=NULL, sens=NULL, FN2=NULL defaults to approach 2, which is used in the manuscript.
-
 # Output: Power
 
 

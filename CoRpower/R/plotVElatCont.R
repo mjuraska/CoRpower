@@ -4,7 +4,7 @@
 #' in vaccine recipients and the lowest vaccine efficacy level for the true biomarker, \eqn{VE_lowest}.
 #' All curves assume \eqn{\rho=1}, and VE ranges from 0 to 1. The legend is completely determined by the function.
 #'
-#' @param outComputePower List containing output from \code{\link{computePower}}, or character string specifying the file containing \code{\link{computePower}} output. Must be a one list or character string.
+#' @param outComputePower List containing output from \code{\link{computePower}}, or character string specifying the file containing \code{\link{computePower}} output. Must be one list or character string.
 #' @param outDir Character string specifying path to output file, necessary if \code{outComputePower} is a character string. Default is \code{NULL}. Must be one character string; cannot take a character vector.
 #'
 #' @details
@@ -90,13 +90,24 @@ plotVElatCont <- function(outComputePower, outDir=NULL) {
   PlatVElowest <- pwr$PlatVElowest
   VElowest <- pwr$VElowest
   VEoverall <- pwr$VEoverall
-  betaLat <- pwr$betaLat
-  alphaLat <- pwr$alphaLat
   risk0 <- pwr$risk0
 
   rho <- 1
   nu <- sqrt(rho*sigma2obs)*qnorm(PlatVElowest)
   o <- length(VElowest)
+
+  betaLat <- rep(NA,o)
+  alphaLat <- rep(NA,o)
+  for (l in 1:o) {
+    # find solutions alphalat and betalat by solving eqn (4) in Appendix B
+    risk1latnu <- (1-VElowest[l])*risk0
+
+    alphaLat[l] <- uniroot(alphaLatEqn, lower=-10, upper=10, nu=nu, risk1latnu=risk1latnu, sigma2obs=sigma2obs, VEoverall=VEoverall, PlatVElowest=PlatVElowest, risk0=risk0)$root
+
+    # Second solve for betalat:
+    D <- risk1latnu
+    betaLat[l] <- (log(D/(1-D)) - alphaLat[l])/nu[1]
+  }
 
   svect <- seq(-3,3,len=300)
 
@@ -126,9 +137,6 @@ plotVElatCont <- function(outComputePower, outDir=NULL) {
   for(i in 1:8) {
     lines(svect, VEcurverr[[i]], lty=i, col=colors[i], lwd=4)
   }
-
-  tmp <- round(fixedRRc[8],2)
-  if (tmp!=1) { print("Warning for plot") }
 
   legend(x="bottomright",legend=c(as.expression(bquote("CoR RR=1.00,   "~VE[lowest]==.(round(VElowest[inds[8]],2)))),
                                   as.expression(bquote("CoR RR="~.(round(fixedRRc[7],2))~", "~VE[lowest]==.(round(VElowest[inds[7]],2)))),

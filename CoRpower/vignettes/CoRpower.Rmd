@@ -1,0 +1,714 @@
+---
+title: "Introduction to CoRpower"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Introduction to CoRpower}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include=FALSE, cache=TRUE}
+figDir <- "T:/vaccine/StephanieWu/CoR Power Package In Progress/Figures"
+```
+
+The `CoRpower` package performs power and sample size calculations for correlates of risk, as described in [Gilbert, Janes, and Huang (2015). “Power/Sample Size Calculations for Assessing Correlates of Risk in Clinical Efficacy Trials.”] The power calculations accomodate three types of biomarkers: 
+
+- trichotomous
+- dichotomous
+- continuous,
+
+as well as two types of sampling design:
+
+- without replacement sampling for retrospective case-control or 2-phase designs
+- Bernoulli sampling for prospective case-cohort designs.
+  
+In this vignette, we will go over the theory and code for all the functions in the package and walk through scenarios that show how to use the `computePower()` function to perform power calculations for different types of biomarkers, sampling designs, and varying parameters. 
+
+The functions included in this package are:
+
+- `computeN()`
+- `computePower()`
+- `plotPowerTri()`
+- `plotPowerCont()`
+- `plotRRgradVE()`
+- `plotVElatCont()`
+
+## Set-up and notation | Without replacement sampling 
+
+- Assume a randomized vaccine vs. placebo/control vaccine efficacy trial
+- $N=$ number of vaccine recipients observed to be at risk at $\tau$
+- $n_{cases}$ ($n_{controls}$) $=$ number of observed cases (controls) between $\tau$ and $\tau_{\mathrm{max}}$, where cases have $\Delta Y = 1$ and controls have $\Delta (1-Y) = 1$
+    - $n_{cases} + n_{controls} \leq N$
+- $n^S_{cases}$ ($n^S_{controls}$) $=$ number of observed cases (controls) between $\tau$ and $\tau_{\mathrm{max}}$ with measured $S$ (or $S^{\ast}$)
+
+- If calculations done at design stage, then $N$, $n_{cases}$, $n_{controls}$, $n^S_{cases}$, and $n^S_{controls}$ projected numbers
+
+## Algorithm for trichotomous biomarker $S$ | Without replacement sampling 
+
+1. Specify overall $VE$ between $\tau$ and $\tau_{\mathrm{max}}$
+    + Protocol-specified design alternative or $\widehat{VE}$
+2. Specify $risk_0$
+    + Protocol-specified placebo-group endpoint rate or $\widehat{risk}_0$
+3. Select a grid of $VE^{lat}_0$ values
+    + E.g., ranging from $VE$ ($H_0$) to 0 (maximal $H_1$ not allowing harm by vaccination)
+4. Select a grid of $VE^{lat}_1 \geq VE^{lat}_0$ values
+    + E.g., $VE^{lat}_1 = VE$
+5. Specify $P^{lat}_0$ and $P^{lat}_2$, then $P^{lat}_1 = 1-P^{lat}_0-P^{lat}_2$
+    + Assuming $risk^{lat}_0(x) = risk_0$,
+      $$VE = VE^{lat}_0 P^{lat}_0 + VE^{lat}_1 P^{lat}_1 + VE^{lat}_2 P^{lat}_2$$
+      yields $VE^{lat}_2$
+    + If $VE^{lat}_0$ varies from $VE$ to 0, then $VE^{lat}_2$ varies from VE to $VE\, (P^{lat}_0 + P^{lat}_2)/P^{lat}_2$
+6. Specify $P_0$ and $P_2$, then $P_1 = 1-P_0-P_2$
+    + E.g., $P_0 = P^{lat}_0$ and $P_2 = P^{lat}_2$
+7. **Approach 1:** Specify two of the three $(Sens, FP^0, FP^1)$ and two of the three $(Spec, FN^2, FN^1)$
+    + E.g., specify $Sens$ and $Spec$ and $FP^0 = FN^2 = 0$
+    
+    **Approach 2:** Specify $\sigma^2_{obs}$ and $\rho = \sigma^2_{tr} / \sigma^2_{obs}$ and determine $(Sens, Spec, FP^0, FP^1, FN^1, FN^2)$ (see below)
+    + Typically, $\sigma^2_{obs} = 1$
+    + **Calculation of $(Sens, Spec, FP^0, FP^1, FN^1, FN^2)$**
+        <ol type="i">
+        <li> Assuming the classical measurement error model, where $X^{\ast} \sim \mathsf{N}(0,\rho\sigma^2_{obs})$, solve
+        $$P^{lat}_0 = P(X^{\ast} \leq \theta_0) \quad \textrm{and} \quad P^{lat}_2 = P(X^{\ast} > \theta_2)$$
+        for $\theta_0$ and $\theta_2$
+        <li> Generate $B$ realizations of $X^{\ast}$ and $S^{\ast} = X^{\ast} + e$, where $e \sim \mathsf{N}(0,(1-\rho)\sigma^2_{obs})$, and
+        $X^{\ast}$ independent of $e$
+            + $B = 20,000$ by default
+        <li> Using $\theta_0$ and $\theta_2$ from Step i., define
+        \[
+        \begin{align}
+        Spec(\phi_0) &= P(S^{\ast} \leq \phi_0 \mid X^{\ast} \leq \theta_0)\\
+        FN^1(\phi_0) &= P(S^{\ast} \leq \phi_0 \mid X^{\ast} \in (\theta_0,\theta_2])\\
+        FN^2(\phi_0) &= P(S^{\ast} \leq \phi_0 \mid X^{\ast} > \theta_2)\\
+        Sens(\phi_2) &= P(S^{\ast} > \phi_2 \mid X^{\ast} > \theta_2)\\
+        FP^1(\phi_2) &= P(S^{\ast} > \phi_2 \mid X^{\ast} \in (\theta_0,\theta_2])\\
+        FP^0(\phi_2) &= P(S^{\ast} > \phi_2 \mid X^{\ast} \leq \theta_0)
+        \end{align}
+        \]
+              
+        Estimate $Spec(\phi_0)$ by
+        $$\widehat{Spec}(\phi_0) = \frac{\#\{S^{\ast}_b \leq \phi_0, X^{\ast}_b \leq \theta_0\}}{\#\{X^{\ast}_b \leq \theta_0\}}\,$$ etc.
+        <li> Find $\phi_0 = \phi^{\ast}_0$ and $\phi_2 = \phi^{\ast}_2$ that numerically solve
+        \[
+        \begin{align}
+        P_0 &= \widehat{Spec}(\phi_0)P^{lat}_0 + \widehat{FN}^1(\phi_0)P^{lat}_1 + \widehat{FN}^2(\phi_0)P^{lat}_2\\
+        P_2 &= \widehat{Sens}(\phi_2)P^{lat}_2 + \widehat{FP}^1(\phi_2)P^{lat}_1 + \widehat{FP}^0(\phi_2)P^{lat}_0
+        \end{align}
+        \]
+        and compute
+        \[
+        Spec = \widehat{Spec}(\phi^{\ast}_0),\; Sens = \widehat{Sens}(\phi^{\ast}_2),\; \textrm{etc.}
+        \]
+        <li> For example, for $P^{lat}_0=P_0=0.2$, $P^{lat}_2=P_2=0.6$, $\sigma^2_{obs}=1$, and $\rho$ taking on the values 1, 0.9, 0.7, and 0.5,          we could end up with the following values for $Sens, Spec, FP^0, FP^1, FN^1,$ and $FN^2$:
+```{r, echo=FALSE, fig.align='center', out.width='90%'}
+knitr::include_graphics(file.path(figDir,"Scen5Table1.png"))
+```
+        </ol>    
+    + In Approach 2, plot
+            \[
+            RR_t \quad \textrm{vs.} \quad \frac{RR^{lat}_2}{RR^{lat}_0},
+            \]
+      where
+      \[
+      RR_t := \frac{risk_1(2)}{risk_1(0)} = \frac{\sum_{x=0}^2 RR^{lat}_x P(X=x|S=2)}{\sum_{x=0}^2 RR^{lat}_x P(X=x|S=0)}
+      \]
+    + For $\rho < 1$, $RR_t$ closer to 1 than $RR^{lat}_2\big/ RR^{lat}_0$
+
+8. Simulate $M$ data sets under the true parameter values:
+    <ol type="a">
+    *Full data*
+    <li> $N_x = (n_{controls} + n_{cases}) P^{lat}_x$
+    <li> $\left(n_{cases}(0),n_{cases}(1),n_{cases}(2)\right) \sim \mathsf{Mult}(n_{cases},(p_0,p_1,p_2))$, where $p_k=P(X=k|Y=1,Y^{\tau}=0,Z=1)$
+    <li> For each of the $N_x$ subjects, generate $S_i$ by a draw from $\mathsf{Mult}(1,(p_0,p_1,p_2))$, where $p_k=P(S=k|X=x)$ </li>
+      
+    *Observed data*
+    <li> Sample without replacement $n^S_{cases}$ and $n^S_{controls} = K n^S_{cases}$ controls with measured $S$ $(R=1)$, i.e., the control:case ratio is not fixed within subgroup $X=x$
+    </ol>
+9. For each observed data set, compute the 1-sided one-degree-of-freedom Wald test statistic for $H_0 \Leftrightarrow \{\widetilde{H}_0: \beta_S \geq 0\}$ from IPW logistic regression model that accounts for biomarker sampling design (function `tps` in R package `osDesign`)
+    + Alternatively, use the generalized two-degree-of-freedom Wald test
+10. Compute power as proportion of data sets with 1-sided Wald test $p \leq \alpha/2$ for specified $\alpha$
+11. Repeat power calculation varying control:case ratio, $n_{cases}$, $n^S_{cases}$, $(P^{lat}_0, P^{lat}_2, P_0, P_2)$, $(Sens, Spec)$, $\rho$
+  
+  
+## Illustration: hypothetical randomized placebo-controlled VE trial
+### **Trial design**
+- $N_{rand} = 4,100$ participants randomized to each of the vaccine and placebo group and followed for $\tau_{\mathrm{max}}=$ 24 months
+- Samples for measurement of $S$ at $\tau=$ 3.5 months stored in all vaccine recipients
+- Cumulative endpoint rate between $\tau$ and $\tau_{\mathrm{max}}$ in placebo group $=3.4\%$ $(=risk_0)$
+- $VE_{\tau-\tau_{\mathrm{max}}}=75\%$, $\quad VE_{0-\tau}=VE_{\tau-\tau_{\mathrm{max}}}/2$
+- Cumulative dropout rate between 0 and $\tau_{\mathrm{max}}$ in both groups $=10\%$
+
+## Illustration: calculation of input parameters with `computeN()`
+### Assumptions
+<br><br>
+<ol type="i">
+<li> Failure time $T$ and censoring time $C$ are independent
+<li> $T\mid Z=0 \sim \mathsf{Exp}(\lambda_T)$ and $C\mid Z=0 \sim \mathsf{Exp}(\lambda_C)$
+<li> $RR_{\tau-\tau_{\mathrm{max}}} := \frac{P(T \leq \tau_{\mathrm{max}} \mid T>\tau, Z=1)}{P(T \leq \tau_{\mathrm{max}} \mid T>\tau, Z=0)} = \frac{P(T \leq t\mid T>\tau, Z=1)}{P(T \leq t\mid T>\tau, Z=0)}$ for all $t \in (\tau,\tau_{\mathrm{max}}]$
+</ol>
+
+### Number of vaccine recipients observed to be at risk at $\tau$
+\[
+\begin{align}
+N &= N_{rand}\, P(T>\tau, C>\tau \mid Z=1)\\
+&= N_{rand}\, P(T>\tau \mid Z=1)\, P(C>\tau \mid Z=1)\\
+&= N_{rand}\, \{1 - RR_{0-\tau}\, P(T \leq \tau \mid Z=0)\}\, P(C>\tau \mid Z=1)\\
+&\approx 4,023
+\end{align}
+\]
+
+### Number of observed cases between $\tau$ and $\tau_{\mathrm{max}}$
+\[
+\begin{align}
+n_{cases} &= N\, P(T\leq \tau_{\mathrm{max}}, T\leq C \mid T>\tau, C>\tau, Z=1)\\
+&= N\, P(T\leq \min(C,\tau_{\mathrm{max}}) \mid T>\tau, C>\tau, Z=1)\\
+&= N\, \frac{\int_{\tau}^{\infty}P(\tau < T \leq \min(c,\tau_{\mathrm{max}})\mid Z=1)f_C(c)\mathop{\mathrm{d}}\!c}{P(T>\tau, C>\tau \mid Z=1)}\\
+&= N\, \frac{\bigg\{\int_{\tau}^{\tau_{\mathrm{max}}}P(\tau < T \leq c\mid Z=1)f_C(c)\mathop{\mathrm{d}}\!c + P(\tau < T \leq \tau_{\mathrm{max}}\mid Z=1) P(C>\tau_{\mathrm{max}})\bigg\}}{P(T>\tau, C>\tau \mid Z=1)}\\
+&\approx 32
+\end{align}
+\]
+
+### Number of observed controls between $\tau$ and $\tau_{\mathrm{max}}$
+\[
+\begin{align}
+n_{controls} &= N \, P(T > \tau_{\mathrm{max}}, C > \tau_{\mathrm{max}} \mid T>\tau, C>\tau, Z=1)\\
+&\approx 3,654
+\end{align}
+\]
+
+### Number of observed cases (controls) between $\tau$ and $\tau_{\mathrm{max}}$ with measured $S$
+\[
+\begin{align}
+n^S_{cases} &= n_{cases}\\
+n^S_{controls} &= K n^S_{cases}
+\end{align}
+\]
+
+### Compute $N, n_{cases}, n_{controls},$ and $n^S_{cases}$ with `computeN()`
+```{r}
+library(CoRpower)
+computeN(Nrand = 4100,          # participants randomized to vaccine arm
+         tau = 3.5,             # biomarker sampling timepoint
+         taumax = 24,           # end of follow-up
+         VEtauToTaumax = 0.75,  # VE between 'tau' and 'taumax'
+         VE0toTau = 0.75/2,     # VE between 0 and 'tau'
+         risk0 = 0.034,         # placebo-group endpoint risk between 'tau' and 'taumax'
+         dropoutRisk = 0.1,     # dropout risk between 0 and 'taumax'
+         propCasesWithS = 1)    # proportion of observed cases with measured S
+```
+
+## Illustration: `CoRpower` for trichotomous \(\, S\) | Without replacement sampling
+**Approach 1** $(Sens, Spec, FP^0, FN^2$ specified$)$
+
+- **Scenario 1:** vary control:case ratio
+- **Scenario 2:** vary $Sens$, $Spec$
+- **Scenario 3:** vary $P_0^{lat}$, $P_2^{lat}$, $P_0$, $P_2$
+
+**Approach 2** $(\sigma^2_{obs}$ and $\rho$ specified$)$
+
+- **Scenario 4:** vary $\rho$
+- **Scenario 5:** vary $P_0^{lat}$, $P_2^{lat}$, $P_0$, $P_2$
+- **Scenario 6:** vary $n_{cases}$
+
+## *Scenario 1:* vary control:case ratio (Approach 1) | Trichotomous $S$, without replacement sampling
+### Run simulations and compute power with `computePower()`
+```{r, eval=FALSE}
+pwr <- computePower(nCases = 32,                 
+                    nControls = 3654,            
+                    nCasesWithS = 32,           
+                    controlCaseRatio = 5,         # scalar, i.e., separate calls for 5, 3, 1
+                    VEoverall = 0.75,             # overall VE
+                    risk0 = 0.034,                # placebo-group endpoint risk from tau - taumax
+                    VElat0 = seq(0, VEoverall, len=100), # grid of VE (V/P) among lower protected
+                    VElat1 = rep(VEoverall, 100), # grid of VE (V/P) among medium protected
+                    Plat0 = 0.2,                  # prevalence of lower protected
+                    Plat2 = 0.6,                  # prevalence of higher protected
+                    P0 = 0.2,                     # probability of low biomarker response
+                    P2 = 0.6,                     # probability of high biomarker response
+                    sens = 0.8, spec = 0.8, FP0 = 0, FN2 = 0,
+                    M = 1000,                     # number of simulated clinical trials
+                    alpha = 0.05,                 # two-sided Wald test Type 1 error rate
+                    biomType = "trichotomous")    # "continuous" by default
+```
+
+```{r, include=FALSE, cache=TRUE}
+setwd("T:/vaccine/StephanieWu/CoR Power Package In Progress/Scenario1/K3")
+load("ansScen1.RData")
+```
+
+### Output list for `controlCaseRatio = 5`:
+```{r}
+names(pwr)
+pwr$power[1, c(1, 25, 50, 75, 100)]
+pwr$RRt[1, c(1, 25, 50, 75, 100)]
+pwr$VElat2[c(1, 25, 50, 75, 100)]
+```
+
+### Plot power curves with `plotPowerTri()`
+Basic plotting functions are included in the package to aid with visualizing results. `plotPowerTri` plots the power curve against the CoR relative risk, $RR_t$, for trichotomous or binary biomarkers. 
+
+Output from `computePower()` can be saved as an object and assigned to the `outComputePower` input parameter. In this scenario, since `computePower()` was run multiple times to vary the controls:cases ratio, these multiple output objects can be read into the function as a list. 
+```{r, eval=FALSE}
+plotPowerTri(outComputePower = list(pwr5to1, pwr3to1, pwr1to1),  # 'computePower' output lists
+             legendText = paste0("Control:Case = ", c("5:1", "3:1", "1:1")))
+```
+
+Alternatively, output from `computePower()` can be saved in an RData file. In this case, the `outComputePower` input parameter should be the name(s) of the output file(s), and the `outDir` input parameter should be the name(s) of the file location(s). For more information, visit the `plotPowerTri()` help page. 
+```{r, eval=FALSE}
+computePower(..., saveDir = "myDir", saveFile = "myFile.RData")
+plotPowerTri(outComputePower = c("myFile1", "myFile2", "myFile3"), # 'computePower' output files
+             outDir = rep("~/myDir", 3),                           # path to each myFilex.RData
+             legendText = paste0("Control:Case = ", c("5:1", "3:1", "1:1")))
+```
+
+```{r, echo=FALSE, fig.align='center', out.width='65%'}
+knitr::include_graphics(file.path(figDir,"powertrinary_CoR_Scen1.png"))
+```
+
+
+## *Scenario 2:* vary \(\, Sens\) and \(\, Spec\) (Approach 1) | Trichotomous \(\, S\), without replacement sampling
+```{r, eval=FALSE}
+pwr <- computePower(nCases = 32,                 
+                    nControls = 3654,            
+                    nCasesWithS = 32,           
+                    controlCaseRatio = 5,         # n^S_controls : n^S_cases ratio
+                    VEoverall = 0.75,             # overall VE
+                    risk0 = 0.034,                # placebo-group endpoint risk from tau - taumax
+                    VElat0 = seq(0, VEoverall, len=100), # grid of VE (V/P) among lower protected
+                    VElat1 = rep(VEoverall, 100), # grid of VE (V/P) among medium protected
+                    Plat0 = 0.2,                  # prevalence of lower protected
+                    Plat2 = 0.6,                  # prevalence of higher protected
+                    P0 = 0.2,                     # probability of low biomarker response
+                    P2 = 0.6,                     # probability of high biomarker response
+                    sens = c(1, 0.9, 0.8, 0.7), spec = c(1, 0.9, 0.8, 0.7), 
+                    FP0 = 0, FN2 = 0,
+                    M = 1000,                     # number of simulated clinical trials
+                    alpha = 0.05,                 # two-sided Wald test Type 1 error rate
+                    biomType = "trichotomous")    # "continuous" by default
+```
+
+```{r, eval=FALSE}
+plotPowerTri(outComputePower = pwr,    
+             legendText = paste0("Sens = Spec = ", c(1, 0.9, 0.8, 0.7)))
+```
+```{r, echo=FALSE, fig.align='center', out.width='67%'}
+knitr::include_graphics(file.path(figDir,"powertrinary_CoR_Scen3.png"))
+```
+
+## *Scenario 3:* vary \(\, P^{lat}_0, P^{lat}_2, P_0, P_2\) (Approach 1) | Trichotomous \(\, S\), without replacement sampling 
+```{r, eval=FALSE}
+pwr <- computePower(nCases = 32,                 
+                    nControls = 3654,            
+                    nCasesWithS = 32,           
+                    controlCaseRatio = 5,         # n^S_controls : n^S_cases ratio
+                    VEoverall = 0.75,             # overall VE
+                    risk0 = 0.034,                # placebo-group endpoint risk from tau - taumax
+                    VElat0 = seq(0, VEoverall, len=100), # grid of VE (V/P) among lower protected
+                    VElat1 = rep(VEoverall, 100), # grid of VE (V/P) among medium protected
+                    Plat0 = 0.05,               # scalar; separate calls for 0.05, 0.1, 0.15, 0.2
+                    Plat2 = 0.15,               # scalar; separate calls for 0.15, 0.3, 0.45, 0.6
+                    P0 = 0.05,                  # scalar; separate calls for 0.05, 0.1, 0.15, 0.2
+                    P2 = 0.15,                  # scalar; separate calls for 0.15, 0.3, 0.45, 0.6
+                    sens = 0.8, spec = 0.8, FP0 = 0, FN2 = 0,
+                    M = 1000,                     # number of simulated clinical trials
+                    alpha = 0.05,                 # two-sided Wald test Type 1 error rate
+                    biomType = "trichotomous")    # "continuous" by default
+```
+
+```{r, eval=FALSE}
+plotPowerTri(outComputePower = list(pwr1, pwr2, pwr3, pwr4), 
+             legendText = c("Plat0=0.05, Plat2=0.15", 
+                            "Plat0=0.1, Plat2=0.3", 
+                            "Plat0=0.15, Plat2=0.45", 
+                            "Plat0=0.2, Plat2=0.6"))
+```
+```{r, echo=FALSE, fig.align='center', out.width='65%'}
+knitr::include_graphics(file.path(figDir,"powertrinary_CoR_Scen2.png"))
+```
+
+
+## *Scenario 4:* vary \(\, \rho \) (Approach 2) | Trichotomous \(\, S\), without replacement sampling 
+### Run simulations and compute power with `computePower()`
+```{r, eval=FALSE}
+pwr <- computePower(nCases = 32,                 
+                    nControls = 3654,            
+                    nCasesWithS = 32,           
+                    controlCaseRatio = 5,         # n^S_controls : n^S_cases ratio
+                    VEoverall = 0.75,             # overall VE
+                    risk0 = 0.034,                # placebo-group endpoint risk from tau - taumax 
+                    VElat0 = seq(0, VEoverall, len=100), # grid of VE (V/P) among lower protected
+                    VElat1 = rep(VEoverall, 100), # grid of VE (V/P) among medium protected
+                    Plat0 = 0.2,                  # prevalence of lower protected
+                    Plat2 = 0.6,                  # prevalence of higher protected
+                    P0 = 0.2,                     # probability of low biomarker response
+                    P2 = 0.6,                     # probability of high biomarker response
+                    sigma2obs = 1,                # variance of observed biomarker S
+                    rho = c(1, 0.9, 0.7, 0.5),    # protection-relevant fraction of variance of S
+                    M = 1000,                     # number of simulated clinical trials
+                    alpha = 0.05,                 # two-sided Wald test Type 1 error rate
+                    biomType = "trichotomous")    # "continuous" by default
+```
+
+### Plot power curves with `plotPowerTri()`
+```{r, eval=FALSE}
+plotPowerTri(outComputePower = pwr,   
+             legendText = paste0("rho = ", c(1, 0.9, 0.7, 0.5)))
+```
+```{r, echo=FALSE, fig.align='center', out.width='65%'}
+knitr::include_graphics(file.path(figDir,"powertrinary_CoR_Scen5.png"))
+```
+
+### Plot $RR_t$ vs. $RR_2^{lat}/RR_0^{lat}$ with `plotRRgradVE()`
+`plotRRgradVE()` plots the ratio of relative risks for the higher and lower latent subgroups $RR_2^{lat}/RR_0^{lat}$ against the CoR relative risk effect size $RR_t = risk_1(2)/risk_1(0)$. 
+
+Output from `computePower()` can be saved as an object and assigned to the `outComputePower` input parameter.
+```{r, eval=FALSE}
+plotRRgradVE(outComputePower = pwr,  # 'computePower' output list
+             legendText = paste0("rho = ", c(1, 0.9, 0.7, 0.5)))
+```
+
+Alternatively, output from `computePower()` can be saved in an RData file. In this case, the `outComputePower` input parameter should be the name(s) of the output file(s), and the `outDir` input parameter should be the name(s) of the file location(s). For more information, visit the `plotRRgradVE()` help page. 
+```{r, eval=FALSE}
+computePower(..., saveDir = "myDir", saveFile = "myFile.RData")
+plotRRgradVE(outComputePower = "myFile",    # file with 'computePower' output
+             outDir = "~/myDir",            # path to myFile.RData
+             legendText = paste0("rho = ", c(1, 0.9, 0.7, 0.5)))
+```
+
+```{r, echo=FALSE, fig.align='center', out.width='70%'}
+knitr::include_graphics(file.path(figDir,"RRcomparison_CoR_Scen5.png"))
+```
+
+
+## *Scenario 5:* vary \(\, P^{lat}_0, P_0, P^{lat}_2, P_2 \) (Approach 2) | Trichotomous \(\, S\), without replacement sampling
+```{r, eval=FALSE}
+pwr <- computePower(nCases = 32,                 
+                    nControls = 3654,            
+                    nCasesWithS = 32,           
+                    controlCaseRatio = 5,         # n^S_controls : n^S_cases ratio
+                    VEoverall = 0.75,             # overall VE
+                    risk0 = 0.034,                # placebo-group endpoint risk from tau - taumax 
+                    VElat0 = seq(0, VEoverall, len=100), # grid of VE (V/P) among lower protected
+                    VElat1 = rep(VEoverall, 100), # grid of VE (V/P) among medium protected
+                    Plat0 = 0.05,               # scalar; separate calls for 0.05, 0.1, 0.15, 0.2
+                    Plat2 = 0.15,               # scalar; separate calls for 0.15, 0.3, 0.45, 0.6
+                    P0 = 0.05,                  # scalar; separate calls for 0.05, 0.1, 0.15, 0.2
+                    P2 = 0.15,                  # scalar; separate calls for 0.15, 0.3, 0.45, 0.6
+                    sigma2obs = 1,                # variance of observed biomarker S
+                    rho = 0.9,                    # protection-relevant fraction of variance of S
+                    M = 1000,                     # number of simulated clinical trials
+                    alpha = 0.05,                 # two-sided Wald test Type 1 error rate
+                    biomType = "trichotomous")    # "continuous" by default
+```
+
+```{r, eval=FALSE}
+plotPowerTri(outComputePower = list(pwr1, pwr2, pwr3, pwr4),  
+             legendText = c("Plat0=0.05, Plat2=0.15", 
+                            "Plat0=0.1, Plat2=0.3", 
+                            "Plat0=0.15, Plat2=0.45", 
+                            "Plat0=0.2, Plat2=0.6"))
+```
+```{r, echo=FALSE, fig.align='center', out.width='65%'}
+knitr::include_graphics(file.path(figDir,"powertrinary_CoR_Scen6.png"))
+```
+
+## *Scenario 6:* vary \(\, n_{cases}\) (Approach 2) | Trichotomous \(\, S\), without replacement sampling
+```{r, eval=FALSE}
+pwr <- computePower(nCases = c(25, 32, 35, 40),             
+                    nControls = c(3661, 3654, 3651, 3646),  
+                    nCasesWithS = c(25, 32, 35, 40),       
+                    controlCaseRatio = 5,         # n^S_controls : n^S_cases ratio
+                    VEoverall = 0.75,             # overall VE
+                    risk0 = 0.034,                # placebo-group endpoint risk fom tau - taumax
+                    VElat0 = seq(0, VEoverall, len=100), # grid of VE (V/P) among lower protected
+                    VElat1 = rep(VEoverall, 100), # grid of VE (V/P) among medium protected
+                    Plat0 = 0.2,                  # prevalence of lower protected
+                    Plat2 = 0.6,                  # prevalence of higher protected
+                    P0 = 0.2,                     # probability of low biomarker response
+                    P2 = 0.6,                     # probability of high biomarker response
+                    sigma2obs = 1,                # variance of observed biomarker S
+                    rho = 0.9,                    # protection-relevant fraction of variance of S
+                    M = 1000,                     # number of simulated clinical trials
+                    alpha = 0.05,                 # two-sided Wald test Type 1 error rate
+                    biomType = "trichotomous")    # "continuous" by default
+```
+
+```{r, eval=FALSE}
+plotPowerTri(outComputePower = pwr,   
+             legendText = paste0("nCases = ", c(25, 32, 35, 40)))
+```
+```{r, echo=FALSE, fig.align='center', out.width='65%'}
+knitr::include_graphics(file.path(figDir,"powertrinary_CoR_Scen7.png"))
+```
+
+
+## Illustration: `CoRpower` for binary \(\, S\) | Without replacement sampling
+Achieved by selecting $P_0^{lat}$, $P_2^{lat}$, $P_0$, $P_2$ such that
+\[
+\begin{align}
+P_0^{lat} + P_2^{lat} &= 1\\
+P_0 + P_2 &= 1
+\end{align}
+\]
+
+**Approach 2** $(\sigma^2_{obs}$ and $\rho$ specified$)$
+
+- **Scenario 7:** vary $n_{cases}$
+
+## **Scenario 7:** vary \(\, n_{cases}\) (Approach 2) | Binary \(\, S\), without replacement sampling 
+### Run simulations and compute power with `computePower()`
+```{r, eval=FALSE}
+pwr <- computePower(nCases = c(25, 32, 35, 40),             
+                    nControls = c(3661, 3654, 3651, 3646),  
+                    nCasesWithS = c(25, 32, 35, 40),       
+                    controlCaseRatio = 5,         # n^S_controls : n^S_cases ratio
+                    VEoverall = 0.75,             # overall VE
+                    risk0 = 0.034,                # placebo-group endpoint risk from tau - taumax
+                    VElat0 = seq(0, VEoverall, len=100), # grid of VE (V/P) among lower protected
+                    VElat1 = rep(VEoverall, 100), # grid of VE (V/P) among medium protected
+                    Plat0 = 0.2,                  # prevalence of lower protected
+                    Plat2 = 0.8,                  # prevalence of higher protected
+                    P0 = 0.2,                     # probability of low biomarker response
+                    P2 = 0.8,                     # probability of high biomarker response
+                    sigma2obs = 1,                # variance of observed biomarker S
+                    rho = 0.9,                    # protection-relevant fraction of variance of S
+                    M = 1000,                     # number of simulated clinical trials
+                    alpha = 0.05,                 # two-sided Wald test Type 1 error rate
+                    biomType = "binary")          # "continuous" by default
+```
+
+### Plot power curves with `plotPowerTri()`
+```{r, eval=FALSE}
+plotPowerTri(outComputePower = pwr,   
+             legendText = paste0("nCases = ", c(25, 32, 35, 40)))
+```
+```{r, echo=FALSE, fig.align='center', out.width='65%'}
+knitr::include_graphics(file.path(figDir,"powertrinary_CoR_Scen8.png"))
+```
+
+## Algorithm for continuous biomarker \(\, S^{\ast}\) | Without replacement sampling
+<ol>
+<li> Specify overall $VE$ between $\tau$ and $\tau_{\mathrm{max}}$
+  <ul>
+  <li> Protocol-specified design alternative or $\widehat{VE}$
+  </ul>
+</li>
+<li> Specify $risk_0$
+  <ul>
+  <li> Protocol-specified placebo-group endpoint rate or $\widehat{risk}_0$
+  </ul>
+</li>
+<li> Specify $P^{lat}_{lowestVE}$, $\rho$, and a grid of $VE_{lowest}$ values (e.g., ranging from $VE$ to 0)
+  <ul>
+  <li> Fixed $(VE, risk_0, P^{lat}_{lowestVE}, VE_{lowest}, \rho)$ and
+  \[
+  \begin{align}
+  risk^{lat}_1(x^{\ast}) &= (1 - VE_{lowest}) risk_0,\quad x^{\ast} \leq \nu\\
+  \mathop{\mathrm{logit}}\{risk^{lat}_1(x^{\ast})\} &= \alpha^{lat}+\beta^{lat}x^{\ast},\quad x^{\ast} \geq \nu\\
+  VE &= 1 - \frac{\int risk^{lat}_1(x^{\ast})\phi(x^{\ast}/\sqrt{\rho} \sigma_{obs})\mathop{\mathrm{d}}\!x^{\ast}}{risk_0}
+  \end{align}
+  \]
+  yield $\alpha^{lat}$ and $\beta^{lat}$
+  <li> Plot $VE^{lat}_{x^{\ast}}$ vs. $x^{\ast}$ and calculate the pertaining CoR effect size $\exp(\beta^{lat})$ for each level of $VE_{lowest}$
+  </ul>
+</li>
+<li> Simulate $M$ data sets under the true parameter values:
+  <ol type="a">
+  *Full data*
+  <li> Sample $X^{\ast}$ for $n_{cases}$ cases from $f_{X^{\ast}}(x^{\ast}|Y=1,Y^{\tau}=0,Z=1)$ using Bayes rule
+  <li> Sample $X^{\ast}$ for $n_{controls}$ controls from $f_{X^{\ast}}(x^{\ast}|Y=0,Y^{\tau}=0,Z=1)$ using Bayes rule
+  <br>
+  - How? Use a fine grid of $\widetilde{x}^{\ast}$ values and then 
+  <br>
+  $\;\;$`sample(`$\widetilde{x}^{\ast}$, `prob=`$f_{X^{\ast}}(\widetilde{x}^{\ast}|Y=\cdot,Y^{\tau}=0,Z=1)$, `replace=TRUE)`
+  <li> Sample $S^{\ast}$ following $S^{\ast} = X^{\ast} + e$ </li>
+  *Observed data*
+  <li> Sample without replacement $n^S_{cases}$ and $n^S_{controls} = K n^S_{cases}$ controls with measured $S^{\ast}$ $(R=1)$
+  </ol>
+</li>
+<li> For each observed data set, compute the 1-sided one-degree-of-freedom Wald test statistic for $H_0 \Leftrightarrow \{\widetilde{H}_0: \beta_{S^{\ast}} \geq 0\}$ from IPW logistic regression model that accounts for biomarker sampling design (function `tps` in R package `osDesign`)
+<li> Compute power as proportion of data sets with 1-sided Wald test $p \leq \alpha/2$ for specified $\alpha$
+<li> Repeat power calculation varying control:case ratio, $n_{cases}$, $n^S_{cases}$, $P^{lat}_{lowestVE}$, $\rho$
+</ol>
+
+## Illustration: `CoRpower` for continuous \(\, S^{\ast}\) | Without replacement sampling
+- **Scenario 8:** vary $\rho$
+- **Scenario 9:** vary $P_{lowestVE}^{lat}$
+
+## *Scenario 8:* vary \(\, \rho \) | Continuous \(\, S^{\ast}\), without replacement sampling 
+### Run simulations and compute power with `computePower()`
+```{r, eval=FALSE}
+pwr <- computePower(nCases = 32,             
+                    nControls = 3654,         
+                    nCasesWithS = 32,         
+                    controlCaseRatio = 5,        # n^S_controls : n^S_cases ratio
+                    VEoverall = 0.75,            # overall VE
+                    risk0 = 0.034,               # placebo-group endpoint risk from tau - taumax
+                    PlatVElowest = 0.2,          # prevalence of VE_lowest
+                    VElowest = seq(0, VEoverall, len=100), # lowest VE for true biomarker X*<=nu
+                    sigma2obs = 1,               # variance of observed biomarker S
+                    rho = c(1, 0.9, 0.7, 0.5)    # protection-relevant fraction of variance of S
+                    M = 1000,                    # number of simulated clinical trials
+                    alpha = 0.05,                # two-sided Wald test Type 1 error rate
+                    biomType = "continuous")     # "continuous" by default
+```
+
+```{r, echo=FALSE, cache=TRUE}
+setwd("T:/vaccine/StephanieWu/CoR Power Package In Progress/Scenario9")
+load("ansScen9.RData")
+pwr <- pwr
+```
+
+### Output list
+```{r}
+names(pwr)
+pwr$power[1, c(1, 25, 50, 75, 100)]
+pwr$RRc[c(1, 25, 50, 75, 100)]
+pwr$VElowest[c(1, 25, 50, 75, 100)]
+```
+
+### Plot power curves with `plotPowerCont()`
+`plotPowerCont()` plots the power curve against the CoR relative risk, $RR_c$, for continuous biomarkers.  
+
+Output from `computePower()` can be saved as an object and assigned to the `outComputePower` input parameter. In this scenario, since `computePower()` was run multiple times to vary the controls:cases ratio, these multiple output objects can be read into the function as a list. 
+```{r, eval=FALSE}
+plotPowerCont(outComputePower = pwr,          # output list from 'computePower'
+              legendText = paste0("rho = ", c(1, 0.9, 0.7, 0.5)))
+```
+
+Alternatively, output from `computePower()` can be saved in an RData file. In this case, the `outComputePower` input parameter should be the name(s) of the output file(s), and the `outDir` input parameter should be the name(s) of the file location(s). For more information, visit the `plotPowerCont()` help page.
+```{r, eval=FALSE}
+computePower(..., saveDir = "myDir", saveFile = "myFile.RData")
+plotPowerCont(outComputePower = "myFile",     # file with 'computePower' output
+              outDir = "~/myDir",             # path to myFile.RData
+              legendText = paste0("rho = ", c(1, 0.9, 0.7, 0.5)))
+```
+```{r, echo=FALSE, fig.align='center', out.width='70%'}
+knitr::include_graphics(file.path(figDir,"powercontinuous_CoR_Scen9.png"))
+```
+
+### Plot $VE^{lat}_{x^{\ast}}$ curves with `plotVElatCont()`
+`plotVElatCont()` plots the vaccine efficacy (VE) curve for the true biomarker X*=x* for eight different values of the true CoR relative risk, \eqn{RR_c (\rho=1)}, in vaccine recipients and the lowest vaccine efficacy level for the true biomarker, \eqn{VE_lowest}.
+
+`outComputePower` contains output from a single run of `computePower()`. This output can be in the form of an assigned object, which is a list, or a character string specifying the file containing the output. Unlike `plotPowerTri()` and `plotPowerCont()`, which can take in output from multiple runs of `computePower()` in the form of a list of lists or a character vector, this function can only take a single list or character string. For more information, visit the `plotVElatCont()` help page. 
+
+Using the function when `computePower()` output is saved as list object `pwr`:
+```{r, eval=FALSE}
+plotVElatCont(outComputePower = pwr)  
+```
+
+Using the function when `computePower()` output is saved in a file with name "myFile" and location "~/myDir":
+```{r, eval=FALSE}
+computePower(..., saveDir = "myDir", saveFile = "myFile.RData")
+plotVElatCont(outComputePower = "myFile",   
+              outDir = "~/myDir")          
+```
+```{r, echo=FALSE, fig.align='center', out.width='65%'}
+knitr::include_graphics(file.path(figDir,"plotVEcurveCoRcontinuous_Scen9.png"))
+```
+
+## *Scenario 9:* vary \(\, P_{lowestVE}^{lat} \) | Continuous \(\, S^{\ast}\), without replacement sampling
+### Run simulations and compute power with `computePower()`
+```{r, eval=FALSE}
+pwr <- computePower(nCases = 32,               
+                    nControls = 3654,         
+                    nCasesWithS = 32,         
+                    controlCaseRatio = 5,        # n^S_controls : n^S_cases ratio
+                    VEoverall = 0.75,            # overall VE
+                    risk0 = 0.034,               # placebo-group endpoint risk from tau - taumax
+                    PlatVElowest = 0.05,         # scalar; separate calls for 0.05, 0.1, 0.15, 0.2
+                    VElowest = seq(0, VEoverall, len=100), # lowest VE for true biomarker X*<=nu
+                    sigma2obs = 1,               # variance of observed biomarker S
+                    rho = 0.9                    # protection-relevant fraction of variance of S
+                    M = 1000,                    # number of simulated clinical trials
+                    alpha = 0.05,                # two-sided Wald test Type 1 error rate
+                    biomType = "continuous")     # "continuous" by default
+```
+
+### Plot power curves with `plotPowerCont()`
+```{r, eval=FALSE}
+plotPowerCont(outComputePower = list(pwr1, pwr2, pwr3, pwr4),          # output list from 'computePower'
+              legendText = paste0("PlatVElowest = ", c(0.05, 0.1, 0.15, 0.2)))
+```
+```{r, echo=FALSE, fig.align='center', out.width='70%'}
+knitr::include_graphics(file.path(figDir,"powercontinuous_CoR_Scen10.png"))
+```
+
+## Bernoulli / case-cohort sampling of \(\, S\) (or \(\, S^{\ast}\))
+- Bernoulli sample at baseline with sampling probability $p$
+- $S$ (or $S^{\ast}$) measured at $\tau$ in
+    - a subset of the sample with $Y^{\tau}=0$, and
+    - all cases with $Y^{\tau}=0$
+- Implications:
+    - $n_{cases} = n^S_{cases}$
+    - design parameter $n^S_{controls}$ replaced by probability $p$ because $n^S_{controls}$ is a random variable in case-cohort designs
+
+## Illustration: `CoRpower` for trichotomous \(\, S\) and continuous \(\, S^{\ast}\) | Bernoulli sampling
+Trichotomous $S$ (Approach 1)
+
+- **Scenario 10:** vary $p$
+
+Continuous $S^{\ast}$
+
+- **Scenario 11:** vary $p$
+
+## *Scenario 10:* vary \(\, p \) (Approach 1) | Trichotomous \(\, S \), Bernoulli sampling
+### Run simulations and compute power with `computePower()`
+```{r, eval=FALSE}
+pwr <- computePower(nCases = 32,             
+                    nControls = 3654,       
+                    nCasesWithS = 32,       
+                    cohort = TRUE,                # FALSE by default
+                    p = 0.01,                 # scalar; separate calls for 0.01, 0.02, 0.03, 0.05
+                    VEoverall = 0.75,             # overall VE
+                    risk0 = 0.034,                # placebo-group endpoint risk from tau - taumax
+                    VElat0 = seq(0, VEoverall, len=100), # grid of VE (V/P) among lower protected
+                    VElat1 = rep(VEoverall, 100), # grid of VE (V/P) among medium protected
+                    Plat0 = 0.2,                  # prevalence of lower protected
+                    Plat2 = 0.6,                  # prevalence of higher protected
+                    P0 = 0.2,                     # probability of low biomarker response
+                    P2 = 0.6,                     # probability of high biomarker response
+                    sens = 0.8, spec = 0.8, FP0 = 0, FN2 = 0,
+                    M = 1000,                     # number of simulated clinical trials
+                    alpha = 0.05,                 # two-sided Wald test Type 1 error rate
+                    biomType = "trichotomous")    # "continuous" by default
+```
+
+### Plot power curves with `plotPowerTri()`
+```{r, eval=FALSE}
+plotPowerTri(outComputePower = list(pwr1, pwr2, pwr3, pwr4),  # 'computePower' outputs
+             legendText = paste0("Cohort p = ", c(0.01, 0.02, 0.03, 0.05)))
+```
+```{r, echo=FALSE, fig.align='center', out.width='66%'}
+knitr::include_graphics(file.path(figDir,"powertrinary_CoR_Scen4.png"))
+```
+
+## *Scenario 11:* vary \(\, p \) | Continuous \(\, S^{\ast}\), Bernoulli sampling
+### Run simulations and compute power with `computePower()`
+```{r, eval=FALSE}
+pwr <- computePower(nCases = 32,             
+                    nControls = 3654,        
+                    nCasesWithS = 32,       
+                    cohort = TRUE,               # FALSE by default
+                    p = 0.01,                    # scalar; separate calls for 0.01, 0.02, 0.03, 0.05
+                    VEoverall = 0.75,            # overall VE
+                    risk0 = 0.034,               # placebo-group endpoint risk from tau - taumax
+                    PlatVElowest = 0.2,          # prevalence of VE_lowest
+                    VElowest = seq(0, VEoverall, len=100), # lowest VE for true biomarker X*<=nu
+                    sigma2obs = 1,               # variance of observed biomarker S
+                    rho = 0.9                    # protection-relevant fraction of variance of S
+                    M = 1000,                    # number of simulated clinical trials
+                    alpha = 0.05,                # two-sided Wald test Type 1 error rate
+                    biomType = "continuous")     # "continuous" by default
+```
+
+### Plot power curves with `plotPowerCont()`
+```{r, eval=FALSE}
+plotPowerCont(outComputePower = list(pwr1, pwr2, pwr3, pwr4),  # 'computePower' outputs
+              legendText = paste0("Cohort p = ", c(0.01, 0.02, 0.03, 0.05)))
+```
+```{r, echo=FALSE, fig.align='center', out.width='70%'}
+knitr::include_graphics(file.path(figDir,"powercontinuous_CoR_Scen11.png"))
+```
+
+
