@@ -2,7 +2,7 @@ Package: CoRpower
 Type: Package
 Title: Power Calculations for Assessing Correlates of Risk in Clinical Efficacy Trials
 Version: 1.0.0
-Authors@R: c(person("Peter", "Gilbert", email = "pgilbert@scharp.org", role = "aut"), person("Stephanie", "Wu", email = "swu18@uw.edu", role = "aut"), person("Michal", "Juraska", email = "mjuraska@fredhutch.org", role = c("aut", "cre")))
+Authors@R: c(person("Peter", "Gilbert", email = "pgilbert@scharp.org", role = "aut"), person("Stephanie", "Wu", email = "swu18@uw.edu", role = "aut"), person("Michal", "Juraska", email = "mjuraska@fredhutch.org", role = c("aut", "cre")), person("Yunda", "Huang", email = "yunda@scharp.org", role = "aut"))
 BugReports: https://github.com/smwu/CoRpower/issues
 Description: Calculates power for correlates of risk assessment in clinical efficacy trials as described in Gilbert, Janes, and Huang (2016, Statistics in Medicine). Plotting functions are provided for visualizing results.
 URL: https://github.com/smwu/CoRpower
