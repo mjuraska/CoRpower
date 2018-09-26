@@ -12,7 +12,7 @@ vignette: >
 figDir <- "T:/vaccine/StephanieWu/CoR Power Package In Progress/Figures"
 ```
 
-The `CoRpower` package performs power and sample size calculations for correlates of risk, as described in [Gilbert, Janes, and Huang (2015). “Power/Sample Size Calculations for Assessing Correlates of Risk in Clinical Efficacy Trials.”] The power calculations accomodate three types of biomarkers: 
+The `CoRpower` package performs power calculations for correlates of risk, as described in [Gilbert, Janes, and Huang (2016). “Power/Sample Size Calculations for Assessing Correlates of Risk in Clinical Efficacy Trials.”] The power calculations accomodate three types of biomarkers: 
 
 - trichotomous
 - dichotomous
@@ -20,10 +20,10 @@ The `CoRpower` package performs power and sample size calculations for correlate
 
 as well as two types of sampling design:
 
-- without replacement sampling for retrospective case-control or 2-phase designs
+- without replacement sampling for retrospective case-control designs
 - Bernoulli sampling for prospective case-cohort designs.
   
-In this vignette, we will go over the theory and code for all the functions in the package and walk through scenarios that show how to use the `computePower()` function to perform power calculations for different types of biomarkers, sampling designs, and varying parameters. 
+The vignette aims to illustrate distinct features of the functions in the package (with some mathematical background) by walking through a number of power calculation scenarios for different biomarker types, sampling designs, and input parameters.
 
 The functions included in this package are:
 
