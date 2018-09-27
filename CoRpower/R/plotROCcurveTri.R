@@ -122,11 +122,11 @@ computesensspecFPFN <- function(sigma2obs,rho,Plat0,Plat2,P0,P2) {
 #' This funciton is used to create Figure 1 in the Supplementary Material of [Gilbert, Janes, and Huang (2015).
 #' “Power/Sample Size Calculations for Assessing Correlates of Risk in Clinical Efficacy Trials.”]
 #'
-#' @param Plat0 Prevalence of the lower protected latent subgroup (\eqn{P(X = 0)}, where X is the true latent biomarker)
-#' @param Plat2 Numeric vector of length four specifying four scenarios for the prevalence of the higher protected latent subgroup (\eqn{P(X = 2)}, where X is the true latent biomarker)
-#' @param P0 Probability of low biomarker response (\eqn{P(S = 0)}, where S is the observed biomarker). Can be scalar or vector specifying grid of probabilities.
-#' @param P2 Probability of low biomarker response (\eqn{P(S = 0)}, where S is the observed biomarker). Can be scalar or vector specifying grid of probabilities.
-#' @param rho Numeric vector of length four specifying the fraction of protection-relevant variability in the observed biomarker. The first element of this vector should be 1, corresponding to the case of no measurement error.
+#' @param Plat0 the prevalence of the latent lower protected subgroup for a dichotomous or trichotomous biomarker
+#' @param Plat2 a numeric vector of length four specifying the prevalences of the latent higher protected subgroup for a dichotomous or trichotomous biomarker
+#' @param P0 the probability of low biomarker response for a dichotomous or trichotomous biomarker. It can be scalar value or a numeric vector specifying a grid of probabilities.
+#' @param P2 the probability of high biomarker response for a dichotomous or trichotomous biomarker. It can be scalar value or a numeric vector specifying a grid of probabilities.
+#' @param rho a numeric vector specifying distinct protection-relevant fractions of \code{sigma2obs}. The first element must be 1, representing a noise-free biomarker.
 #'
 #' @return Plot displaying CoR curves for various CoR relative risk and lowest VE scenarios
 #'

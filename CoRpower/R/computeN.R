@@ -1,20 +1,23 @@
 #' Sample Size Calculations for Correlates of Risk
 #'
-#' Calculates projected sample sizes at the design stage for trials assessing biomarkers as correlates of risk (CoRs).
+#' Calculates additional requisite design parameters pertaining to the target population of active treatment recipients observed to be
+#' at risk at the biomarker sampling timepoint.
 #'
-#' @param Nrand Number of participants randomized to vaccine arm
-#' @param tau Biomarker sampling timepoint
-#' @param taumax End of follow-up time period
-#' @param VEtauToTaumax VE between 'tau' and 'taumax'
-#' @param VE0toTau VE between 0 and 'tau'
-#' @param risk0 Placebo-group endpoint risk between 'tau' and 'taumax'
-#' @param dropoutRisk Dropout risk between 0 and 'taumax'
-#' @param propCasesWithS Proportion of cases with measured S
+#' @param Nrand the number of participants randomized to vaccine arm
+#' @param tau the biomarker sampling timepoint
+#' @param taumax the end of the follow-up time period
+#' @param VEtauToTaumax the treatment (vaccine) efficacy level between \eqn{\tau} and \eqn{\tau_{max}}
+#' @param VE0toTau the treatment (vaccine) efficacy between 0 and \eqn{\tau}
+#' @param risk0 the placebo-group endpoint risk between \eqn{\tau} and \eqn{\tau_{max}}
+#' @param dropoutRisk the risk of participant dropout between 0 and \eqn{\tau_{max}}
+#' @param propCasesWithS the proportion of cases with measured biomarker S
 #'
 #' @details
-#' This function calculates projected sample sizes and includes options to account for dropout and incomplete sample storage.
-#' These projected sample sizes can then be used as input values for the computePower function. Calculations use the following
-#' assumptions:
+#' The design parameters calculated by this function can be used as input values for the \code{\link{computePower}} function.
+#' The calculations include options to account for participant dropout by specifying the \code{dropoutRisk} input parameter,
+#' as well as for incomplete sample storage by specifying the \code{propCasesWithS} input parameter.
+#'
+#' The calculations use the following assumptions:
 #' \enumerate{
 #'   \item Failure time \eqn{T} and censoring time \eqn{C} are independent
 #'   \item \eqn{T|Z=0} follows an exponential distribution with rate parameter \eqn{\theta_t} and \eqn{C|Z=0} follows an
@@ -23,10 +26,10 @@
 #' }
 #' @return List with the following elements:
 #' \itemize{
-#'   \item N: the number of subjects in the vaccine group at risk at tau
-#'   \item nCases: Number of subjects in the vaccine group at-risk at tau with the clinical event (cases) by taumax.
-#'    \item nControls: Number of subjects in the vaccine group at-risk at tau without the clinical event (controls) by taumax.
-#'    \item nCasesWithS: Number of subjects in the vaccine group at-risk at tau with the clinical event (cases) by taumax and with the biomarker measured
+#'   \item N: the number of participants in the active treatment group that are at risk at \eqn{\tau}
+#'   \item nCases: the number of clinical endpoint cases observed (or projected) between \eqn{\tau} and \eqn{\tau_{max}} in the active treatment group
+#'    \item nControls: the number of controls observed (or projected) to complete follow-up through \eqn{\tau_{max}} endpoint-free in the active treatment group
+#'    \item nCasesWithS: the number of clinical endpoint cases observed (or projected) between \eqn{\tau} and \eqn{\tau_{max}} in the active treatment group with an available biomarker response
 #' }
 #'
 #' @examples
