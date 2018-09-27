@@ -9,6 +9,7 @@ vignette: >
 ---
 
 ```{r, include=FALSE, cache=TRUE}
+library(devtools)
 figDir <- "T:/vaccine/StephanieWu/CoR Power Package In Progress/Figures"
 ```
 
@@ -103,6 +104,7 @@ The functions included in this package are:
 ```{r, echo=FALSE, fig.align='center', out.width='90%'}
 knitr::include_graphics(file.path(figDir,"Scen5Table1.png"))
 ```
+        
         </ol>    
     + In Approach 2, plot
             \[
@@ -231,17 +233,18 @@ pwr <- computePower(nCases = 32,
                     biomType = "trichotomous")    # "continuous" by default
 ```
 
-```{r, include=FALSE, cache=TRUE}
-setwd("T:/vaccine/StephanieWu/CoR Power Package In Progress/Scenario1/K3")
-load("ansScen1.RData")
+```{r, include=FALSE, cache=TRUE, message=FALSE}
+load("T:/vaccine/StephanieWu/CoR Power Package In Progress/Scenario1/K3/ansScen1.RData")
+pwr5to1 <- pwr
+devtools::use_data(pwr5to1, internal = TRUE, overwrite=TRUE)
 ```
 
 ### Output list for `controlCaseRatio = 5`:
 ```{r}
-names(pwr)
-pwr$power[1, c(1, 25, 50, 75, 100)]
-pwr$RRt[1, c(1, 25, 50, 75, 100)]
-pwr$VElat2[c(1, 25, 50, 75, 100)]
+names(pwr5to1)
+pwr5to1$power[1, c(1, 25, 50, 75, 100)]
+pwr5to1$RRt[1, c(1, 25, 50, 75, 100)]
+pwr5to1$VElat2[c(1, 25, 50, 75, 100)]
 ```
 
 ### Plot power curves with `plotPowerTri()`
@@ -553,10 +556,10 @@ pwr <- computePower(nCases = 32,
                     biomType = "continuous")     # "continuous" by default
 ```
 
-```{r, echo=FALSE, cache=TRUE}
-setwd("T:/vaccine/StephanieWu/CoR Power Package In Progress/Scenario9")
-load("ansScen9.RData")
+```{r, echo=FALSE, cache=TRUE, message=FALSE}
+load("T:/vaccine/StephanieWu/CoR Power Package In Progress/Scenario9/ansScen9.RData")
 pwr <- pwr
+devtools::use_data(pwr, internal = TRUE, overwrite=TRUE)
 ```
 
 ### Output list
