@@ -198,12 +198,10 @@ computeSensSpecFPFN <- function(sigma2obs,rho,Plat0,Plat2,P0,P2) {
   # Args:
   #   sigma2obs: Variance of observed biomarker S*
   #   rho: Protection-relevant fraction of the variance of S*
-  #   Plat0: Prevalence of lower protected latent subgroup. Is scalar in computePower() but can be vector.
-  #   Plat2: Prevalence of higher protected latent subgroup. Is scalar in computePower() but can be vector.
-  #   P0: Probability of low biomarker response. Is scalar in computePower() but can be vector.
-  #       If vector, should include one value equal to Plat0 and values straddling either side.
-  #   P2: Probability of high biomarker response. Is scalar in computePower() but can be vector.
-  #       If vector, should include one value equal to Plat2 and values straddling either side.
+  #   Plat0: Prevalence of lower protected latent subgroup.
+  #   Plat2: Prevalence of higher protected latent subgroup.
+  #   P0: Probability of low biomarker response.
+  #   P2: Probability of high biomarker response.
   #
   # Returns:
   #   Matrix with each row corresponding to a value of rho and with the following columns:
@@ -227,18 +225,17 @@ computeSensSpecFPFN <- function(sigma2obs,rho,Plat0,Plat2,P0,P2) {
   thetaloVE <- qnorm(Plat0)*sqrt(sigma2tr)
 
   Plat1 <- 1 - Plat0 - Plat2
-  m <- length(P2)
   ans <- list()
 
   for(i in 1:length(rho)){
-    sens <- rep(1,m)
-    spec <- rep(1,m)
-    FP0 <- rep(0,m)
-    FP1 <- rep(0,m)
-    FN2 <- rep(0,m)
-    FN1 <- rep(0,m)
-    tauhisolution <- rep(0,m)
-    taulosolution <- rep(0,m)
+    sens <- 1
+    spec <- 1
+    FP0 <- 0
+    FP1 <- 0
+    FN2 <- 0
+    FN1 <- 0
+    tauhisolution <- 0
+    taulosolution <- 0
     if (rho[i] < 1) {  # if rho=1, then sens=1, spec=1, FP0=0, FP1=0, FN2=0, FN1=0
       # Stochastic integration
       X <- rnorm(20000,0,sqrt(sigma2tr[i]))
@@ -248,61 +245,57 @@ computeSensSpecFPFN <- function(sigma2obs,rho,Plat0,Plat2,P0,P2) {
       Plo <- sum(X<=thetaloVE[i])/length(X)
       Pmed <- 1 - Phi - Plo
 
-      for (l in 1:m) {
+      # Find the cut points tauhi and taulo by solving the following equations:
+      #   0 = sensvec*Plat2 + FP1vec*Plat1 + FP0vec*Plat0 - P2  (f2 below; eqn 8 in manuscript)
+      #   0 = specvec*Plat0 + FN1vec*Plat1 + FN2vec*Plat2 - P0  (f0 below; eqn 7 in manuscript)
+      # where
+      #   sensvec <- (sum(S>tauhi & X > thetahiVE[i])/length(S))/Phi
+      #   specvec <- (sum(S<=taulo & X <= thetaloVE[i])/length(S))/Plo
+      # if binary biomarker,
+      #   FP1vec <- 0
+      #   FP0vec <- 0
+      #   FN2vec <- 0
+      #   FN1vec <- 0
+      # if trichotomous biomarker,
+      #   FP1vec <- (sum(S>tauhi & X > thetaloVE[i] & X <= thetahiVE[i])/length(S))/Pmed
+      #   FP0vec <- (sum(S>tauhi & X <= thetaloVE[i])/length(S))/Plo
+      #   FN2vec <- (sum(S<=taulo & X > thetahiVE[i])/length(S))/Phi
+      #   FN1vec <- (sum(S<=taulo & X > thetaloVE[i] & X <= thetahiVE[i])/length(S))/Pmed
 
-        # Find the cut points tauhi and taulo by solving the following equations:
-        #   0 = sensvec*Plat2 + FP1vec*Plat1 + FP0vec*Plat0 - P2  (f2 below; eqn 8 in manuscript)
-        #   0 = specvec*Plat0 + FN1vec*Plat1 + FN2vec*Plat2 - P0  (f0 below; eqn 7 in manuscript)
-        # where
-        #   sensvec <- (sum(S>tauhi & X > thetahiVE[i])/length(S))/Phi
-        #   specvec <- (sum(S<=taulo & X <= thetaloVE[i])/length(S))/Plo
-        # if binary biomarker,
-        #   FP1vec <- 0
-        #   FP0vec <- 0
-        #   FN2vec <- 0
-        #   FN1vec <- 0
-        # if trichotomous biomarker,
-        #   FP1vec <- (sum(S>tauhi & X > thetaloVE[i] & X <= thetahiVE[i])/length(S))/Pmed
-        #   FP0vec <- (sum(S>tauhi & X <= thetaloVE[i])/length(S))/Plo
-        #   FN2vec <- (sum(S<=taulo & X > thetahiVE[i])/length(S))/Phi
-        #   FN1vec <- (sum(S<=taulo & X > thetaloVE[i] & X <= thetahiVE[i])/length(S))/Pmed
+      if (Pmed==0){  # binary
+        f2 <- function(tauhi) ((sum(S>tauhi & X > thetahiVE[i])/length(S))/Phi)*Plat2 - P2
+        f0 <- function(taulo) ((sum(S<=taulo & X <= thetaloVE[i])/length(S))/Plo)*Plat0 - P0
+      } else {  # trichotomous
+        f2 <- function(tauhi) ((sum(S>tauhi & X > thetahiVE[i])/length(S))/Phi)*Plat2 +
+          ((sum(S>tauhi & X > thetaloVE[i] & X <= thetahiVE[i])/length(S))/Pmed)*Plat1 +
+          ((sum(S>tauhi & X <= thetaloVE[i])/length(S))/Plo)*Plat0 - P2
+        f0 <- function(taulo) ((sum(S<=taulo & X <= thetaloVE[i])/length(S))/Plo)*Plat0 +
+          ((sum(S<=taulo & X > thetaloVE[i] & X <= thetahiVE[i])/length(S))/Pmed)*Plat1 +
+          ((sum(S<=taulo & X > thetahiVE[i])/length(S))/Phi)*Plat2 - P0
+      }
+      tauhisolution <- uniroot(f2, interval=c(-2.5,2.5))$root
+      taulosolution <- uniroot(f0, interval=c(-2.5,2.5))$root
 
-        if (Pmed==0){  # binary
-          f2 <- function(tauhi) ((sum(S>tauhi & X > thetahiVE[i])/length(S))/Phi)*Plat2 - P2[l]
-          f0 <- function(taulo) ((sum(S<=taulo & X <= thetaloVE[i])/length(S))/Plo)*Plat0 - P0[l]
-        } else {  # trichotomous
-          f2 <- function(tauhi) ((sum(S>tauhi & X > thetahiVE[i])/length(S))/Phi)*Plat2 +
-            ((sum(S>tauhi & X > thetaloVE[i] & X <= thetahiVE[i])/length(S))/Pmed)*Plat1 +
-            ((sum(S>tauhi & X <= thetaloVE[i])/length(S))/Plo)*Plat0 - P2[l]
-          f0 <- function(taulo) ((sum(S<=taulo & X <= thetaloVE[i])/length(S))/Plo)*Plat0 +
-            ((sum(S<=taulo & X > thetaloVE[i] & X <= thetahiVE[i])/length(S))/Pmed)*Plat1 +
-            ((sum(S<=taulo & X > thetahiVE[i])/length(S))/Phi)*Plat2 - P0[l]
-        }
-        tauhisol <- uniroot(f2, interval=c(-2.5,2.5))$root
-        taulosol <- uniroot(f0, interval=c(-2.5,2.5))$root
-        tauhisolution[l] <- tauhisol
-        taulosolution[l] <- taulosol
-
-        sens[l] <- sum(S>tauhisolution[l] & X > thetahiVE[i])/sum(X>thetahiVE[i])
-        spec[l] <- sum(S<=taulosolution[l] & X <= thetaloVE[i])/sum(X<=thetaloVE[i])
-        if (Pmed==0) {  # if binary biomarker, 0's for FP1, FP0, FN2, FN1
-          FP1[l] <- 0
-          FP0[l] <- 0
-          FN2[l] <- 0
-          FN1[l] <- 0 }
-        if (Pmed > 0) {
-          FP1[l] <- (sum(S>tauhisolution[l] & X > thetaloVE[i] & X <= thetahiVE[i])/length(S))/Pmed
-          FP0[l] <- (sum(S>tauhisolution[l] & X <= thetaloVE[i])/length(S))/Plo
-          FN2[l] <- (sum(S<=taulosolution[l] & X > thetahiVE[i])/length(S))/Phi
-          FN1[l] <- (sum(S<=taulosolution[l] & X > thetaloVE[i] & X <= thetahiVE[i])/length(S))/Pmed
-        }
+      sens <- sum(S>tauhisolution & X > thetahiVE[i])/sum(X>thetahiVE[i])
+      spec <- sum(S<=taulosolution & X <= thetaloVE[i])/sum(X<=thetaloVE[i])
+      if (Pmed==0) {  # if binary biomarker, 0's for FP1, FP0, FN2, FN1
+        FP1 <- 0
+        FP0 <- 0
+        FN2 <- 0
+        FN1 <- 0 }
+      if (Pmed > 0) {
+        FP1 <- (sum(S>tauhisolution & X > thetaloVE[i] & X <= thetahiVE[i])/length(S))/Pmed
+        FP0 <- (sum(S>tauhisolution & X <= thetaloVE[i])/length(S))/Plo
+        FN2 <- (sum(S<=taulosolution & X > thetahiVE[i])/length(S))/Phi
+        FN1 <- (sum(S<=taulosolution & X > thetaloVE[i] & X <= thetahiVE[i])/length(S))/Pmed
       }
     }
-    ans[[i]] <- cbind(rep(thetaloVE[i],m),rep(thetahiVE[i],m),rep(Plat0,m),rep(Plat1,m),rep(Plat2,m),P0,P2,
+    ans[[i]] <- cbind(thetaloVE[i],thetahiVE[i],Plat0,Plat1,Plat2,P0,P2,
                       taulosolution,tauhisolution,sens,spec,FP0,FP1,FN2,FN1)
   }
   return(ans)
 }
+
 
 checkParamLengthsMatch <- function(sens, spec, FP0, FN2){
   # Checks that the lengths of sens, spec, FP0, and FN2 are equal.
