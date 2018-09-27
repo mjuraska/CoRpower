@@ -1,35 +1,37 @@
-#' Sample Size Calculations for Correlates of Risk
+#' Estimation of Size and Numbers of Cases and Controls in the Target Population of Active Treatment Recipients At Risk at the Biomarker Sampling Timepoint
 #'
-#' Calculates additional requisite design parameters pertaining to the target population of active treatment recipients observed to be
+#' If the power calculation is done at the study design stage, the function estimates the size and numbers of cases and controls in the target population of active treatment recipients observed to be
 #' at risk at the biomarker sampling timepoint.
 #'
-#' @param Nrand the number of participants randomized to vaccine arm
-#' @param tau the biomarker sampling timepoint
-#' @param taumax the end of the follow-up time period
+#' @param Nrand the number of participants randomized to the active treatment group
+#' @param tau the biomarker sampling timepoint after randomization
+#' @param taumax the time after randomization marking the end of the follow-up period for the clinical endpoint
 #' @param VEtauToTaumax the treatment (vaccine) efficacy level between \eqn{\tau} and \eqn{\tau_{max}}
 #' @param VE0toTau the treatment (vaccine) efficacy between 0 and \eqn{\tau}
-#' @param risk0 the placebo-group endpoint risk between \eqn{\tau} and \eqn{\tau_{max}}
+#' @param risk0 the overall placebo-group endpoint risk between \eqn{\tau} and \eqn{\tau_{max}}
 #' @param dropoutRisk the risk of participant dropout between 0 and \eqn{\tau_{max}}
-#' @param propCasesWithS the proportion of cases with measured biomarker S
+#' @param propCasesWithS the proportion of observed cases with a measured biomarker response
 #'
 #' @details
-#' The design parameters calculated by this function can be used as input values for the \code{\link{computePower}} function.
-#' The calculations include options to account for participant dropout by specifying the \code{dropoutRisk} input parameter,
-#' as well as for incomplete sample storage by specifying the \code{propCasesWithS} input parameter.
+#' The function estimates design parameters that are required as input to \code{\link{computePower}}. If the power calculation is done after the follow-up was completed, the estimates are replaced by the observed
+#' counterparts for use as input parameters in \code{\link{computePower}}.
+#' 
+#' The calculations include options to account for participant dropout by specifying \code{dropoutRisk} as well as for incomplete sample storage by specifying \code{propCasesWithS}.
 #'
-#' The calculations use the following assumptions:
+#' The estimation procedure considers the standard survival analysis framework with failure and censoring times denoted by \eqn{T} and \eqn{C}, respectively, and makes the following assumptions:
 #' \enumerate{
-#'   \item Failure time \eqn{T} and censoring time \eqn{C} are independent
-#'   \item \eqn{T|Z=0} follows an exponential distribution with rate parameter \eqn{\theta_t} and \eqn{C|Z=0} follows an
-#'      exponential distribution with rate parameter \eqn{\theta_c}
-#'   \item RRtauToTaumax \eqn{ = P(T <= t|T> \tau, Z=1)/P(T <= t|T> \tau, Z=0)} for all \eqn{t} between tau and taumax (this will only approximately hold).
+#'   \item \eqn{T} and \eqn{C} are independent.
+#'   \item \eqn{T|Z=0} follows an exponential distribution with rate \eqn{\theta_t} and \eqn{C|Z=0} follows an
+#'      exponential distribution with rate \eqn{\theta_c}
+#'   \item RRtauToTaumax \eqn{ = P(T <= \tau_{max}|T> \tau, Z=1)/P(T <= \tau_{max}|T> \tau, Z=0)} is assumed to be equal to \eqn{ P(T <= t|T> \tau, Z=1)/P(T <= t|T> \tau, Z=0)} for all \eqn{t \in (t,\tau_{max}]}.
 #' }
-#' @return List with the following elements:
+#' 
+#' @return A list with the following components:
 #' \itemize{
-#'   \item N: the number of participants in the active treatment group that are at risk at \eqn{\tau}
-#'   \item nCases: the number of clinical endpoint cases observed (or projected) between \eqn{\tau} and \eqn{\tau_{max}} in the active treatment group
-#'    \item nControls: the number of controls observed (or projected) to complete follow-up through \eqn{\tau_{max}} endpoint-free in the active treatment group
-#'    \item nCasesWithS: the number of clinical endpoint cases observed (or projected) between \eqn{\tau} and \eqn{\tau_{max}} in the active treatment group with an available biomarker response
+#'   \item N: the total estimated number of active treatment recipients observed to be at risk at \eqn{\tau}
+#'   \item nCases: the estimated number of clinical endpoint cases observed between \eqn{\tau} and \eqn{\tau_{max}} in the active treatment group
+#'    \item nControls: the estimated number of controls observed to complete follow-up through \eqn{\tau_{max}} endpoint-free in the active treatment group
+#'    \item nCasesWithS: the estimated number of clinical endpoint cases observed between \eqn{\tau} and \eqn{\tau_{max}} in the active treatment group with an available biomarker response
 #' }
 #'
 #' @examples

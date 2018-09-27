@@ -490,7 +490,7 @@ biomSubset <- function(Y, Ncomplete, nCasesWithS, controlCaseRatio, p, cohort){
 #' @param nCasesWithS the number of clinical endpoint cases observed (or projected) between \eqn{\tau} and \eqn{\tau_{max}} in the active treatment group with an available biomarker response (a numeric vector of multiple counts/scenarios is allowed)
 #' @param controlCaseRatio the number of controls sampled per case for biomarker measurement in the without replacement case-control sampling design
 #' @param VEoverall the overall treatment (vaccine) efficacy between \eqn{\tau} and \eqn{\tau_{max}}
-#' @param risk0 the placebo-group endpoint risk between \eqn{\tau} and \eqn{\tau_{max}}
+#' @param risk0 the overall placebo-group endpoint risk between \eqn{\tau} and \eqn{\tau_{max}}
 #' @param VElat0 a numeric vector specifying a grid of treatment (vaccine) efficacy levels in the latent lower protected subgroup for a dichotomous or trichotomous biomarker. Each value of \code{VElat0} corresponds to one unique effect size (\eqn{RR_t}). It typically ranges from \code{VEoverall} (\eqn{H_0}) to 0 (maximal \eqn{H_1} not allowing harm by treatment).
 #' @param VElat1 a numeric vector specifying a grid of treatment (vaccine) efficacy levels in the latent medium protected subgroup for a trichotomous biomarker (\code{NULL} by default for a dichotomous biomarker)
 #' @param VElowest a numeric vector specifying a grid of treatment (vaccine) efficacy levels in the latent lowest-efficacy subgroup for a continuous biomarker. It typically ranges from \code{VEoverall} (\eqn{H_0}) to 0 (maximal \eqn{H_1} not allowing harm by treatment).
@@ -549,36 +549,36 @@ biomSubset <- function(Y, Ncomplete, nCasesWithS, controlCaseRatio, p, cohort){
 #'
 #' Parameters for case-cohort sampling design: \code{cohort=TRUE}, \code{p}
 #'
-#' @return
-#' If trichotomous or binary biomarker, list with the following elements:
+#' @return If \code{saveFile} and \code{saveDir} are both specified, the output list (named \code{xxx}) is saved as an \code{.RData} file; otherwise it is returned only.
+#' For a dichotomous or trichotomous biomarker, the output list has the following components:
 #' \itemize{
-#'   \item power: fraction of simulated trials in which the null hypothesis H_0 (expression (14) of the manuscript) is rejected.
-#'   \item RRt: CoR relative risk effect size (risk1(2)/risk1(0))
-#'   \item risk1_2: vaccine-group endpoint risk for high biomarker responses (P(Y=1|X=2))
-#'   \item risk1_0: vaccine-group endpoint risk for low biomarker responses (P(Y=1|X=0))
-#'   \item VElat2: grid of VE (vaccine/placebo) among higher protected latent group
-#'   \item VElat0: grid of VE (vaccine/placebo) among lower protected latent group
-#'   \item Plat2: prevalence of higher protected
-#'   \item Plat0: prevalence of lower protected
-#'   \item P2: probability of high biomarker response
-#'   \item P0: probability of low biomarker response
-#'   \item alphaLat: logit(Y=1|s=0)
-#'   \item betaLat: logit(Y=1|S=2)-logit(Y=1|s=0)
-#'   \item sens: sensitivity (P(S=2|X=2))
-#'   \item spec: specificity (P(S=0|X=0))
-#'   \item FP0: low false positive rate (P(S=2|X=0))
-#'   \item FN2: high false negative rate (P(S=0|X=2))
-#'   \item Ncomplete: total number of subjects at risk at tau, excluding dropouts
-#'   \item nCases: number of observed cases between tau and taumax
-#'   \item nCasesWithS: number of observed cases between tau and taumax with measured S or S*
-#'   \item VEoverall: overall VE
-#'   \item alpha: two-sided Wald test Type 1 error rate
-#'   \item rho: protection-relevant fraction of the variance of S*
-#'   \item controlCaseRatio: ratio of controls to cases in case-control sampling design
-#'   \item risk0: placeb0-group endpoint risk between tau and taumax
+#'   \item power: a numeric vector of fractions of simulated trials in which the null hypothesis \eqn{H_0} is rejected for the grid of...
+#'   \item RRt: a xx-by-xx matrix of correlate-of-risk relative-risk effect sizes. Rows represent..., and columns represent...
+#'   \item risk1_2: a numeric vector of conditional endpoint risks given a high biomarker response in the active treatment group as a function of \code{rho}
+#'   \item risk1_0: a numeric vector of conditional endpoint risks given a low biomarker response in the active treatment group as a function of \code{rho}
+#'   \item VElat2: a numeric vector specifying a grid of treatment (vaccine) efficacy levels in the latent higher protected subgroup for a dichotomous or trichotomous biomarker
+#'   \item VElat0: a numeric vector specifying a grid of treatment (vaccine) efficacy levels in the latent lower protected subgroup for a dichotomous or trichotomous biomarker
+#'   \item Plat2: the prevalence of the latent higher protected subgroup for a dichotomous or trichotomous biomarker
+#'   \item Plat0: the prevalence of the latent lower protected subgroup for a dichotomous or trichotomous biomarker
+#'   \item P2: the probability of high biomarker response for a dichotomous or trichotomous biomarker
+#'   \item P0: the probability of low biomarker response for a dichotomous or trichotomous biomarker
+#'   \item alphaLat: the log odds of the clinical endpoint in the subgroup of active treatment recipients with the latent \eqn{x^{\ast}=0} (this coefficient estimate applies to a continuous biomarker)
+#'   \item betaLat: the log odds ratio of the clinical endpoint comparing two subgroups of active treatment recipients differing in the latent \eqn{x*} by 1 (this coefficient estimate applies to a continuous biomarker)
+#'   \item sens: a numeric vector of sensitivities, \eqn{P(S=2|X=2)}, of the observed dichotomous or trichotomous biomarker as a function of \code{rho}
+#'   \item spec: a numeric vector of specificities, \eqn{P(S=0|X=0)}, of the observed dichotomous or trichotomous biomarker as a function of \code{rho}
+#'   \item FP0: a numeric vector of false positive rates \eqn{P(S=2|X=0)} of the observed dichotomous or trichotomous biomarker as a function of \code{rho}
+#'   \item FN2: a numeric vector of false negative rates \eqn{P(S=0|X=2)} of the observed dichotomous or trichotomous biomarker as a function of \code{rho}
+#'   \item Ncomplete: \code{nCases} + \code{nControls}, i.e., the total number, observed or projected, of active treatment recipients at risk at \eqn{\tau}
+#'   \item nCases: the number of clinical endpoint cases observed (or projected) between \eqn{\tau} and \eqn{\tau_{max}} in the active treatment group
+#'   \item nCasesWithS: the number of clinical endpoint cases observed (or projected) between \eqn{\tau} and \eqn{\tau_{max}} in the active treatment group with an available biomarker response
+#'   \item controlCaseRatio: the number of controls sampled per case for biomarker measurement in the without replacement case-control sampling design
+#'   \item VEoverall: the overall treatment (vaccine) efficacy between \eqn{\tau} and \eqn{\tau_{max}}
+#'   \item risk0: the overall placebo-group endpoint risk between \eqn{\tau} and \eqn{\tau_{max}}
+#'   \item alpha: the two-sided Wald test type-I error rate
+#'   \item rho: a numeric vector specifying distinct protection-relevant fractions of the variance of the observed biomarker
 #' }
 #'
-#' If continuous biomarker, list with the following elements:
+#' For a continuous biomarker, a list with the following components:
 #' \itemize{
 #'   \item power: fraction of simulated trials in which the null hypothesis H_0 (expression (16) of the manuscript) is rejected.
 #'   \item RRc: CoR relative risk effect size (risk1(s*)/risk1(s*-1))
@@ -592,7 +592,7 @@ biomSubset <- function(Y, Ncomplete, nCasesWithS, controlCaseRatio, p, cohort){
 #'   \item nCasesWithS: number of observed cases between tau and taumax with measured S*
 #'   \item VEoverall: overall VE
 #'   \item alpha: two-sided Wald test Type 1 error rate
-#'   \item rho: protection-relevant fraction of the variance of S*
+#'   \item rho: a numeric vector specifying distinct protection-relevant fractions of the variance of the observed biomarker
 #'   \item controlCaseRatio: ratio of controls to cases in case-control sampling design
 #'   \item risk0: placeb0-group endpoint risk between tau and taumax
 #' }
