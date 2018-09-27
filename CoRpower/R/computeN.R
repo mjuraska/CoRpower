@@ -23,7 +23,7 @@
 #'   \item \eqn{T} and \eqn{C} are independent.
 #'   \item \eqn{T|Z=0} follows an exponential distribution with rate \eqn{\theta_t} and \eqn{C|Z=0} follows an
 #'      exponential distribution with rate \eqn{\theta_c}
-#'   \item RRtauToTaumax \eqn{ = P(T <= \tau_{max}|T> \tau, Z=1)/P(T <= \tau_{max}|T> \tau, Z=0)} is assumed to be equal to \eqn{ P(T <= t|T> \tau, Z=1)/P(T <= t|T> \tau, Z=0)} for all \eqn{t \in (t,\tau_{max}]}.
+#'   \item \eqn{RR_{\tau-\tau_{max}} := P(T <= \tau_{max}|T> \tau, Z=1)/P(T <= \tau_{max}|T> \tau, Z=0)} is assumed to be equal to \eqn{ P(T <= t|T> \tau, Z=1)/P(T <= t|T> \tau, Z=0)} for all \eqn{t \in (t,\tau_{max}]}.
 #' }
 #' 
 #' @return A list with the following components:
