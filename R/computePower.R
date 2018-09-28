@@ -543,17 +543,17 @@ biomSubset <- function(Y, Ncomplete, nCasesWithS, controlCaseRatio, p, cohort){
 #' \code{M}, \code{alpha}, \code{tpsMethod}, \code{saveDir}, \code{saveFile}.
 #'
 #' Parameters for trichotomous (or dichotomous) biomarker: \code{VElat0}, \code{VElat1}, \code{Plat0}, \code{Plat2}, \code{P0},
-#' \code{P2}, \code{biomType="trichotomous"} (or \code{"dichotomous"})
+#' \code{P2}, \code{biomType = "trichotomous"} (or \code{"dichotomous"})
 #'   \itemize{
 #'     \item Parameters for Approach 1: \code{sens}, \code{spec}, \code{FP0}, \code{FN2}
 #'     \item Parameters for Approach 2: \code{sigma2obs}, \code{rho}
 #'   }
 #'
-#' Parameters for continuous biomarker: \code{VElowest}, \code{PlatVElowest}, \code{sigma2obs}, \code{rho}, \code{biomType = "continuous"}
+#' Parameters for continuous biomarker: \code{VElowest}, \code{PlatVElowest}, \code{sigma2obs}, \code{rho}, \cr\code{biomType = "continuous"}
 #'
 #' Parameters for a case-control without replacement sampling design: \code{controlCaseRatio}
 #'
-#' Parameters for a case-cohort Bernoulli sampling design: \code{cohort=TRUE}, \code{p}
+#' Parameters for a case-cohort Bernoulli sampling design: \code{cohort = TRUE}, \code{p}
 #'
 #' @return If \code{saveFile} and \code{saveDir} are both specified, the output list (named \code{pwr}) is saved as an \code{.RData} file; otherwise it is returned only.
 #' For a dichotomous or trichotomous biomarker, the output list has the following components:
@@ -569,7 +569,7 @@ biomSubset <- function(Y, Ncomplete, nCasesWithS, controlCaseRatio, p, cohort){
 #'   \item \code{P2}: a numeric value specifying the probability of high biomarker response for a dichotomous or trichotomous biomarker
 #'   \item \code{P0}: a numeric value specifying the probability of low biomarker response for a dichotomous or trichotomous biomarker
 #'   \item \code{alphaLat}: a numeric vector of the log odds of the clinical endpoint in the subgroup of active treatment recipients with the latent \eqn{x^{\ast}=0} (this coefficient estimate applies to a continuous biomarker)
-#'   \item \code{betaLat}: a numeric vector of the log odds ratio of the clinical endpoint comparing two subgroups of active treatment recipients differing in the latent \eqn{x*} by 1 (this coefficient estimate applies to a continuous biomarker)
+#'   \item \code{betaLat}: a numeric vector of the log odds ratio of the clinical endpoint comparing two subgroups of active treatment recipients differing in the latent \eqn{x^{\ast}} by 1 (this coefficient estimate applies to a continuous biomarker)
 #'   \item \code{sens}: a numeric vector of sensitivities (i.e., the probability of high biomarker response conditional on membership in the higher protected subgroup) of the observed dichotomous or trichotomous biomarker as a function of \code{rho}
 #'   \item \code{spec}: a numeric vector of specificities (i.e., the probability of low biomarker response conditional on membership in the lower protected subgroup) of the observed dichotomous or trichotomous biomarker as a function of \code{rho}
 #'   \item \code{FP0}: a numeric vector of false positive rates (i.e., the probability of high biomarker response conditional on membership in the lower protected subgroup) of the observed dichotomous or trichotomous biomarker as a function of \code{rho}
@@ -577,7 +577,7 @@ biomSubset <- function(Y, Ncomplete, nCasesWithS, controlCaseRatio, p, cohort){
 #'   \item \code{Ncomplete}: an integer value specifying \code{nCases} + \code{nControls}, i.e., the number, observed or projected, of active treatment recipients at risk at \eqn{\tau} with an observed endpoint or a completed follow-up through \eqn{\tau_{max}}
 #'   \item \code{nCases}: an integer value specifying the number of clinical endpoint cases observed (or projected) between \eqn{\tau} and \eqn{\tau_{max}} in the active treatment group
 #'   \item \code{nCasesWithS}: an integer value specifying the number of clinical endpoint cases observed (or projected) between \eqn{\tau} and \eqn{\tau_{max}} in the active treatment group with an available biomarker response
-#'   \item \code{controlCaseRatio}: an integer specifying the number of controls sampled per case for 
+#'   \item \code{controlCaseRatio}: an integer specifying the number of controls sampled per case for
 #'   biomarker measurement in the without replacement case-control sampling design
 #'   \item \code{VEoverall}: a numeric value specifying the overall treatment (vaccine) efficacy between \eqn{\tau} and \eqn{\tau_{max}}
 #'   \item \code{risk0}: a numeric value specifying the overall placebo-group endpoint risk between \eqn{\tau} and \eqn{\tau_{max}}
@@ -589,7 +589,7 @@ biomSubset <- function(Y, Ncomplete, nCasesWithS, controlCaseRatio, p, cohort){
 #' \itemize{
 #'   \item \code{power}: a matrix of fractions of simulated trials in which the null hypothesis \eqn{H_0} is rejected. Rows represent calculations for different values of \code{rho} or \code{nCases}, depending on which is a vector. Columns represent calculations for the grid of treatment (vaccine) efficacy levels in the latent lowest-efficacy subgroup, specified by \code{VElowest}.
 #'   \item \code{RRc}: a numeric vector of correlate-or-risk relative-risk effect sizes as a function of the grid of treatment (vaccine) efficacy levels in the latent lowest-efficacy subgroup, specified by \code{VElowest}
-#'   \item \code{betaLat}: a numeric vector specifying the log odds ratio of the clinical endpoint comparing two subgroups of active treatment recipients differing in the latent \eqn{x*} by 1 (this coefficient estimate applies to a continuous biomarker)
+#'   \item \code{betaLat}: a numeric vector specifying the log odds ratio of the clinical endpoint comparing two subgroups of active treatment recipients differing in the latent \eqn{x^{\ast}} by 1 (this coefficient estimate applies to a continuous biomarker)
 #'   \item \code{alphaLat}: a numeric vector specifying the the log odds of the clinical endpoint in the subgroup of active treatment recipients with the latent \eqn{x^{\ast}=0} (this coefficient estimate applies to a continuous biomarker)
 #'   \item \code{PlatVElowest}: a numeric value specifying the prevalence of the latent lowest-efficacy subgroup for a continuous biomarker
 #'   \item \code{VElowest}: a numeric vector specifying a grid of treatment (vaccine) efficacy levels in the latent lowest-efficacy subgroup for a continuous biomarker
@@ -626,9 +626,9 @@ biomSubset <- function(Y, Ncomplete, nCasesWithS, controlCaseRatio, p, cohort){
 #' alpha <- 0.05
 #' biomType <- "trichotomous"
 #' computePower(nCases=nCases, nControls=nControls, nCasesWithS=nCasesWithS,
-#'              controlCaseRatio=controlCaseRatio, VEoverall=VEoverall, 
-#'              risk0=risk0, VElat0=VElat0, VElat1=VElat1, Plat0=Plat0, 
-#'              Plat2=Plat2, P0=P0, P2=P2, M=M, alpha=alpha, spec=spec, 
+#'              controlCaseRatio=controlCaseRatio, VEoverall=VEoverall,
+#'              risk0=risk0, VElat0=VElat0, VElat1=VElat1, Plat0=Plat0,
+#'              Plat2=Plat2, P0=P0, P2=P2, M=M, alpha=alpha, spec=spec,
 #'              FP0=FP0, sens=sens, FN2=FN2, biomType=biomType)
 #'
 #' \dontrun{
@@ -721,18 +721,18 @@ biomSubset <- function(Y, Ncomplete, nCasesWithS, controlCaseRatio, p, cohort){
 #' cohort <- TRUE
 #' p <- 0.01
 #' computePower(nCases=nCases, nControls=nControls, nCasesWithS=nCasesWithS,
-#'              VEoverall=VEoverall, risk0=risk0, PlatVElowest=PlatVElowest, 
-#'              VElowest=VElowest, M=M, alpha=alpha, sigma2obs=sigma2obs, 
+#'              VEoverall=VEoverall, risk0=risk0, PlatVElowest=PlatVElowest,
+#'              VElowest=VElowest, M=M, alpha=alpha, sigma2obs=sigma2obs,
 #'              rho=rho, biomType=biomType, cohort=cohort, p=p)
 #' p <- 0.02
 #' computePower(nCases=nCases, nControls=nControls, nCasesWithS=nCasesWithS,
-#'              VEoverall=VEoverall, risk0=risk0, PlatVElowest=PlatVElowest, 
-#'              VElowest=VElowest, M=M, alpha=alpha, sigma2obs=sigma2obs, 
+#'              VEoverall=VEoverall, risk0=risk0, PlatVElowest=PlatVElowest,
+#'              VElowest=VElowest, M=M, alpha=alpha, sigma2obs=sigma2obs,
 #'              rho=rho, biomType=biomType, cohort=cohort, p=p)
 #' p <- 0.03
 #' computePower(nCases=nCases, nControls=nControls, nCasesWithS=nCasesWithS,
-#'              VEoverall=VEoverall, risk0=risk0, PlatVElowest=PlatVElowest, 
-#'              VElowest=VElowest, M=M, alpha=alpha, sigma2obs=sigma2obs, 
+#'              VEoverall=VEoverall, risk0=risk0, PlatVElowest=PlatVElowest,
+#'              VElowest=VElowest, M=M, alpha=alpha, sigma2obs=sigma2obs,
 #'              rho=rho, biomType=biomType, cohort=cohort, p=p)
 #'
 #'
@@ -754,13 +754,13 @@ biomSubset <- function(Y, Ncomplete, nCasesWithS, controlCaseRatio, p, cohort){
 #' saveDir <- "~/myDir"
 #' saveFile <- "MyFile"
 #' computePower(nCases=nCases, nCasesWithS=nCasesWithS, nControls=nControls,
-#'              controlCaseRatio=controlCaseRatio, VEoverall=VEoverall, 
-#'              risk0=risk0, PlatVElowest=PlatVElowest, VElowest=VElowest, 
-#'              M=M, alpha=alpha, sigma2obs=sigma2obs, rho=rho, 
+#'              controlCaseRatio=controlCaseRatio, VEoverall=VEoverall,
+#'              risk0=risk0, PlatVElowest=PlatVElowest, VElowest=VElowest,
+#'              M=M, alpha=alpha, sigma2obs=sigma2obs, rho=rho,
 #'              biomType=biomType, saveDir=saveDir, saveFile=saveFile)
 #' }
 #'
-#' @seealso \code{\link{computeN}}
+#' @seealso \code{\link{computeN}}, \code{\link{plotPowerTri}}, \code{\link{plotPowerCont}}
 #'
 #' @import survival
 #' @import osDesign

@@ -27,10 +27,10 @@ computeN(Nrand, tau, taumax, VEtauToTaumax, VE0toTau, risk0, dropoutRisk,
 \value{
 A list with the following components:
 \itemize{
-  \item N: the total estimated number of active treatment recipients observed to be at risk at \eqn{\tau}
-  \item nCases: the estimated number of clinical endpoint cases observed between \eqn{\tau} and \eqn{\tau_{max}} in the active treatment group
-   \item nControls: the estimated number of controls observed to complete follow-up through \eqn{\tau_{max}} endpoint-free in the active treatment group
-   \item nCasesWithS: the estimated number of clinical endpoint cases observed between \eqn{\tau} and \eqn{\tau_{max}} in the active treatment group with an available biomarker response
+  \item \code{N}: the total estimated number of active treatment recipients observed to be at risk at \eqn{\tau}
+  \item \code{nCases}: the estimated number of clinical endpoint cases observed between \eqn{\tau} and \eqn{\tau_{max}} in the active treatment group
+   \item \code{nControls}: the estimated number of controls observed to complete follow-up through \eqn{\tau_{max}} endpoint-free in the active treatment group
+   \item \code{nCasesWithS}: the estimated number of clinical endpoint cases observed between \eqn{\tau} and \eqn{\tau_{max}} in the active treatment group with an available biomarker response
 }
 }
 \description{

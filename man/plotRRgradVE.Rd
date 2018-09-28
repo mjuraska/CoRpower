@@ -9,7 +9,7 @@ plotRRgradVE(outComputePower, outDir = NULL, legendText)
 \arguments{
 \item{outComputePower}{either a list or list of lists containing output from \code{\link{computePower}} or a character vector specifying the \code{.RData} file(s) containing \code{\link{computePower}} output}
 
-\item{outDir}{a character vector specifying path(s) to output \code{.RData} file(s), necessary if \code{outComputePower} is a character vector. Default is \code{NULL}.}
+\item{outDir}{a character vector specifying path(s) to output \code{.RData} file(s), necessary if \cr\code{outComputePower} is a character vector. Default is \code{NULL}.}
 
 \item{legendText}{a character vector specifying the entirety of the legend text. The order of the elements (i.e., parameter values) must match that of the \code{\link{computePower}} input parameters in order for legend labels to be accurate.}
 }
@@ -49,8 +49,9 @@ biomType <- "trichotomous"
 # Output from computePower function is stored in an object as a list
 pwr <- computePower(nCases=nCases, nControls=nControls, nCasesWithS=nCasesWithS,
                     controlCaseRatio=controlCaseRatio, risk0=risk0, VEoverall=VEoverall,
-                    Plat0=Plat0, Plat2=Plat2, P0=P0, P2=P2, VElat0=VElat0, VElat1=VElat1,
-                    M=M, alpha=alpha, sigma2obs=sigma2obs, rho=rho, biomType=biomType)
+                    Plat0=Plat0, Plat2=Plat2, P0=P0, P2=P2, VElat0=VElat0,
+                    VElat1=VElat1, M=M, alpha=alpha, sigma2obs=sigma2obs, rho=rho,
+                    biomType=biomType)
 
 # Set parameters for plotPowerCont function
 # outComputePower is a list containing output from the computePower function
@@ -71,5 +72,5 @@ plotRRgradVE(outComputePower, outDir=outDir, legendText = legendText)
 
 }
 \seealso{
-\code{\link{computePower}} \code{\link{plotPowerTri}}
+\code{\link{computePower}}, \code{\link{plotPowerTri}}
 }

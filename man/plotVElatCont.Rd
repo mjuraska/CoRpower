@@ -9,7 +9,7 @@ plotVElatCont(outComputePower, outDir = NULL)
 \arguments{
 \item{outComputePower}{a list containing output from \code{\link{computePower}} or a character string specifying the \code{.RData} file containing \code{\link{computePower}} output}
 
-\item{outDir}{a character string specifying path to output \code{.RData} file, necessary if \code{outComputePower} is a character string. Default is \code{NULL}.}
+\item{outDir}{a character string specifying path to output \code{.RData} file, necessary if \cr\code{outComputePower} is a character string. Default is \code{NULL}.}
 }
 \value{
 None. The function is called solely for plot generation.
@@ -77,5 +77,5 @@ plotVElatCont(outComputePower, outDir=outDir)
 
 }
 \seealso{
-\code{\link{computePower}} \code{\link{plotPowerCont}}
+\code{\link{computePower}}, \code{\link{plotPowerCont}}
 }

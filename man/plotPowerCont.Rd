@@ -9,7 +9,7 @@ plotPowerCont(outComputePower, outDir = NULL, legendText)
 \arguments{
 \item{outComputePower}{either a list or list of lists containing output from \code{\link{computePower}} or a character vector specifying the \code{.RData} file(s) containing \code{\link{computePower}} output}
 
-\item{outDir}{a character vector specifying path(s) to output \code{.RData} file(s), necessary if 
+\item{outDir}{a character vector specifying path(s) to output \code{.RData} file(s), necessary if \cr
 \code{outComputePower} is a character vector. Default is \code{NULL}.}
 
 \item{legendText}{a character vector specifying the entirety of the legend text. The order of the elements (i.e., parameter values) must match that of the \code{\link{computePower}} input parameters in order for legend labels to be accurate.}
@@ -61,7 +61,7 @@ plotPowerCont(outComputePower=outComputePower, legendText=legendText)
 \dontrun{
 # Output from computePower function is saved in an RData file
 computePower(..., saveDir = "myDir", saveFile = "myFile.RData")
-# outComputePower is a character string specifying the file containing the 
+# outComputePower is a character string specifying the file containing the
 # computePower output
 # outDir is a character string specifying the outComputePower file directory
 outComputePower = "myFile"
@@ -72,5 +72,5 @@ plotPowerCont(outComputePower, outDir=outDir, legendText = legendText)
 
 }
 \seealso{
-\code{\link{computePower}} \code{\link{plotVElatCont}} \code{\link{plotPowerTri}}
+\code{\link{computePower}}, \code{\link{plotVElatCont}}, \code{\link{plotPowerTri}}
 }

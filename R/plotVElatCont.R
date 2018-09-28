@@ -5,7 +5,7 @@
 #' efficacy ranges from 0 to 1. The legend is completely determined by the function.
 #'
 #' @param outComputePower a list containing output from \code{\link{computePower}} or a character string specifying the \code{.RData} file containing \code{\link{computePower}} output
-#' @param outDir a character string specifying path to output \code{.RData} file, necessary if \code{outComputePower} is a character string. Default is \code{NULL}.
+#' @param outDir a character string specifying path to output \code{.RData} file, necessary if \cr\code{outComputePower} is a character string. Default is \code{NULL}.
 #'
 #' @details
 #' \code{\link{computePower}} function input parameter \code{VElowest} must have length greater than or equal to eight
@@ -66,7 +66,7 @@
 #' plotVElatCont(outComputePower, outDir=outDir)
 #' }
 #'
-#' @seealso \code{\link{computePower}} \code{\link{plotPowerCont}}
+#' @seealso \code{\link{computePower}}, \code{\link{plotPowerCont}}
 #'
 #' @importFrom graphics abline axis box legend lines mtext par plot text title
 #'
