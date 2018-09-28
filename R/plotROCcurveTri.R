@@ -3,7 +3,7 @@
 computesensspecFPFN <- function(sigma2obs,rho,Plat0,Plat2,P0,P2) {
   # For trichotomous biomarker specified using Approach 2, maps input parameters rho and sigma2obs
   # to sensitivity, specificity, FP0, FP1, FN2, and FN1 values (defined above).
-  # Can also be used for a binary biomarker (Plat0 + Plat2 = 1), in which case only sensitivity and specificity
+  # Can also be used for a dichotomous biomarker (Plat0 + Plat2 = 1), in which case only sensitivity and specificity
   # are relevant (FP0, FP1, FN2, FN1 are not used in the calculations).
   #
   # Args:
@@ -20,7 +20,7 @@ computesensspecFPFN <- function(sigma2obs,rho,Plat0,Plat2,P0,P2) {
   #   Matrix with each row corresponding to one set of values for Plat0, Plat2, P0, and P2,
   #   and with the following columns: thetaloVE*, thetahiVE*, Plat0, Plat1, Plat2, P0, P2,
   #   taulosolution**, tauhisolution**, sens, spec, FP0, FP1, FN2, and FN1.
-  #   If binary biomarker, returns 0's for FP0, FP1, FN2, and FN1, which are irrelavant.
+  #   If dichotomous biomarker, returns 0's for FP0, FP1, FN2, and FN1, which are irrelavant.
   #
   #   *Let X* denote the true latent subgroups. X* = 2 if X* > thetahiVE, X* = 0 if X <= thetaloVE, and
   #   X* = 1 if X* is in between thetaloVE and thetahiVE, for fixed thetaloVE and thetahiVE that are solved for.
@@ -60,7 +60,7 @@ computesensspecFPFN <- function(sigma2obs,rho,Plat0,Plat2,P0,P2) {
       # where
       #   sensvec <- (sum(S>tauhi & X > thetahiVE)/length(S))/Phi
       #   specvec <- (sum(S<=taulo & X <= thetaloVE)/length(S))/Plo
-      # if binary biomarker,
+      # if dichotomous biomarker,
       #   FP1vec <- 0
       #   FP0vec <- 0
       #   FN2vec <- 0
@@ -71,7 +71,7 @@ computesensspecFPFN <- function(sigma2obs,rho,Plat0,Plat2,P0,P2) {
       #   FN2vec <- (sum(S<=taulo & X > thetahiVE)/length(S))/Phi
       #   FN1vec <- (sum(S<=taulo & X > thetaloVE & X <= thetahiVE)/length(S))/Pmed
 
-      if (Pmed==0){  # binary
+      if (Pmed==0){  # dichotomous
         f2 <- function(tauhi) ((sum(S>tauhi & X > thetahiVE)/length(S))/Phi)*Plat2 - P2[l]
         f0 <- function(taulo) ((sum(S<=taulo & X <= thetaloVE)/length(S))/Plo)*Plat0 - P0[l]
       } else {  # trichotomous
@@ -109,29 +109,22 @@ computesensspecFPFN <- function(sigma2obs,rho,Plat0,Plat2,P0,P2) {
   return(ans)
 }
 
-# sensspectrichotomous.eps illustrates how different levels of measurement error
-# rho map to Sensitivity and Specificity, for fixed values of Plat0 and Plat2,
-# and for single values of P0, P2 or vectors of P0, P2.
-# Figure 1 in the manuscript Supplemental Material
-
-#' Plot ROC Curves for Trichotomous Biomarkers
+#' Plotting of ROC Curves for Trichotomous Biomarkers
 #'
-#' Plots the receiver operating characteristic (ROC) curve displaying sensitivity and specificity for a range of \eqn{P_2=1-P_0} values,
-#' four values of \eqn{\rho}, and four values of \eqn{P^{lat}_2}. It illustrates how different levels of measurement error \eqn{\rho}
-#' map to to sensitivity and specificity, depending on the value of \eqn{P^{lat}_2}.
-#' This funciton is used to create Figure 1 in the Supplementary Material of [Gilbert, Janes, and Huang (2015).
-#' “Power/Sample Size Calculations for Assessing Correlates of Risk in Clinical Efficacy Trials.”]
+#' Plots the receiver operating characteristic (ROC) curve displaying sensitivity and specificity for a range of \code{P2} and \code{P0} values,
+#' four values of \code{rho}, and four values of \code{Plat2}. Illustrates how different levels of measurement error \code{rho} map to sensitivity
+#' and specificity, depending on the value of \code{Plat2}. This funciton is used to create Figure 1 in the Supplementary Material of
+#' [Gilbert, Janes, and Huang (2015). “Power/Sample Size Calculations for Assessing Correlates of Risk in Clinical Efficacy Trials.”]
 #'
-#' @param Plat0 the prevalence of the latent lower protected subgroup for a dichotomous or trichotomous biomarker
+#' @param Plat0 a numeric value specifying the prevalence of the latent lower protected subgroup for a dichotomous or trichotomous biomarker
 #' @param Plat2 a numeric vector of length four specifying the prevalences of the latent higher protected subgroup for a dichotomous or trichotomous biomarker
-#' @param P0 the probability of low biomarker response for a dichotomous or trichotomous biomarker. It can be scalar value or a numeric vector specifying a grid of probabilities.
-#' @param P2 the probability of high biomarker response for a dichotomous or trichotomous biomarker. It can be scalar value or a numeric vector specifying a grid of probabilities.
-#' @param rho a numeric vector specifying distinct protection-relevant fractions of \code{sigma2obs}. The first element must be 1, representing a noise-free biomarker.
+#' @param P0 a numeric vector specifying a grid of probabilities of low biomarker response for a dichotomous or trichotomous biomarker.
+#' @param P2 a numeric vector specifying a grid of probabilities of high biomarker response for a dichotomous or trichotomous biomarker.
+#' @param rho a numeric vector of length four specifying distinct protection-relevant fractions of \code{sigma2obs}.
 #'
-#' @return Plot displaying CoR curves for various CoR relative risk and lowest VE scenarios
+#' @return None. The function is called solely for plot generation.
 #'
 #' @examples
-#'
 #' Plat0 <- 0.2
 #' Plat2 <- c(0.2, 0.3, 0.4, 0.5)
 #' P0 <- seq(0.90, 0.10, len=25)
@@ -168,7 +161,7 @@ plotROCcurveTri <- function(Plat0, Plat2, P0, P2, rho) {
     title(bquote(P[2]^{lat}==.(Plat2VE)), cex=1.1)
   }
 
-  mtext("ROC Curve of a Trichotomous Marker: 10%-90% (90%-10%) Vaccinees with S=2 (S=0)",outer=T,cex=1.2)
+  mtext(bquote("ROC Curve of a Trichotomous Marker: "~.(P2[1]*100)~"% - "~.(P2[length(P2)]*100)~"%  ("~.(P0[1]*100)~"% - "~.(P0[length(P0)]*100)~"%) Vaccinees with S=2 (S=0)"),outer=T,cex=1.2)
 }
 
 

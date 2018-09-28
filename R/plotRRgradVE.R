@@ -1,26 +1,21 @@
-#' Plot Ratio of Relative Risks for Higher/Lower Latent Subgroups against CoR Effect Size \eqn{RR_t} for Trichotomous Biomarker
+#' Plotting of the Ratio of Relative Risks for Higher/Lower Latent Subgroups against Correlate of Risk Effect Size for Trichotomous Biomarkers
 #'
-#' Plots the ratio of relative risks for the higher and lower latent subgroups (\eqn{RRlat2/RRlat0}) versus
-#' the CoR relative risk effect size (\eqn{RR_t = risk_1(2)/risk_1(0)}).
+#' Plots the ratio of relative risks for the higher and lower latent subgroups (on the y-axis) versus the correlate of risk effect size (on the x-axis) in the active treatment group for a trichotomous biomarker.
+#' The correlate of risk effect size is quantified as the relative risk ratio of the clinical endpoint comparing subgroups of active treatment recipients with high and low biomarker response.
 #'
-#' @param outComputePower List or list of lists containing output from \code{\link{computePower}}, or character vector specifying the file(s) containing \code{\link{computePower}} output.
-#' @param outDir Character vector specifying path(s) to output file(s), necessary if \code{outComputePower} is a character vector. Default is \code{NULL}.
-#' @param legendText Character vector specifying the entirety of the legend text. Order of the parameter values must match that of the \code{\link{computePower}} input parameters in order for legend labels to be accurate.
+#' @param outComputePower either a list or list of lists containing output from \code{\link{computePower}} or a character vector specifying the \code{.RData} file(s) containing \code{\link{computePower}} output
+#' @param outDir a character vector specifying path(s) to output \code{.RData} file(s), necessary if \code{outComputePower} is a character vector. Default is \code{NULL}.
+#' @param legendText a character vector specifying the entirety of the legend text. The order of the elements (i.e., parameter values) must match that of the \code{\link{computePower}} input parameters in order for legend labels to be accurate.
 #'
 #' @details
-#' When \eqn{\rho} is varied, this plot shows how the relationship between the CoR effect size RRt and the ratio of latent relative risks RRlat2/RRlat0 changes
-#' for different values of \eqn{\rho}. RRlat2/RRlat0 is a relative vaccine efficacy parameter because RRlat2 = 1 - VElat2 and RRlat0 = 1 - VElat0.
-#' When \eqn{\rho=1}, RRt = RRlat2/RRlat0 such that a CoR in the vaccine group is equivalent to the relative vaccine efficacy parameter,
-#' whereas for imperfectly measured biomarkers with \eqn{\rho<1}, RRt>RRlat2/RRlat0 and the CoR effect size is closer to the null than the relative vaccine efficacy
-#' parameter is.
+#' When \code{rho} is varied, this plot shows how the relationship between the correlate of risk effect size and the relative risks for the higher and lower latent subgroups
+#' changes for different values of \code{rho}. The ratio of relative risks for the higher and lower latent subgroups is a relative vaccine efficacy parameter. When \code{rho=1},
+#' a correlate of risk in the vaccine group is equivalent to the relative vaccine efficacy parameter, whereas for imperfectly measured biomarkers with \code{rho<1},
+#' the correlate of risk effect size is closer to the null than the relative vaccine efficacy parameter is.
 #'
-#' Note: RRlat2/RRlat0 = \eqn{(risk_1^{lat}(2)/risk_0^{lat}(2)) / (risk_1^{lat}(0)/risk_0^{lat}(0)) = risk_1^{lat}(2) / risk_1^{lat}(0)},
-#' assuming risk_0 is constant for all s* and x*.
-#'
-#' @return Plot displaying ratio of relative risks vs. CoR relative risk effect size
+#' @return None. The function is called solely for plot generation.
 #'
 #' @examples
-#'
 #' # Example scenario with trichotomous biomarker, where values of rho are varied
 #'
 #' # Set input parameters for computePower function

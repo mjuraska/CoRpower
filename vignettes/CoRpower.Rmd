@@ -8,12 +8,7 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r, include=FALSE, cache=TRUE}
-library(devtools)
-figDir <- "T:/vaccine/StephanieWu/CoR Power Package In Progress/Figures"
-```
-
-The `CoRpower` package performs power calculations for correlates of risk, as described in [Gilbert, Janes, and Huang (2016). “Power/Sample Size Calculations for Assessing Correlates of Risk in Clinical Efficacy Trials.”] The power calculations accomodate three types of biomarkers: 
+The `CoRpower` package performs power calculations for correlates of risk, as described in [Gilbert, Janes, and Huang (2016). Power/Sample Size Calculations for Assessing Correlates of Risk in Clinical Efficacy Trials] The power calculations accomodate three types of biomarkers: 
 
 - trichotomous
 - dichotomous
@@ -100,11 +95,6 @@ The functions included in this package are:
         \[
         Spec = \widehat{Spec}(\phi^{\ast}_0),\; Sens = \widehat{Sens}(\phi^{\ast}_2),\; \textrm{etc.}
         \]
-        <li> For example, for $P^{lat}_0=P_0=0.2$, $P^{lat}_2=P_2=0.6$, $\sigma^2_{obs}=1$, and $\rho$ taking on the values 1, 0.9, 0.7, and 0.5,          we could end up with the following values for $Sens, Spec, FP^0, FP^1, FN^1,$ and $FN^2$:
-```{r, echo=FALSE, fig.align='center', out.width='90%'}
-knitr::include_graphics(file.path(figDir,"Scen5Table1.png"))
-```
-        
         </ol>    
     + In Approach 2, plot
             \[
@@ -233,20 +223,6 @@ pwr <- computePower(nCases = 32,
                     biomType = "trichotomous")    # "continuous" by default
 ```
 
-```{r, include=FALSE, cache=TRUE, message=FALSE}
-load("T:/vaccine/StephanieWu/CoR Power Package In Progress/Scenario1/K3/ansScen1.RData")
-pwr5to1 <- pwr
-devtools::use_data(pwr5to1, internal = TRUE, overwrite=TRUE)
-```
-
-### Output list for `controlCaseRatio = 5`:
-```{r}
-names(pwr5to1)
-pwr5to1$power[1, c(1, 25, 50, 75, 100)]
-pwr5to1$RRt[1, c(1, 25, 50, 75, 100)]
-pwr5to1$VElat2[c(1, 25, 50, 75, 100)]
-```
-
 ### Plot power curves with `plotPowerTri()`
 Basic plotting functions are included in the package to aid with visualizing results. `plotPowerTri` plots the power curve against the CoR relative risk, $RR_t$, for trichotomous or binary biomarkers. 
 
@@ -262,10 +238,6 @@ computePower(..., saveDir = "myDir", saveFile = "myFile.RData")
 plotPowerTri(outComputePower = c("myFile1", "myFile2", "myFile3"), # 'computePower' output files
              outDir = rep("~/myDir", 3),                           # path to each myFilex.RData
              legendText = paste0("Control:Case = ", c("5:1", "3:1", "1:1")))
-```
-
-```{r, echo=FALSE, fig.align='center', out.width='65%'}
-knitr::include_graphics(file.path(figDir,"powertrinary_CoR_Scen1.png"))
 ```
 
 
@@ -293,9 +265,6 @@ pwr <- computePower(nCases = 32,
 ```{r, eval=FALSE}
 plotPowerTri(outComputePower = pwr,    
              legendText = paste0("Sens = Spec = ", c(1, 0.9, 0.8, 0.7)))
-```
-```{r, echo=FALSE, fig.align='center', out.width='67%'}
-knitr::include_graphics(file.path(figDir,"powertrinary_CoR_Scen3.png"))
 ```
 
 ## *Scenario 3:* vary \(\, P^{lat}_0, P^{lat}_2, P_0, P_2\) (Approach 1) | Trichotomous \(\, S\), without replacement sampling 
@@ -325,10 +294,6 @@ plotPowerTri(outComputePower = list(pwr1, pwr2, pwr3, pwr4),
                             "Plat0=0.15, Plat2=0.45", 
                             "Plat0=0.2, Plat2=0.6"))
 ```
-```{r, echo=FALSE, fig.align='center', out.width='65%'}
-knitr::include_graphics(file.path(figDir,"powertrinary_CoR_Scen2.png"))
-```
-
 
 ## *Scenario 4:* vary \(\, \rho \) (Approach 2) | Trichotomous \(\, S\), without replacement sampling 
 ### Run simulations and compute power with `computePower()`
@@ -357,9 +322,6 @@ pwr <- computePower(nCases = 32,
 plotPowerTri(outComputePower = pwr,   
              legendText = paste0("rho = ", c(1, 0.9, 0.7, 0.5)))
 ```
-```{r, echo=FALSE, fig.align='center', out.width='65%'}
-knitr::include_graphics(file.path(figDir,"powertrinary_CoR_Scen5.png"))
-```
 
 ### Plot $RR_t$ vs. $RR_2^{lat}/RR_0^{lat}$ with `plotRRgradVE()`
 `plotRRgradVE()` plots the ratio of relative risks for the higher and lower latent subgroups $RR_2^{lat}/RR_0^{lat}$ against the CoR relative risk effect size $RR_t = risk_1(2)/risk_1(0)$. 
@@ -378,10 +340,16 @@ plotRRgradVE(outComputePower = "myFile",    # file with 'computePower' output
              legendText = paste0("rho = ", c(1, 0.9, 0.7, 0.5)))
 ```
 
-```{r, echo=FALSE, fig.align='center', out.width='70%'}
-knitr::include_graphics(file.path(figDir,"RRcomparison_CoR_Scen5.png"))
+### Plot ROC curves with `plotROCcurveTri()`
+`plotROCcurveTri()` plots the receiver operating characteristic (ROC) curve displaying sensitivity and specificity for a range of values for `P2`, `P0`, `Plat2`, and `rho`. 
+For more information, visit the `plotROCcurveTri()` help page. 
+```{r, eval=FALSE}
+plotROCcurveTri(Plat0 = 0.2, 
+                Plat2 = c(0.2, 0.3, 0.4, 0.5), 
+                P0 = seq(0.90, 0.10, len=25), 
+                P2 = seq(0.10, 0.90, len=25), 
+                rho = c(`, 0.9, 0.7, 0.5))
 ```
-
 
 ## *Scenario 5:* vary \(\, P^{lat}_0, P_0, P^{lat}_2, P_2 \) (Approach 2) | Trichotomous \(\, S\), without replacement sampling
 ```{r, eval=FALSE}
@@ -411,9 +379,6 @@ plotPowerTri(outComputePower = list(pwr1, pwr2, pwr3, pwr4),
                             "Plat0=0.15, Plat2=0.45", 
                             "Plat0=0.2, Plat2=0.6"))
 ```
-```{r, echo=FALSE, fig.align='center', out.width='65%'}
-knitr::include_graphics(file.path(figDir,"powertrinary_CoR_Scen6.png"))
-```
 
 ## *Scenario 6:* vary \(\, n_{cases}\) (Approach 2) | Trichotomous \(\, S\), without replacement sampling
 ```{r, eval=FALSE}
@@ -440,10 +405,6 @@ pwr <- computePower(nCases = c(25, 32, 35, 40),
 plotPowerTri(outComputePower = pwr,   
              legendText = paste0("nCases = ", c(25, 32, 35, 40)))
 ```
-```{r, echo=FALSE, fig.align='center', out.width='65%'}
-knitr::include_graphics(file.path(figDir,"powertrinary_CoR_Scen7.png"))
-```
-
 
 ## Illustration: `CoRpower` for binary \(\, S\) | Without replacement sampling
 Achieved by selecting $P_0^{lat}$, $P_2^{lat}$, $P_0$, $P_2$ such that
@@ -484,9 +445,6 @@ pwr <- computePower(nCases = c(25, 32, 35, 40),
 ```{r, eval=FALSE}
 plotPowerTri(outComputePower = pwr,   
              legendText = paste0("nCases = ", c(25, 32, 35, 40)))
-```
-```{r, echo=FALSE, fig.align='center', out.width='65%'}
-knitr::include_graphics(file.path(figDir,"powertrinary_CoR_Scen8.png"))
 ```
 
 ## Algorithm for continuous biomarker \(\, S^{\ast}\) | Without replacement sampling
@@ -556,20 +514,6 @@ pwr <- computePower(nCases = 32,
                     biomType = "continuous")     # "continuous" by default
 ```
 
-```{r, echo=FALSE, cache=TRUE, message=FALSE}
-load("T:/vaccine/StephanieWu/CoR Power Package In Progress/Scenario9/ansScen9.RData")
-pwr <- pwr
-devtools::use_data(pwr, internal = TRUE, overwrite=TRUE)
-```
-
-### Output list
-```{r}
-names(pwr)
-pwr$power[1, c(1, 25, 50, 75, 100)]
-pwr$RRc[c(1, 25, 50, 75, 100)]
-pwr$VElowest[c(1, 25, 50, 75, 100)]
-```
-
 ### Plot power curves with `plotPowerCont()`
 `plotPowerCont()` plots the power curve against the CoR relative risk, $RR_c$, for continuous biomarkers.  
 
@@ -585,9 +529,6 @@ computePower(..., saveDir = "myDir", saveFile = "myFile.RData")
 plotPowerCont(outComputePower = "myFile",     # file with 'computePower' output
               outDir = "~/myDir",             # path to myFile.RData
               legendText = paste0("rho = ", c(1, 0.9, 0.7, 0.5)))
-```
-```{r, echo=FALSE, fig.align='center', out.width='70%'}
-knitr::include_graphics(file.path(figDir,"powercontinuous_CoR_Scen9.png"))
 ```
 
 ### Plot $VE^{lat}_{x^{\ast}}$ curves with `plotVElatCont()`
@@ -605,9 +546,6 @@ Using the function when `computePower()` output is saved in a file with name "my
 computePower(..., saveDir = "myDir", saveFile = "myFile.RData")
 plotVElatCont(outComputePower = "myFile",   
               outDir = "~/myDir")          
-```
-```{r, echo=FALSE, fig.align='center', out.width='65%'}
-knitr::include_graphics(file.path(figDir,"plotVEcurveCoRcontinuous_Scen9.png"))
 ```
 
 ## *Scenario 9:* vary \(\, P_{lowestVE}^{lat} \) | Continuous \(\, S^{\ast}\), without replacement sampling
@@ -632,9 +570,6 @@ pwr <- computePower(nCases = 32,
 ```{r, eval=FALSE}
 plotPowerCont(outComputePower = list(pwr1, pwr2, pwr3, pwr4),          # output list from 'computePower'
               legendText = paste0("PlatVElowest = ", c(0.05, 0.1, 0.15, 0.2)))
-```
-```{r, echo=FALSE, fig.align='center', out.width='70%'}
-knitr::include_graphics(file.path(figDir,"powercontinuous_CoR_Scen10.png"))
 ```
 
 ## Bernoulli / case-cohort sampling of \(\, S\) (or \(\, S^{\ast}\))
@@ -682,9 +617,6 @@ pwr <- computePower(nCases = 32,
 plotPowerTri(outComputePower = list(pwr1, pwr2, pwr3, pwr4),  # 'computePower' outputs
              legendText = paste0("Cohort p = ", c(0.01, 0.02, 0.03, 0.05)))
 ```
-```{r, echo=FALSE, fig.align='center', out.width='66%'}
-knitr::include_graphics(file.path(figDir,"powertrinary_CoR_Scen4.png"))
-```
 
 ## *Scenario 11:* vary \(\, p \) | Continuous \(\, S^{\ast}\), Bernoulli sampling
 ### Run simulations and compute power with `computePower()`
@@ -709,9 +641,6 @@ pwr <- computePower(nCases = 32,
 ```{r, eval=FALSE}
 plotPowerCont(outComputePower = list(pwr1, pwr2, pwr3, pwr4),  # 'computePower' outputs
               legendText = paste0("Cohort p = ", c(0.01, 0.02, 0.03, 0.05)))
-```
-```{r, echo=FALSE, fig.align='center', out.width='70%'}
-knitr::include_graphics(file.path(figDir,"powercontinuous_CoR_Scen11.png"))
 ```
 
 

@@ -1,13 +1,13 @@
 #' Plotting of Power versus Correlate of Risk Effect Size for Dichotomous and Trichotomous Biomarkers
 #'
-#' Plots power (on th y-axis) to detect a correlate of risk effect size (on the x-axis) in the active treatment group for a dichotomous or trichotomous biomarker. The correlate of risk effect size is quantified as
-#' the relative risk ratio of the clinical endpoint comparing subgroups of active treatment recipients with high and low biomarker response, considering a noise-free biomarker.
+#' Plots power (on the y-axis) to detect a correlate of risk effect size (on the x-axis) in the active treatment group for a dichotomous or trichotomous biomarker. The correlate of risk effect size is quantified as
+#' the relative risk ratio of the clinical endpoint comparing subgroups of active treatment recipients with high and low biomarker response.
 #'
 #' @param outComputePower either a list or list of lists containing output from \code{\link{computePower}} or a character vector specifying the \code{.RData} file(s) containing \code{\link{computePower}} output
 #' @param outDir a character vector specifying path(s) to output \code{.RData} file(s), necessary if \code{outComputePower} is a character vector. Default is \code{NULL}.
 #' @param legendText a character vector specifying the entirety of the legend text. The order of the elements (i.e., parameter values) must match that of the \code{\link{computePower}} input parameters in order for legend labels to be accurate.
 #'
-#' @details If multiple levels are specified for the biomarker measurement error input parameters (i.e., for \code{sens}/\code{spec} or \code{rho}) in \code{\link{computePower}}, only the first level is used to determine 
+#' @details If multiple levels are specified for the biomarker measurement error input parameters (i.e., for \code{sens}/\code{spec} or \code{rho}) in \code{\link{computePower}}, only the first level is used to determine
 #' the \eqn{RR_t} values that are plotted on the x-axis.
 #'
 #' @return None. The function is called solely for plot generation.
@@ -97,7 +97,7 @@ plotPowerTri <- function(outComputePower, outDir=NULL, legendText) {
   alpha <- pwr$alpha
   Plat0 <- pwr$Plat0
   Plat2 <- pwr$Plat2
-  biomType <- ifelse(Plat0 + Plat2 == 1, "Binary", "Trichotomous")
+  biomType <- ifelse(Plat0 + Plat2 == 1, "dichotomous", "Trichotomous")
 
   if(multiple==TRUE) {
     for(i in 2:length(outComputePower)) {
@@ -127,7 +127,7 @@ plotPowerTri <- function(outComputePower, outDir=NULL, legendText) {
   tick4 <- which.min(abs(RRt[,1]-RRtgrid[4]))
   tick5 <- which.min(abs(RRt[,1]-RRtgrid[5]))
   axis(1, at=RRtgrid, labels=round(c(VElat0[tick1], VElat0[tick2], VElat0[tick3], VElat0[tick4], VElat0[tick5]),2), line=1.5, tick=FALSE)
-  if(biomType == "binary") {
+  if(biomType == "dichotomous") {
     axis(1, at=RRtgrid, labels=round(c(VElat2[tick1], VElat2[tick2], VElat2[tick3], VElat2[tick4], VElat2[tick5]),2), line=3, tick=FALSE)
   } else {
     axis(1, at=RRtgrid, labels=round(c(VElat1[tick1], VElat1[tick2], VElat1[tick3], VElat1[tick4], VElat1[tick5]),2), line=3, tick=FALSE)
@@ -135,7 +135,7 @@ plotPowerTri <- function(outComputePower, outDir=NULL, legendText) {
   }
   mtext(expression(RR[t]), 1, line=1, at=-0.05, cex=1.2)
   mtext(expression(VE[0]^{lat}), 1, line=2.8, at=-0.05, cex=1.2)
-  if(biomType == "binary") {
+  if(biomType == "dichotomous") {
     mtext(expression(VE[2]^{lat}), 1, line=4.3, at=-0.05, cex=1.2)
   } else {
     mtext(expression(VE[1]^{lat}), 1, line=4.3, at=-0.05, cex=1.2)
