@@ -32,15 +32,8 @@ vignettes/*.pdf
 *.utf8.md
 *.knit.md
 
-# Web page directories and files
-/*_files/
-/*-cache/
-/*-figure/
-*.md
-*.html
-
 # Shiny token, see https://shiny.rstudio.com/articles/shinyapps.html
 rsconnect/
 
 *.orig
-.Rproj.user
+
