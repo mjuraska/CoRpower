@@ -4,7 +4,8 @@
 #' the relative risk ratio of the clinical endpoint comparing subgroups of active treatment recipients with high and low biomarker response.
 #'
 #' @param outComputePower either a list or list of lists containing output from \code{\link{computePower}} or a character vector specifying the \code{.RData} file(s) containing \code{\link{computePower}} output
-#' @param outDir a character vector specifying path(s) to output \code{.RData} file(s), necessary if \code{outComputePower} is a character vector. Default is \code{NULL}.
+#' @param outDir a character vector specifying path(s) to output \code{.RData} file(s), necessary if 
+#' \code{outComputePower} is a character vector. Default is \code{NULL}.
 #' @param legendText a character vector specifying the entirety of the legend text. The order of the elements (i.e., parameter values) must match that of the \code{\link{computePower}} input parameters in order for legend labels to be accurate.
 #'
 #' @details If multiple levels are specified for the biomarker measurement error input parameters (i.e., for \code{sens}/\code{spec} or \code{rho}) in \code{\link{computePower}}, only the first level is used to determine
@@ -34,21 +35,24 @@
 #'
 #' # Output from computePower function is stored in an object as a list
 #' pwr1 <- computePower(nCases=nCases, nControls=nControls, nCasesWithS=nCasesWithS,
-#'                      controlCaseRatio=controlCaseRatio, risk0=risk0, VEoverall=VEoverall,
-#'                      Plat0=Plat0, Plat2=Plat2, P0=P0, P2=P2, VElat0=VElat0, VElat1=VElat1,
-#'                      M=M, alpha=alpha, spec=spec, FP0=FP0, sens=sens, FN2=FN2, biomType=biomType)
+#'                      controlCaseRatio=controlCaseRatio, risk0=risk0, 
+#'                      VEoverall=VEoverall, Plat0=Plat0, Plat2=Plat2, P0=P0, P2=P2, 
+#'                      VElat0=VElat0, VElat1=VElat1, M=M, alpha=alpha, spec=spec, 
+#'                      FP0=FP0, sens=sens, FN2=FN2, biomType=biomType)
 #'
 #' controlCaseRatio <- 3
 #' pwr2 <- computePower(nCases=nCases, nControls=nControls, nCasesWithS=nCasesWithS,
-#'                      controlCaseRatio=controlCaseRatio, risk0=risk0, VEoverall=VEoverall,
-#'                      Plat0=Plat0, Plat2=Plat2, P0=P0, P2=P2, VElat0=VElat0, VElat1=VElat1,
-#'                      M=M, alpha=alpha, spec=spec, FP0=FP0, sens=sens, FN2=FN2, biomType=biomType)
+#'                      controlCaseRatio=controlCaseRatio, risk0=risk0, 
+#'                      VEoverall=VEoverall, Plat0=Plat0, Plat2=Plat2, P0=P0, P2=P2, 
+#'                      VElat0=VElat0, VElat1=VElat1, M=M, alpha=alpha, spec=spec, 
+#'                      FP0=FP0, sens=sens, FN2=FN2, biomType=biomType)
 #'
 #' controlCaseRatio <- 1
 #' pwr3 <- computePower(nCases=nCases, nControls=nControls, nCasesWithS=nCasesWithS,
-#'                      controlCaseRatio=controlCaseRatio, risk0=risk0, VEoverall=VEoverall,
-#'                      Plat0=Plat0, Plat2=Plat2, P0=P0, P2=P2, VElat0=VElat0, VElat1=VElat1,
-#'                      M=M, alpha=alpha, spec=spec, FP0=FP0, sens=sens, FN2=FN2, biomType=biomType)
+#'                      controlCaseRatio=controlCaseRatio, risk0=risk0, 
+#'                      VEoverall=VEoverall, Plat0=Plat0, Plat2=Plat2, P0=P0, P2=P2, 
+#'                      VElat0=VElat0, VElat1=VElat1, M=M, alpha=alpha, spec=spec, 
+#'                      FP0=FP0, sens=sens, FN2=FN2, biomType=biomType)
 #'
 #' # Set parameters for plotPowerTri function
 #' # outComputePower is a list of lists containing outputs from the computePower function

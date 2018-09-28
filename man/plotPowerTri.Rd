@@ -9,7 +9,8 @@ plotPowerTri(outComputePower, outDir = NULL, legendText)
 \arguments{
 \item{outComputePower}{either a list or list of lists containing output from \code{\link{computePower}} or a character vector specifying the \code{.RData} file(s) containing \code{\link{computePower}} output}
 
-\item{outDir}{a character vector specifying path(s) to output \code{.RData} file(s), necessary if \code{outComputePower} is a character vector. Default is \code{NULL}.}
+\item{outDir}{a character vector specifying path(s) to output \code{.RData} file(s), necessary if 
+\code{outComputePower} is a character vector. Default is \code{NULL}.}
 
 \item{legendText}{a character vector specifying the entirety of the legend text. The order of the elements (i.e., parameter values) must match that of the \code{\link{computePower}} input parameters in order for legend labels to be accurate.}
 }
@@ -46,21 +47,24 @@ biomType <- "trichotomous"
 
 # Output from computePower function is stored in an object as a list
 pwr1 <- computePower(nCases=nCases, nControls=nControls, nCasesWithS=nCasesWithS,
-                     controlCaseRatio=controlCaseRatio, risk0=risk0, VEoverall=VEoverall,
-                     Plat0=Plat0, Plat2=Plat2, P0=P0, P2=P2, VElat0=VElat0, VElat1=VElat1,
-                     M=M, alpha=alpha, spec=spec, FP0=FP0, sens=sens, FN2=FN2, biomType=biomType)
+                     controlCaseRatio=controlCaseRatio, risk0=risk0, 
+                     VEoverall=VEoverall, Plat0=Plat0, Plat2=Plat2, P0=P0, P2=P2, 
+                     VElat0=VElat0, VElat1=VElat1, M=M, alpha=alpha, spec=spec, 
+                     FP0=FP0, sens=sens, FN2=FN2, biomType=biomType)
 
 controlCaseRatio <- 3
 pwr2 <- computePower(nCases=nCases, nControls=nControls, nCasesWithS=nCasesWithS,
-                     controlCaseRatio=controlCaseRatio, risk0=risk0, VEoverall=VEoverall,
-                     Plat0=Plat0, Plat2=Plat2, P0=P0, P2=P2, VElat0=VElat0, VElat1=VElat1,
-                     M=M, alpha=alpha, spec=spec, FP0=FP0, sens=sens, FN2=FN2, biomType=biomType)
+                     controlCaseRatio=controlCaseRatio, risk0=risk0, 
+                     VEoverall=VEoverall, Plat0=Plat0, Plat2=Plat2, P0=P0, P2=P2, 
+                     VElat0=VElat0, VElat1=VElat1, M=M, alpha=alpha, spec=spec, 
+                     FP0=FP0, sens=sens, FN2=FN2, biomType=biomType)
 
 controlCaseRatio <- 1
 pwr3 <- computePower(nCases=nCases, nControls=nControls, nCasesWithS=nCasesWithS,
-                     controlCaseRatio=controlCaseRatio, risk0=risk0, VEoverall=VEoverall,
-                     Plat0=Plat0, Plat2=Plat2, P0=P0, P2=P2, VElat0=VElat0, VElat1=VElat1,
-                     M=M, alpha=alpha, spec=spec, FP0=FP0, sens=sens, FN2=FN2, biomType=biomType)
+                     controlCaseRatio=controlCaseRatio, risk0=risk0, 
+                     VEoverall=VEoverall, Plat0=Plat0, Plat2=Plat2, P0=P0, P2=P2, 
+                     VElat0=VElat0, VElat1=VElat1, M=M, alpha=alpha, spec=spec, 
+                     FP0=FP0, sens=sens, FN2=FN2, biomType=biomType)
 
 # Set parameters for plotPowerTri function
 # outComputePower is a list of lists containing outputs from the computePower function

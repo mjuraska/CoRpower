@@ -93,7 +93,8 @@ For a dichotomous or trichotomous biomarker, the output list has the following c
   \item \code{Ncomplete}: an integer value specifying \code{nCases} + \code{nControls}, i.e., the number, observed or projected, of active treatment recipients at risk at \eqn{\tau} with an observed endpoint or a completed follow-up through \eqn{\tau_{max}}
   \item \code{nCases}: an integer value specifying the number of clinical endpoint cases observed (or projected) between \eqn{\tau} and \eqn{\tau_{max}} in the active treatment group
   \item \code{nCasesWithS}: an integer value specifying the number of clinical endpoint cases observed (or projected) between \eqn{\tau} and \eqn{\tau_{max}} in the active treatment group with an available biomarker response
-  \item \code{controlCaseRatio}: an integer specifying the number of controls sampled per case for biomarker measurement in the without replacement case-control sampling design
+  \item \code{controlCaseRatio}: an integer specifying the number of controls sampled per case for 
+  biomarker measurement in the without replacement case-control sampling design
   \item \code{VEoverall}: a numeric value specifying the overall treatment (vaccine) efficacy between \eqn{\tau} and \eqn{\tau_{max}}
   \item \code{risk0}: a numeric value specifying the overall placebo-group endpoint risk between \eqn{\tau} and \eqn{\tau_{max}}
   \item \code{alpha}: a numeric value specifying the two-sided Wald test type-I error rate
@@ -167,9 +168,10 @@ M <- 5
 alpha <- 0.05
 biomType <- "trichotomous"
 computePower(nCases=nCases, nControls=nControls, nCasesWithS=nCasesWithS,
-             controlCaseRatio=controlCaseRatio, VEoverall=VEoverall, risk0=risk0,
-             VElat0=VElat0, VElat1=VElat1, Plat0=Plat0, Plat2=Plat2, P0=P0, P2=P2,
-             M=M, alpha=alpha, spec=spec, FP0=FP0, sens=sens, FN2=FN2, biomType=biomType)
+             controlCaseRatio=controlCaseRatio, VEoverall=VEoverall, 
+             risk0=risk0, VElat0=VElat0, VElat1=VElat1, Plat0=Plat0, 
+             Plat2=Plat2, P0=P0, P2=P2, M=M, alpha=alpha, spec=spec, 
+             FP0=FP0, sens=sens, FN2=FN2, biomType=biomType)
 
 \dontrun{
 ## Trichotomous biomarker, Approach 2, varying rho ##
@@ -261,17 +263,19 @@ biomType <- "continuous"
 cohort <- TRUE
 p <- 0.01
 computePower(nCases=nCases, nControls=nControls, nCasesWithS=nCasesWithS,
-             VEoverall=VEoverall, risk0=risk0, PlatVElowest=PlatVElowest, VElowest=VElowest,
-             M=M, alpha=alpha, sigma2obs=sigma2obs, rho=rho, biomType=biomType, cohort=cohort,
-             p=p)
+             VEoverall=VEoverall, risk0=risk0, PlatVElowest=PlatVElowest, 
+             VElowest=VElowest, M=M, alpha=alpha, sigma2obs=sigma2obs, 
+             rho=rho, biomType=biomType, cohort=cohort, p=p)
 p <- 0.02
 computePower(nCases=nCases, nControls=nControls, nCasesWithS=nCasesWithS,
-             VEoverall=VEoverall, risk0=risk0, PlatVElowest=PlatVElowest, VElowest=VElowest,
-             M=M, alpha=alpha, sigma2obs=sigma2obs, rho=rho, biomType=biomType, cohort=cohort, p=p)
+             VEoverall=VEoverall, risk0=risk0, PlatVElowest=PlatVElowest, 
+             VElowest=VElowest, M=M, alpha=alpha, sigma2obs=sigma2obs, 
+             rho=rho, biomType=biomType, cohort=cohort, p=p)
 p <- 0.03
 computePower(nCases=nCases, nControls=nControls, nCasesWithS=nCasesWithS,
-             VEoverall=VEoverall, risk0=risk0, PlatVElowest=PlatVElowest, VElowest=VElowest,
-             M=M, alpha=alpha, sigma2obs=sigma2obs, rho=rho, biomType=biomType, cohort=cohort, p=p)
+             VEoverall=VEoverall, risk0=risk0, PlatVElowest=PlatVElowest, 
+             VElowest=VElowest, M=M, alpha=alpha, sigma2obs=sigma2obs, 
+             rho=rho, biomType=biomType, cohort=cohort, p=p)
 
 
 ## Continuous biomarker, saving output, varying sample sizes ##
@@ -292,9 +296,10 @@ biomType <- "continuous"
 saveDir <- "~/myDir"
 saveFile <- "MyFile"
 computePower(nCases=nCases, nCasesWithS=nCasesWithS, nControls=nControls,
-             controlCaseRatio=controlCaseRatio, VEoverall=VEoverall, risk0=risk0,
-             PlatVElowest=PlatVElowest, VElowest=VElowest, M=M, alpha=alpha,
-             sigma2obs=sigma2obs, rho=rho, biomType=biomType, saveDir=saveDir, saveFile=saveFile)
+             controlCaseRatio=controlCaseRatio, VEoverall=VEoverall, 
+             risk0=risk0, PlatVElowest=PlatVElowest, VElowest=VElowest, 
+             M=M, alpha=alpha, sigma2obs=sigma2obs, rho=rho, 
+             biomType=biomType, saveDir=saveDir, saveFile=saveFile)
 }
 
 }
