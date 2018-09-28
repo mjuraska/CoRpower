@@ -2,49 +2,53 @@
 % Please edit documentation in R/computeN.R
 \name{computeN}
 \alias{computeN}
-\title{Sample Size Calculations for Correlates of Risk}
+\title{Estimation of Size and Numbers of Cases and Controls in the Target Population of Active Treatment Recipients At Risk at the Biomarker Sampling Timepoint}
 \usage{
 computeN(Nrand, tau, taumax, VEtauToTaumax, VE0toTau, risk0, dropoutRisk,
   propCasesWithS)
 }
 \arguments{
-\item{Nrand}{Number of participants randomized to vaccine arm}
+\item{Nrand}{the number of participants randomized to the active treatment group}
 
-\item{tau}{Biomarker sampling timepoint}
+\item{tau}{the biomarker sampling timepoint after randomization}
 
-\item{taumax}{End of follow-up time period}
+\item{taumax}{the time after randomization marking the end of the follow-up period for the clinical endpoint}
 
-\item{VEtauToTaumax}{VE between 'tau' and 'taumax'}
+\item{VEtauToTaumax}{the treatment (vaccine) efficacy level between \eqn{\tau} and \eqn{\tau_{max}}}
 
-\item{VE0toTau}{VE between 0 and 'tau'}
+\item{VE0toTau}{the treatment (vaccine) efficacy between 0 and \eqn{\tau}}
 
-\item{risk0}{Placebo-group endpoint risk between 'tau' and 'taumax'}
+\item{risk0}{the overall placebo-group endpoint risk between \eqn{\tau} and \eqn{\tau_{max}}}
 
-\item{dropoutRisk}{Dropout risk between 0 and 'taumax'}
+\item{dropoutRisk}{the risk of participant dropout between 0 and \eqn{\tau_{max}}}
 
-\item{propCasesWithS}{Proportion of cases with measured S}
+\item{propCasesWithS}{the proportion of observed cases with a measured biomarker response}
 }
 \value{
-List with the following elements:
+A list with the following components:
 \itemize{
-  \item N: the number of subjects in the vaccine group at risk at tau
-  \item nCases: Number of subjects in the vaccine group at-risk at tau with the clinical event (cases) by taumax.
-   \item nControls: Number of subjects in the vaccine group at-risk at tau without the clinical event (controls) by taumax.
-   \item nCasesWithS: Number of subjects in the vaccine group at-risk at tau with the clinical event (cases) by taumax and with the biomarker measured
+  \item N: the total estimated number of active treatment recipients observed to be at risk at \eqn{\tau}
+  \item nCases: the estimated number of clinical endpoint cases observed between \eqn{\tau} and \eqn{\tau_{max}} in the active treatment group
+   \item nControls: the estimated number of controls observed to complete follow-up through \eqn{\tau_{max}} endpoint-free in the active treatment group
+   \item nCasesWithS: the estimated number of clinical endpoint cases observed between \eqn{\tau} and \eqn{\tau_{max}} in the active treatment group with an available biomarker response
 }
 }
 \description{
-Calculates projected sample sizes at the design stage for trials assessing biomarkers as correlates of risk (CoRs).
+If the power calculation is done at the study design stage, the function estimates the size and numbers of cases and controls in the target population of active treatment recipients observed to be
+at risk at the biomarker sampling timepoint.
 }
 \details{
-This function calculates projected sample sizes and includes options to account for dropout and incomplete sample storage.
-These projected sample sizes can then be used as input values for the computePower function. Calculations use the following
-assumptions:
+The function estimates design parameters that are required as input to \code{\link{computePower}}. If the power calculation is done after the follow-up was completed, the estimates are replaced by the observed
+counterparts for use as input parameters in \code{\link{computePower}}.
+
+The calculations include options to account for participant dropout by specifying \code{dropoutRisk} as well as for incomplete sample storage by specifying \code{propCasesWithS}.
+
+The estimation procedure considers the standard survival analysis framework with failure and censoring times denoted by \eqn{T} and \eqn{C}, respectively, and makes the following assumptions:
 \enumerate{
-  \item Failure time \eqn{T} and censoring time \eqn{C} are independent
-  \item \eqn{T|Z=0} follows an exponential distribution with rate parameter \eqn{\theta_t} and \eqn{C|Z=0} follows an
-     exponential distribution with rate parameter \eqn{\theta_c}
-  \item RRtauToTaumax \eqn{ = P(T <= t|T> \tau, Z=1)/P(T <= t|T> \tau, Z=0)} for all \eqn{t} between tau and taumax (this will only approximately hold).
+  \item \eqn{T} and \eqn{C} are independent.
+  \item \eqn{T|Z=0} follows an exponential distribution with rate \eqn{\theta_t} and \eqn{C|Z=0} follows an
+     exponential distribution with rate \eqn{\theta_c}
+  \item \eqn{RR_{\tau-\tau_{max}} := P(T <= \tau_{max}|T> \tau, Z=1)/P(T <= \tau_{max}|T> \tau, Z=0)} is assumed to be equal to \eqn{ P(T <= t|T> \tau, Z=1)/P(T <= t|T> \tau, Z=0)} for all \eqn{t \in (\tau,\tau_{max}]}.
 }
 }
 \examples{

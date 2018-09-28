@@ -2,31 +2,29 @@
 % Please edit documentation in R/plotPowerTri.R
 \name{plotPowerTri}
 \alias{plotPowerTri}
-\title{Plot Power Curve against CoR Relative Risk for Trichotomous or Binary Biomarkers}
+\title{Plotting of Power versus Correlate of Risk Effect Size for Dichotomous and Trichotomous Biomarkers}
 \usage{
 plotPowerTri(outComputePower, outDir = NULL, legendText)
 }
 \arguments{
-\item{outComputePower}{List or list of lists containing output from \code{\link{computePower}}, or character vector specifying the file(s) containing \code{\link{computePower}} output.}
+\item{outComputePower}{either a list or list of lists containing output from \code{\link{computePower}} or a character vector specifying the \code{.RData} file(s) containing \code{\link{computePower}} output}
 
-\item{outDir}{Character vector specifying path(s) to output file(s), necessary if \code{outComputePower} is a character vector. Default is \code{NULL}.}
+\item{outDir}{a character vector specifying path(s) to output \code{.RData} file(s), necessary if \code{outComputePower} is a character vector. Default is \code{NULL}.}
 
-\item{legendText}{Character vector specifying the entirety of the legend text. Order of the parameter values must match that of the \code{\link{computePower}} input parameters in order for legend labels to be accurate.}
+\item{legendText}{a character vector specifying the entirety of the legend text. The order of the elements (i.e., parameter values) must match that of the \code{\link{computePower}} input parameters in order for legend labels to be accurate.}
 }
 \value{
-Plot displaying power vs. CoR relative risk
+None. The function is called solely for plot generation.
 }
 \description{
-Plots the power to detect a trichotomous or binary CoR in vaccine recipients against different
-values of the CoR effect size, RRt, which is the relative risk in the high biomarker
-response subgroup versus the low biomarker response subgroup.
+Plots power (on the y-axis) to detect a correlate of risk effect size (on the x-axis) in the active treatment group for a dichotomous or trichotomous biomarker. The correlate of risk effect size is quantified as
+the relative risk ratio of the clinical endpoint comparing subgroups of active treatment recipients with high and low biomarker response.
 }
 \details{
-If multiple levels are specified for the biomarker measurement error input parameters (i.e., for \code{Sens}/\code{Spec} or \code{rho}) in the
-\code{\link{computePower}} function, only the first level is used to determine the \eqn{RR_t} values that are plotted on the x-axis.
+If multiple levels are specified for the biomarker measurement error input parameters (i.e., for \code{sens}/\code{spec} or \code{rho}) in \code{\link{computePower}}, only the first level is used to determine
+the \eqn{RR_t} values that are plotted on the x-axis.
 }
 \examples{
-
 # Example scenario with trichotomous biomarker, where values of controlCaseRatio are varied
 
 # Set input parameters for computePower function

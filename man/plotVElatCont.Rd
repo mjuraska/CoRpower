@@ -2,33 +2,34 @@
 % Please edit documentation in R/plotVElatCont.R
 \name{plotVElatCont}
 \alias{plotVElatCont}
-\title{Plot Vaccine Efficacy Curves for Different CoR Relative Risks for Continuous Biomarkers}
+\title{Plotting Treatment (Vaccine) Efficacy Curves for Different Correlate of Risk Relative Risks for Continuous Biomarkers}
 \usage{
 plotVElatCont(outComputePower, outDir = NULL)
 }
 \arguments{
-\item{outComputePower}{List containing output from \code{\link{computePower}}, or character string specifying the file containing \code{\link{computePower}} output. Must be one list or character string.}
+\item{outComputePower}{a list containing output from \code{\link{computePower}} or a character string specifying the \code{.RData} file containing \code{\link{computePower}} output}
 
-\item{outDir}{Character string specifying path to output file, necessary if \code{outComputePower} is a character string. Default is \code{NULL}. Must be one character string; cannot take a character vector.}
+\item{outDir}{a character string specifying path to output \code{.RData} file, necessary if \code{outComputePower} is a character string. Default is \code{NULL}.}
 }
 \value{
-Plot displaying VE curves for various CoR relative risk and lowest VE scenarios
+None. The function is called solely for plot generation.
 }
 \description{
-Plots the vaccine efficacy (VE) curve for the true biomarker X*=x* for eight different values of the true CoR relative risk, \eqn{RR_c (\rho=1)},
-in vaccine recipients and the lowest vaccine efficacy level for the true biomarker, \eqn{VE_lowest}.
-All curves assume \eqn{\rho=1}, and VE ranges from 0 to 1. The legend is completely determined by the function.
+Plots the treatment (vaccine) efficacy curve for the true latent biomarker for eight different values of the latent correlate of risk
+relative risk and the lowest vaccine efficacy level for the true biomarker. All curves assume \code{rho=1}, and treatment (vaccine)
+efficacy ranges from 0 to 1. The legend is completely determined by the function.
 }
 \details{
-\code{\link{computePower}} function input parameter \code{VElowest} must have length >= 8
+\code{\link{computePower}} function input parameter \code{VElowest} must have length greater than or equal to eight
 for all eight scenarios to have unique RRc and VElowest. Otherwise, only \code{length(VElowest)} unique
 VE curves will be displayed.
 
-When interpreting the output of the function, the null hypothesis \eqn{H_0: CoR RR_c=1} (expression 16 in the manuscript)
-corresponds to a flat curve where VE(x*) = VE for all x*. Increasing departures from the null hypothesis correspond
-to increasingly variable and steep VE curves. The output assumes \eqn{risk_0} is constant for all x* and s* and there is
-no measurement error (\eqn{\rho=1}), and one can see that when this is the case, an association of the biomarker with
-infection risk in the vaccine group (a CoR) is equivalent to an association of the biomarker with VE.
+When interpreting the output of the function, the null hypothesis corresponds to a flat curve where vaccine efficacy for all values of the
+true latent biomarker is equal to the overall vaccine efficacy. Increasing departures from the null hypothesis correspond
+to increasingly variable and steep VE curves. The output assumes the overall placebo-group endpoint risk between \eqn{\tau} and \eqn{\tau_{max}}
+is constant for all values of the latent and observed biomarker and that there is no measurement error (\eqn{\rho=1}). When this is the case,
+an association of the biomarker with infection risk in the vaccine group (a correlate of risk) is equivalent to an association of the biomarker
+with treatment (vaccine) efficacy.
 
 The function's plot can also be interpreted in conjunction with the output of the \code{\link{plotPowerCont}} function by
 matching the CoR relative risk in the two plots and examining power compared to VE. This sheds light on the importance
@@ -36,7 +37,6 @@ of overall VE on power and further enables correlates of risk results to be inte
 potential correlates of efficacy/protection.
 }
 \examples{
-
 # Example scenario with continuous biomarker, where values of rho are varied
 
 # Set input parameters for computePower function

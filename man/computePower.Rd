@@ -2,7 +2,7 @@
 % Please edit documentation in R/computePower.R
 \name{computePower}
 \alias{computePower}
-\title{Power Calculations for Assessing Biomarkers as Correlates of Risk (CoRs), Accounting for Measurement Error and Treatment Efficacy}
+\title{Power Calculations for Assessing Intermediate Biomarkers as Correlates of Risk in the Active Treatment Group in Clinical Efficacy Trials, Accounting for Biomarker's Measurement Error and Treatment Efficacy}
 \usage{
 computePower(nCases, nControls, nCasesWithS, controlCaseRatio = NULL,
   VEoverall, risk0, VElat0 = seq(0, VEoverall, len = 20),
@@ -10,152 +10,140 @@ computePower(nCases, nControls, nCasesWithS, controlCaseRatio = NULL,
   Plat2 = 0.6, P0 = Plat0, P2 = Plat2, PlatVElowest = NULL,
   spec = NULL, FP0 = NULL, sens = NULL, FN2 = NULL, M = 100,
   alpha = 0.05, sigma2obs = 1, rho = 1, biomType = c("continuous",
-  "trichotomous", "binary"), cohort = FALSE, p = NULL,
+  "trichotomous", "dichotomous"), cohort = FALSE, p = NULL,
   tpsMethod = c("PL", "ML", "WL"), saveDir = NULL, saveFile = NULL)
 }
 \arguments{
-\item{nCases}{Number of vaccine recipients at-risk at tau with the clinical event by taumax (regardless of whether the biomarker is measured).}
+\item{nCases}{an integer value specifying the number of clinical endpoint cases observed (or projected) between \eqn{\tau} and \eqn{\tau_{max}} in the active treatment group (a numeric vector of multiple counts/scenarios is allowed)}
 
-\item{nControls}{Number of vaccine recipients at-risk at tau \emph{without} the clinical event by taumax (regardless of whether the biomarker is measured).}
+\item{nControls}{an integer value specifying the number of controls observed (or projected) to complete follow-up through \eqn{\tau_{max}} endpoint-free in the active treatment group (a numeric vector of multiple counts/scenarios is allowed)}
 
-\item{nCasesWithS}{Number of vaccine recipients at-risk at tau with the clinical event by taumax and with the biomarker measured.}
+\item{nCasesWithS}{an integer value specifying the number of clinical endpoint cases observed (or projected) between \eqn{\tau} and \eqn{\tau_{max}} in the active treatment group with an available biomarker response (a numeric vector of multiple counts/scenarios is allowed)}
 
-\item{controlCaseRatio}{Number of controls sampled per case in the vaccine arm.}
+\item{controlCaseRatio}{an integer value specifying the number of controls sampled per case for biomarker measurement in the without replacement case-control sampling design}
 
-\item{VEoverall}{Overall vaccine efficacy.}
+\item{VEoverall}{a numeric value specifying the overall treatment (vaccine) efficacy between \eqn{\tau} and \eqn{\tau_{max}}}
 
-\item{risk0}{Placebo-group endpoint rate between time tau and time taumax.}
+\item{risk0}{a numeric value specifying the overall placebo-group endpoint risk between \eqn{\tau} and \eqn{\tau_{max}}}
 
-\item{VElat0}{For trichotomous (or binary) biomarker, grid of VE (vaccine/placebo) values for the lower protected latent subgroup. Each value of \code{VElat0} corresponds to one unique effect size (RR_t).}
+\item{VElat0}{a numeric vector specifying a grid of treatment (vaccine) efficacy levels in the latent lower protected subgroup for a dichotomous or trichotomous biomarker. Each value of \code{VElat0} corresponds to one unique effect size (\eqn{RR_t}). It typically ranges from \code{VEoverall} (\eqn{H_0}) to 0 (maximal \eqn{H_1} not allowing harm by treatment).}
 
-\item{VElat1}{For trichotomous biomarker, grid of VE (vaccine/placebo) values for the medium protected latent subgroup. For binary biomarker, specify as any vector of same length as \code{VElat0}; value does not affect function output.}
+\item{VElat1}{a numeric vector specifying a grid of treatment (vaccine) efficacy levels in the latent medium protected subgroup for a trichotomous biomarker (\code{NULL} by default for a dichotomous biomarker)}
 
-\item{VElowest}{For continuous bioarker, a vector of values corresponding to the lowest possible value of VE. Typical applications will range \code{VElowest} from 0 to 1 - \code{RRoverall}.}
+\item{VElowest}{a numeric vector specifying a grid of treatment (vaccine) efficacy levels in the latent lowest-efficacy subgroup for a continuous biomarker. It typically ranges from \code{VEoverall} (\eqn{H_0}) to 0 (maximal \eqn{H_1} not allowing harm by treatment).}
 
-\item{Plat0}{For trichotomous (or binary) biomarker, prevalence of lower protected latent subgroup (\eqn{P(X = 0)}, where X is the true latent biomarker).}
+\item{Plat0}{a numeric value specifying the prevalence of the latent lower protected subgroup for a dichotomous or trichotomous biomarker}
 
-\item{Plat2}{For trichotomous (or binary) biomarker, prevalence of higher protected latent subgroup (\eqn{P(X = 2)}, where X is the true latent biomarker).}
+\item{Plat2}{a numeric value specifying the prevalence of the latent higher protected subgroup for a dichotomous or trichotomous biomarker}
 
-\item{P0}{For trichotomous (or binary) biomarker, probability of low biomarker response (\eqn{P(S = 0)}, where S is the observed biomarker). If unspecified, this parameter is set to \code{Plat0}.}
+\item{P0}{a numeric value specifying the probability of low biomarker response for a dichotomous or trichotomous biomarker. If unspecified, it is set to \code{Plat0}.}
 
-\item{P2}{For trichotomous (or binary) biomarker, probability of high biomarker response (\eqn{P(S = 2)}, where S is the observed biomarker). If unspecified, this parameter is set to \code{Plat2}.}
+\item{P2}{a numeric value specifying the probability of high biomarker response for a dichotomous or trichotomous biomarker. If unspecified, it is set to \code{Plat2}.}
 
-\item{PlatVElowest}{For continuous biomarker, proportion of vaccine recipients with the lowest value of VE.}
+\item{PlatVElowest}{a numeric value specifying the prevalence of the latent lowest-efficacy subgroup for a continuous biomarker}
 
-\item{spec}{For trichotomous (or binary) biomarker, numeric scalar or vector specifying the specificity (\eqn{P(S=0|X=0)}) of the observed biomarker. Default is \code{NULL}, which indicates 'approach 2' is to be used.}
+\item{spec}{a numeric vector specifying the specificity, i.e., the probability of low biomarker response conditional on membership in the lower protected subgroup, of a dichotomous or trichotomous biomarker. Default is \code{NULL}, which indicates the use of 'approach 2'.}
 
-\item{FP0}{For trichotomous (or binary) biomarker, numeric scalar or vector specifying the low false positive rate (\eqn{P(S=2|X=0)}) of the observed biomarker. Default is \code{NULL}, which indicates 'approach 2' is to be used.}
+\item{FP0}{a numeric vector specifying the false positive rate, i.e., the probability of high biomarker response conditional on membership in the lower protected subgroup, for a dichotomous or trichotomous biomarker. Default is \code{NULL}, which indicates the use of 'approach 2'.}
 
-\item{sens}{For trichotomous (or binary) biomarker, numeric scalar or vector specifying the sensitivity (\eqn{P(S=2|X=2)}) of the observed biomarker. Default is \code{NULL}, which indicates 'approach 2' is to be used.}
+\item{sens}{a numeric vector specifying the sensitivity, i.e., the probability of high biomarker response conditional on membership in the higher protected subgroup, for a dichotomous or trichotomous biomarker. Default is \code{NULL}, which indicates the use of 'approach 2'.}
 
-\item{FN2}{For trichotomous (or binary) biomarker, numeric scalar or vector specifying the high false negative rate (\eqn{P(S=0|X=2)}) of the observed biomarker. Default is \code{NULL}, which indicates 'approach 2' is to be used.}
+\item{FN2}{a numeric vector specifying the false negative rate, i.e., the probability of low biomarker response conditional on membership in the higher protected subgroup, for a dichotomous or trichotomous biomarker. Default is \code{NULL}, which indicates the use of 'approach 2'.}
 
-\item{M}{Number of simulated clinical trials.}
+\item{M}{an integer value specifying the number of simulated clinical trials}
 
-\item{alpha}{Two-sided Wald test type-I error rate.}
+\item{alpha}{a numeric value specifying the two-sided Wald test type-I error rate}
 
-\item{sigma2obs}{For continuous biomarker, or for trichotomous (or binary) biomarker simulated using 'approach 2', the variance of the observed biomarker.}
+\item{sigma2obs}{a numeric value specifying the variance of the observed continuous biomarker or of the dichotomous or trichotomous biomarker simulated using 'approach 2'}
 
-\item{rho}{For continuous biomarker, or for trichotomous (or binary) biomarker simulated using 'approach 2', a numeric scalar or vector specifying the fraction of protection-relevant variability in the observed biomarker. The first element of this vector should be 1, corresponding to the case of no measurement error.}
+\item{rho}{a numeric vector specifying distinct protection-relevant fractions of \code{sigma2obs}}
 
-\item{biomType}{Type of biomarker that is used. Default is "continuous"; other choices are "trichotomous" and "binary".}
+\item{biomType}{a character string specifying the biomarker type. Default is \code{continuous}; other choices are \code{dichotomous} and \code{trichotomous}.}
 
-\item{cohort}{Sampling design to be used. Default is \code{FALSE}, specifying case-control sampling design. If \code{TRUE}, case-cohort sampling is used.}
+\item{cohort}{a logical value for whether a case-cohort Bernoulli sampling design is to be used. If \code{FALSE} (default), the case-control without replacement sampling is used.}
 
-\item{p}{For case-cohort sampling design, probability that a subject will be in the cohort.}
+\item{p}{a numeric value specifying the probability of sampling into the subcohort in the case-cohort design}
 
-\item{tpsMethod}{Character denoting method for fitting the logistic regression model. Choose from "PL" for pseudo-likelihood (default), "ML" for maximum likelihood, and "WL" for weighted likelihood.}
+\item{tpsMethod}{a character string specifying the estimation method in the inverse probability weighted logistic regression model fit by the \code{tps} function in the \code{osDesign} package. The options are \code{PL} for pseudo-likelihood (default), \code{ML} for maximum likelihood, and \code{WL} for weighted likelihood.}
 
-\item{saveDir}{Character denoting the directory that the function output is to be saved in. Default is \code{NULL}.}
+\item{saveDir}{a character string specifying the path for a directory in which the output is to be saved. If \code{NULL} (default), the output is returned only.}
 
-\item{saveFile}{Character denoting the name of the file the function output will be saved in. Output will be saved as an .RData file. Default is \code{NULL}.}
+\item{saveFile}{a character string specifying the name of the \code{.RData} file storing the output. If \code{NULL} (default), the output is returned only.}
 }
 \value{
-If trichotomous or binary biomarker, list with the following elements:
+If \code{saveFile} and \code{saveDir} are both specified, the output list (named \code{pwr}) is saved as an \code{.RData} file; otherwise it is returned only.
+For a dichotomous or trichotomous biomarker, the output list has the following components:
 \itemize{
-  \item power: fraction of simulated trials in which the null hypothesis H_0 (expression (14) of the manuscript) is rejected.
-  \item RRt: CoR relative risk effect size (risk1(2)/risk1(0))
-  \item risk1_2: vaccine-group endpoint risk for high biomarker responses (P(Y=1|X=2))
-  \item risk1_0: vaccine-group endpoint risk for low biomarker responses (P(Y=1|X=0))
-  \item VElat2: grid of VE (vaccine/placebo) among higher protected latent group
-  \item VElat0: grid of VE (vaccine/placebo) among lower protected latent group
-  \item Plat2: prevalence of higher protected
-  \item Plat0: prevalence of lower protected
-  \item P2: probability of high biomarker response
-  \item P0: probability of low biomarker response
-  \item alphaLat: logit(Y=1|s=0)
-  \item betaLat: logit(Y=1|S=2)-logit(Y=1|s=0)
-  \item sens: sensitivity (P(S=2|X=2))
-  \item spec: specificity (P(S=0|X=0))
-  \item FP0: low false positive rate (P(S=2|X=0))
-  \item FN2: high false negative rate (P(S=0|X=2))
-  \item Ncomplete: total number of subjects at risk at tau, excluding dropouts
-  \item nCases: number of observed cases between tau and taumax
-  \item nCasesWithS: number of observed cases between tau and taumax with measured S or S*
-  \item VEoverall: overall VE
-  \item alpha: two-sided Wald test Type 1 error rate
-  \item rho: protection-relevant fraction of the variance of S*
-  \item controlCaseRatio: ratio of controls to cases in case-control sampling design
-  \item risk0: placeb0-group endpoint risk between tau and taumax
+  \item \code{power}: a matrix of fractions of simulated trials in which the null hypothesis \eqn{H_0} is rejected. Rows represent calculations for different values of \code{rho}, \code{sens}, or \code{nCases}, depending on which is a vector. Columns represent calculations for the grid of treatment (vaccine) efficacies specified by \code{VElat0} and \code{VElat1}.
+  \item \code{RRt}: a matrix of correlate-of-risk relative-risk effect sizes. Rows represent different values of \code{rho}, \code{sens}, or \code{nCases}, depending on which is a vector. Columns represent the grid of treatment (vaccine) efficacies specified by \code{VElat0} and \code{VElat1}.
+  \item \code{risk1_2}: a matrix of conditional endpoint risks given a high biomarker response in the active treatment group. Rows represent different values of \code{rho}, \code{sens}, or \code{nCases}, depending on which is a vector. Columns represent the grid of treatment (vaccine) efficacies specified by \code{VElat0} and \code{VElat1}.
+  \item \code{risk1_0}: a matrix of conditional endpoint risks given a low biomarker response in the active treatment group. Rows represent different values of \code{rho}, \code{sens}, or \code{nCases}, depending on which is a vector. Columns represent the grid of treatment (vaccine) efficacies specified by \code{VElat0} and \code{VElat1}.
+  \item \code{VElat2}: a numeric vector specifying a grid of treatment (vaccine) efficacy levels in the latent higher protected subgroup for a dichotomous or trichotomous biomarker
+  \item \code{VElat0}: a numeric vector specifying a grid of treatment (vaccine) efficacy levels in the latent lower protected subgroup for a dichotomous or trichotomous biomarker
+  \item \code{Plat2}: a numeric value specifying the prevalence of the latent higher protected subgroup for a dichotomous or trichotomous biomarker
+  \item \code{Plat0}: a numeric value specifying the prevalence of the latent lower protected subgroup for a dichotomous or trichotomous biomarker
+  \item \code{P2}: a numeric value specifying the probability of high biomarker response for a dichotomous or trichotomous biomarker
+  \item \code{P0}: a numeric value specifying the probability of low biomarker response for a dichotomous or trichotomous biomarker
+  \item \code{alphaLat}: a numeric vector of the log odds of the clinical endpoint in the subgroup of active treatment recipients with the latent \eqn{x^{\ast}=0} (this coefficient estimate applies to a continuous biomarker)
+  \item \code{betaLat}: a numeric vector of the log odds ratio of the clinical endpoint comparing two subgroups of active treatment recipients differing in the latent \eqn{x*} by 1 (this coefficient estimate applies to a continuous biomarker)
+  \item \code{sens}: a numeric vector of sensitivities (i.e., the probability of high biomarker response conditional on membership in the higher protected subgroup) of the observed dichotomous or trichotomous biomarker as a function of \code{rho}
+  \item \code{spec}: a numeric vector of specificities (i.e., the probability of low biomarker response conditional on membership in the lower protected subgroup) of the observed dichotomous or trichotomous biomarker as a function of \code{rho}
+  \item \code{FP0}: a numeric vector of false positive rates (i.e., the probability of high biomarker response conditional on membership in the lower protected subgroup) of the observed dichotomous or trichotomous biomarker as a function of \code{rho}
+  \item \code{FN2}: a numeric vector of false negative rates (i.e., the probability of low biomarker response conditional on membership in the higher protected subgroup) of the observed dichotomous or trichotomous biomarker as a function of \code{rho}
+  \item \code{Ncomplete}: an integer value specifying \code{nCases} + \code{nControls}, i.e., the number, observed or projected, of active treatment recipients at risk at \eqn{\tau} with an observed endpoint or a completed follow-up through \eqn{\tau_{max}}
+  \item \code{nCases}: an integer value specifying the number of clinical endpoint cases observed (or projected) between \eqn{\tau} and \eqn{\tau_{max}} in the active treatment group
+  \item \code{nCasesWithS}: an integer value specifying the number of clinical endpoint cases observed (or projected) between \eqn{\tau} and \eqn{\tau_{max}} in the active treatment group with an available biomarker response
+  \item \code{controlCaseRatio}: an integer specifying the number of controls sampled per case for biomarker measurement in the without replacement case-control sampling design
+  \item \code{VEoverall}: a numeric value specifying the overall treatment (vaccine) efficacy between \eqn{\tau} and \eqn{\tau_{max}}
+  \item \code{risk0}: a numeric value specifying the overall placebo-group endpoint risk between \eqn{\tau} and \eqn{\tau_{max}}
+  \item \code{alpha}: a numeric value specifying the two-sided Wald test type-I error rate
+  \item \code{rho}: a numeric vector specifying distinct protection-relevant fractions of the variance of the observed biomarker
 }
 
-If continuous biomarker, list with the following elements:
+For a continuous biomarker, a list with the following components:
 \itemize{
-  \item power: fraction of simulated trials in which the null hypothesis H_0 (expression (16) of the manuscript) is rejected.
-  \item RRc: CoR relative risk effect size (risk1(s*)/risk1(s*-1))
-  \item betaLat: variable in logistic regression model: logit(risk1lat(x*)) = alphaLat + betaLat x*
-  \item alphaLat: variable in logistic regression model: logit(risk1lat(x*)) = alphaLat + betaLat x*
-  \item PlatVElowest: prevalence of VElowest
-  \item VElowest: lowest VE level for true biomarker X* <= nu
-  \item sigma2obs: variance of observed biomarker S*
-  \item Ncomplete: total number of subjects at risk at tau, excluding dropouts
-  \item nCases: number of observed cases between tau and taumax
-  \item nCasesWithS: number of observed cases between tau and taumax with measured S*
-  \item VEoverall: overall VE
-  \item alpha: two-sided Wald test Type 1 error rate
-  \item rho: protection-relevant fraction of the variance of S*
-  \item controlCaseRatio: ratio of controls to cases in case-control sampling design
-  \item risk0: placeb0-group endpoint risk between tau and taumax
+  \item \code{power}: a matrix of fractions of simulated trials in which the null hypothesis \eqn{H_0} is rejected. Rows represent calculations for different values of \code{rho} or \code{nCases}, depending on which is a vector. Columns represent calculations for the grid of treatment (vaccine) efficacy levels in the latent lowest-efficacy subgroup, specified by \code{VElowest}.
+  \item \code{RRc}: a numeric vector of correlate-or-risk relative-risk effect sizes as a function of the grid of treatment (vaccine) efficacy levels in the latent lowest-efficacy subgroup, specified by \code{VElowest}
+  \item \code{betaLat}: a numeric vector specifying the log odds ratio of the clinical endpoint comparing two subgroups of active treatment recipients differing in the latent \eqn{x*} by 1 (this coefficient estimate applies to a continuous biomarker)
+  \item \code{alphaLat}: a numeric vector specifying the the log odds of the clinical endpoint in the subgroup of active treatment recipients with the latent \eqn{x^{\ast}=0} (this coefficient estimate applies to a continuous biomarker)
+  \item \code{PlatVElowest}: a numeric value specifying the prevalence of the latent lowest-efficacy subgroup for a continuous biomarker
+  \item \code{VElowest}: a numeric vector specifying a grid of treatment (vaccine) efficacy levels in the latent lowest-efficacy subgroup for a continuous biomarker
+  \item \code{sigma2obs}: a numeric value specifying the variance of the observed continuous biomarker or of the dichotomous or trichotomous biomarker simulated using 'approach 2'
+  \item \code{Ncomplete}: an integer value specifying \code{nCases} + \code{nControls}, i.e., the number, observed or projected, of active treatment recipients at risk at \eqn{\tau} with an observed endpoint or a completed follow-up through \eqn{\tau_{max}}
+  \item \code{nCases}: an integer value specifying the number of clinical endpoint cases observed (or projected) between \eqn{\tau} and \eqn{\tau_{max}} in the active treatment group
+  \item \code{nCasesWithS}: an integer value specifying the number of clinical endpoint cases observed (or projected) between \eqn{\tau} and \eqn{\tau_{max}} in the active treatment group with an available biomarker response
+  \item \code{VEoverall}: a numeric value specifying the overall treatment (vaccine) efficacy between \eqn{\tau} and \eqn{\tau_{max}}
+  \item \code{alpha}: a numeric value specifying the two-sided Wald test type-I error rate
+  \item \code{rho}: a numeric vector specifying distinct protection-relevant fractions of the variance of the observed biomarker
+  \item \code{controlCaseRatio}: an integer value specifying the number of controls sampled per case for biomarker measurement in the without replacement case-control sampling design
+  \item \code{risk0}: a numeric value specifying the overall placebo-group endpoint risk between \eqn{\tau} and \eqn{\tau_{max}}
 }
 }
 \description{
-Performs power calculations for assessing trichotomous, binary, and continuous biomarkers as correlates of risk,
-accounting for measurement error and treatment efficacy. Methods are described in [Gilbert, Janes, and Huang (2015).
+Performs a power calculation for assessing a univariate dichotomous, trichotomous, or continuous intermediate biomarker response as a correlate of risk
+in the active treatment group in a clinical efficacy trial, accounting for the biomarker's measurement error and treatment efficacy. The statistical methods are described in [Gilbert, Janes, and Huang (2016).
 ``Power/Sample Size Calculations for Assessing Correlates of Risk in Clinical Efficacy Trials.'']
 }
 \details{
-If \code{nCases}, \code{nControls}, and \code{nCasesWithS} are vectors, then \code{rho} must be scalar.
+If \code{nCases}, \code{nControls}, and \code{nCasesWithS} are vectors (of the same length), then \code{rho} must be a scalar.
 
-To save output in an .RData file, specify the file directory with \code{saveDir} and the name of the file with \code{saveFile}.
+To save output in an \code{.RData} file, both \code{saveDir} and \code{saveFile} must be specified.
 
-This function asuumes the scenario \code{VElat1 = VEoverall}, which yields the formula
-\code{VEoverall = (Plat0*VElat0 + Plat2*VElat2)/(Plat0 + Plat2)}.
-For fixed values of \code{Plat0} and \code{Plat2}, this links \code{VElat0} to \code{VElat2}
-by the formula \code{VElat2 = (VEoverall*(Plat0+Plat2) - Plat0*VElat0)/Plat2},
-which is what the function uses to obtain \code{VElat2}.
+Parameters independent of biomarker type and sampling design: \code{nCases}, \code{nControls}, \code{nCasesWithS}, \code{VEoverall}, \code{risk0},
+\code{M}, \code{alpha}, \code{tpsMethod}, \code{saveDir}, \code{saveFile}.
 
-Following Step 7 in section 3.1 in the manuscript, the measurement error in a trichotomous (or binary) biomarker is accounted for in one of two ways:
-  Approach 1 specifies \code{spec}, \code{sens}, \code{FP0}, and \code{FN2} which determine \code{FP1} and \code{FN1} from equations (7) and (8).
-  Vector inputs are acceptable and allows for the evaluation of biomarkers with different levels of measurement error.
-
-  Approach 2 specifies \code{sigma2obs} and \code{rho}; this approach assumes the normal measurement error model (9) in the manuscript.
-  Specifying \code{spec=NULL}, \code{sens=NULL}, \code{FP0=NULL}, and \code{FN2=NULL} defaults to approach 2, which is what is used in
-  illustrations in the manuscript.
-
-Parameters independent of biomarker type and sampling design: nCases, nControls, nCasesWithS, VEoverall, risk0, M, alpha, tpsMethod, saveDir, saveFile
-
-Parameters for trichotomous (or binary) biomarker: \code{VElat0}, \code{VElat1}, \code{Plat0}, \code{Plat2}, \code{P0},
-\code{P2}, \code{biomType} = "trichomous" (or "binary")
+Parameters for trichotomous (or dichotomous) biomarker: \code{VElat0}, \code{VElat1}, \code{Plat0}, \code{Plat2}, \code{P0},
+\code{P2}, \code{biomType="trichotomous"} (or \code{"dichotomous"})
   \itemize{
     \item Parameters for Approach 1: \code{sens}, \code{spec}, \code{FP0}, \code{FN2}
     \item Parameters for Approach 2: \code{sigma2obs}, \code{rho}
   }
 
-Parameters for continuous biomarker: \code{VElowest}, \code{PlatVElowest}, \code{sigma2obs}, \code{rho}, \code{biomType} = "continuous"
+Parameters for continuous biomarker: \code{VElowest}, \code{PlatVElowest}, \code{sigma2obs}, \code{rho}, \code{biomType = "continuous"}
 
-Parameters for case-control sampling design (without-replacement sampling): \code{controlCaseRatio}
+Parameters for a case-control without replacement sampling design: \code{controlCaseRatio}
 
-Parameters for case-cohort sampling design: \code{cohort=TRUE}, \code{p}
+Parameters for a case-cohort Bernoulli sampling design: \code{cohort=TRUE}, \code{p}
 }
 \examples{
 
@@ -210,7 +198,7 @@ computePower(nCases=nCases, nControls=nControls, nCasesWithS=nCasesWithS,
              M=M, alpha=alpha, sigma2obs=sigma2obs, rho=rho, biomType=biomType)
 
 
-## Binary biomarker, Approach 2, varying rho ##
+## dichotomous biomarker, Approach 2, varying rho ##
 ## Plat0 + Plat2 = 1
 
 nCases <- 32
@@ -229,7 +217,7 @@ M <- 5
 alpha <- 0.05
 sigma2obs <- 1
 rho <- c(1, 0.9, 0.7, 0.5)
-biomType <- "binary"
+biomType <- "dichotomous"
 computePower(nCases=nCases, nControls=nControls, nCasesWithS=nCasesWithS,
              controlCaseRatio=controlCaseRatio, VEoverall=VEoverall, risk0=risk0,
              VElat0=VElat0, VElat1=VElat1, Plat0=Plat0, Plat2=Plat2, P0=P0, P2=P2,
@@ -274,7 +262,8 @@ cohort <- TRUE
 p <- 0.01
 computePower(nCases=nCases, nControls=nControls, nCasesWithS=nCasesWithS,
              VEoverall=VEoverall, risk0=risk0, PlatVElowest=PlatVElowest, VElowest=VElowest,
-             M=M, alpha=alpha, sigma2obs=sigma2obs, rho=rho, biomType=biomType, cohort=cohort, p=p)
+             M=M, alpha=alpha, sigma2obs=sigma2obs, rho=rho, biomType=biomType, cohort=cohort,
+             p=p)
 p <- 0.02
 computePower(nCases=nCases, nControls=nControls, nCasesWithS=nCasesWithS,
              VEoverall=VEoverall, risk0=risk0, PlatVElowest=PlatVElowest, VElowest=VElowest,

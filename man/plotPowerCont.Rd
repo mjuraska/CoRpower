@@ -2,33 +2,32 @@
 % Please edit documentation in R/plotPowerCont.R
 \name{plotPowerCont}
 \alias{plotPowerCont}
-\title{Plot Power Curve against CoR Relative Risk for Continuous Biomarkers}
+\title{Plotting of Power Curve versus Correlate of Risk Effect Size for Continuous Biomarkers}
 \usage{
 plotPowerCont(outComputePower, outDir = NULL, legendText)
 }
 \arguments{
-\item{outComputePower}{List or list of lists containing output from \code{\link{computePower}}, or character vector specifying the file(s) containing \code{\link{computePower}} output.}
+\item{outComputePower}{either a list or list of lists containing output from \code{\link{computePower}} or a character vector specifying the \code{.RData} file(s) containing \code{\link{computePower}} output}
 
-\item{outDir}{Character vector specifying path(s) to output file(s), necessary if \code{outComputePower} is a character vector. Default is \code{NULL}.}
+\item{outDir}{a character vector specifying path(s) to output \code{.RData} file(s), necessary if \code{outComputePower} is a character vector. Default is \code{NULL}.}
 
-\item{legendText}{Character vector specifying the entirety of the legend text. Order of the parameter values must match that of the \code{\link{computePower}} input parameters in order for legend labels to be accurate.}
+\item{legendText}{a character vector specifying the entirety of the legend text. The order of the elements (i.e., parameter values) must match that of the \code{\link{computePower}} input parameters in order for legend labels to be accurate.}
 }
 \value{
-Plot displaying power vs. CoR relative risk
+None. The function is called solely for plot generation.
 }
 \description{
-Plots the power to detect a normally distributed CoR in vaccine recipients against different
-values of the CoR effect size, RRc, which is the relative risk per standard deviation increase
-for a noise-free biomarker (\eqn{\rho=1}).
+Plots power (on the y-axis) to detect a correlate of risk effect size (on the x-axis) in the active treatment group for a continuous biomarker.
+The correlate of risk effect size is quantified as the relative risk ratio of the clinical endpoint per standard deviation increase for a
+noise-free biomarker.
 }
 \details{
-The function's plot can be interpreted in conjunction with the output of the \code{\link{plotVElatCont}} function by
-matching the CoR relative risk in the two plots and examining power compared to VE. This sheds light on the importance
-of overall VE on power and allows correlates of risk results to be interpreted in terms of
-potential correlates of efficacy/protection.
+The function's plot can be interpreted in conjunction with the output of \code{\link{plotVElatCont}} by
+matching the CoR relative risk in the two plots and examining power compared to treatment (vaccine) efficacy.
+This sheds light on the importance of overall vaccine efficacy on power and allows correlates of risk results
+to be interpreted in terms of potential correlates of efficacy/protection.
 }
 \examples{
-
 # Example scenario with continuous biomarker, where values of rho are varied
 
 # Set input parameters for computePower function

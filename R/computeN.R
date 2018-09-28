@@ -15,7 +15,7 @@
 #' @details
 #' The function estimates design parameters that are required as input to \code{\link{computePower}}. If the power calculation is done after the follow-up was completed, the estimates are replaced by the observed
 #' counterparts for use as input parameters in \code{\link{computePower}}.
-#' 
+#'
 #' The calculations include options to account for participant dropout by specifying \code{dropoutRisk} as well as for incomplete sample storage by specifying \code{propCasesWithS}.
 #'
 #' The estimation procedure considers the standard survival analysis framework with failure and censoring times denoted by \eqn{T} and \eqn{C}, respectively, and makes the following assumptions:
@@ -23,9 +23,9 @@
 #'   \item \eqn{T} and \eqn{C} are independent.
 #'   \item \eqn{T|Z=0} follows an exponential distribution with rate \eqn{\theta_t} and \eqn{C|Z=0} follows an
 #'      exponential distribution with rate \eqn{\theta_c}
-#'   \item \eqn{RR_{\tau-\tau_{max}} := P(T <= \tau_{max}|T> \tau, Z=1)/P(T <= \tau_{max}|T> \tau, Z=0)} is assumed to be equal to \eqn{ P(T <= t|T> \tau, Z=1)/P(T <= t|T> \tau, Z=0)} for all \eqn{t \in (t,\tau_{max}]}.
+#'   \item \eqn{RR_{\tau-\tau_{max}} := P(T <= \tau_{max}|T> \tau, Z=1)/P(T <= \tau_{max}|T> \tau, Z=0)} is assumed to be equal to \eqn{ P(T <= t|T> \tau, Z=1)/P(T <= t|T> \tau, Z=0)} for all \eqn{t \in (\tau,\tau_{max}]}.
 #' }
-#' 
+#'
 #' @return A list with the following components:
 #' \itemize{
 #'   \item N: the total estimated number of active treatment recipients observed to be at risk at \eqn{\tau}

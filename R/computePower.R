@@ -549,7 +549,7 @@ biomSubset <- function(Y, Ncomplete, nCasesWithS, controlCaseRatio, p, cohort){
 #'     \item Parameters for Approach 2: \code{sigma2obs}, \code{rho}
 #'   }
 #'
-#' Parameters for continuous biomarker: \code{VElowest}, \code{PlatVElowest}, \code{sigma2obs}, \code{rho}, \code{biomType} = "continuous"
+#' Parameters for continuous biomarker: \code{VElowest}, \code{PlatVElowest}, \code{sigma2obs}, \code{rho}, \code{biomType = "continuous"}
 #'
 #' Parameters for a case-control without replacement sampling design: \code{controlCaseRatio}
 #'
@@ -558,10 +558,10 @@ biomSubset <- function(Y, Ncomplete, nCasesWithS, controlCaseRatio, p, cohort){
 #' @return If \code{saveFile} and \code{saveDir} are both specified, the output list (named \code{pwr}) is saved as an \code{.RData} file; otherwise it is returned only.
 #' For a dichotomous or trichotomous biomarker, the output list has the following components:
 #' \itemize{
-#'   \item \code{power}: a matrix of fractions of simulated trials in which the null hypothesis \eqn{H_0} is rejected. Rows represent calculations for different values of \code{\rho}, \code{sens}, or \code{nCases}, depending on which is a vector. Columns represent calculations for the grid of treatment (vaccine) efficacies specified by \code{VElat0} and \code{VElat1}.
-#'   \item \code{RRt}: a matrix of correlate-of-risk relative-risk effect sizes. Rows represent different values of \code{\rho}, \code{sens}, or \code{nCases}, depending on which is a vector. Columns represent the grid of treatment (vaccine) efficacies specified by \code{VElat0} and \code{VElat1}.
-#'   \item \code{risk1_2}: a matrix of conditional endpoint risks given a high biomarker response in the active treatment group. Rows represent different values of \code{\rho}, \code{sens}, or \code{nCases}, depending on which is a vector. Columns represent the grid of treatment (vaccine) efficacies specified by \code{VElat0} and \code{VElat1}.
-#'   \item \code{risk1_0}: a matrix of conditional endpoint risks given a low biomarker response in the active treatment group. Rows represent different values of \code{\rho}, \code{sens}, or \code{nCases}, depending on which is a vector. Columns represent the grid of treatment (vaccine) efficacies specified by \code{VElat0} and \code{VElat1}.
+#'   \item \code{power}: a matrix of fractions of simulated trials in which the null hypothesis \eqn{H_0} is rejected. Rows represent calculations for different values of \code{rho}, \code{sens}, or \code{nCases}, depending on which is a vector. Columns represent calculations for the grid of treatment (vaccine) efficacies specified by \code{VElat0} and \code{VElat1}.
+#'   \item \code{RRt}: a matrix of correlate-of-risk relative-risk effect sizes. Rows represent different values of \code{rho}, \code{sens}, or \code{nCases}, depending on which is a vector. Columns represent the grid of treatment (vaccine) efficacies specified by \code{VElat0} and \code{VElat1}.
+#'   \item \code{risk1_2}: a matrix of conditional endpoint risks given a high biomarker response in the active treatment group. Rows represent different values of \code{rho}, \code{sens}, or \code{nCases}, depending on which is a vector. Columns represent the grid of treatment (vaccine) efficacies specified by \code{VElat0} and \code{VElat1}.
+#'   \item \code{risk1_0}: a matrix of conditional endpoint risks given a low biomarker response in the active treatment group. Rows represent different values of \code{rho}, \code{sens}, or \code{nCases}, depending on which is a vector. Columns represent the grid of treatment (vaccine) efficacies specified by \code{VElat0} and \code{VElat1}.
 #'   \item \code{VElat2}: a numeric vector specifying a grid of treatment (vaccine) efficacy levels in the latent higher protected subgroup for a dichotomous or trichotomous biomarker
 #'   \item \code{VElat0}: a numeric vector specifying a grid of treatment (vaccine) efficacy levels in the latent lower protected subgroup for a dichotomous or trichotomous biomarker
 #'   \item \code{Plat2}: a numeric value specifying the prevalence of the latent higher protected subgroup for a dichotomous or trichotomous biomarker
@@ -586,7 +586,7 @@ biomSubset <- function(Y, Ncomplete, nCasesWithS, controlCaseRatio, p, cohort){
 #'
 #' For a continuous biomarker, a list with the following components:
 #' \itemize{
-#'   \item \code{power}: a matrix of fractions of simulated trials in which the null hypothesis \eqn{H_0} is rejected. Rows represent calculations for different values of \code{\rho} or \code{nCases}, depending on which is a vector. Columns represent calculations for the grid of treatment (vaccine) efficacy levels in the latent lowest-efficacy subgroup, specified by \code{VElowest}.
+#'   \item \code{power}: a matrix of fractions of simulated trials in which the null hypothesis \eqn{H_0} is rejected. Rows represent calculations for different values of \code{rho} or \code{nCases}, depending on which is a vector. Columns represent calculations for the grid of treatment (vaccine) efficacy levels in the latent lowest-efficacy subgroup, specified by \code{VElowest}.
 #'   \item \code{RRc}: a numeric vector of correlate-or-risk relative-risk effect sizes as a function of the grid of treatment (vaccine) efficacy levels in the latent lowest-efficacy subgroup, specified by \code{VElowest}
 #'   \item \code{betaLat}: a numeric vector specifying the log odds ratio of the clinical endpoint comparing two subgroups of active treatment recipients differing in the latent \eqn{x*} by 1 (this coefficient estimate applies to a continuous biomarker)
 #'   \item \code{alphaLat}: a numeric vector specifying the the log odds of the clinical endpoint in the subgroup of active treatment recipients with the latent \eqn{x^{\ast}=0} (this coefficient estimate applies to a continuous biomarker)
@@ -720,7 +720,8 @@ biomSubset <- function(Y, Ncomplete, nCasesWithS, controlCaseRatio, p, cohort){
 #' p <- 0.01
 #' computePower(nCases=nCases, nControls=nControls, nCasesWithS=nCasesWithS,
 #'              VEoverall=VEoverall, risk0=risk0, PlatVElowest=PlatVElowest, VElowest=VElowest,
-#'              M=M, alpha=alpha, sigma2obs=sigma2obs, rho=rho, biomType=biomType, cohort=cohort, p=p)
+#'              M=M, alpha=alpha, sigma2obs=sigma2obs, rho=rho, biomType=biomType, cohort=cohort,
+#'              p=p)
 #' p <- 0.02
 #' computePower(nCases=nCases, nControls=nControls, nCasesWithS=nCasesWithS,
 #'              VEoverall=VEoverall, risk0=risk0, PlatVElowest=PlatVElowest, VElowest=VElowest,
