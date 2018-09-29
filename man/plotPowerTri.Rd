@@ -59,25 +59,18 @@ pwr2 <- computePower(nCases=nCases, nControls=nControls, nCasesWithS=nCasesWithS
                      VElat0=VElat0, VElat1=VElat1, M=M, alpha=alpha, spec=spec,
                      FP0=FP0, sens=sens, FN2=FN2, biomType=biomType)
 
-controlCaseRatio <- 1
-pwr3 <- computePower(nCases=nCases, nControls=nControls, nCasesWithS=nCasesWithS,
-                     controlCaseRatio=controlCaseRatio, risk0=risk0,
-                     VEoverall=VEoverall, Plat0=Plat0, Plat2=Plat2, P0=P0, P2=P2,
-                     VElat0=VElat0, VElat1=VElat1, M=M, alpha=alpha, spec=spec,
-                     FP0=FP0, sens=sens, FN2=FN2, biomType=biomType)
-
 # Set parameters for plotPowerTri function
 # outComputePower is a list of lists containing outputs from the computePower function
-outComputePower <- list(pwr1, pwr2, pwr3)
-legendText <- paste0("controls:cases = ", c("5:1","3:1","1:1"))
+outComputePower <- list(pwr1, pwr2)
+legendText <- paste0("controls:cases = ", c("5:1","3:1"))
 plotPowerTri(outComputePower=outComputePower, legendText=legendText)
 
 \dontrun{
 # outComputePower is a character vector specifying the files containing computePower output
 # outDir is a character vector specifying the outComputePower file directories
-outComputePower = c("myFile1", "myFile2", "myFile3")
-outDir = rep("~/myDir", 3)
-legendText <- paste0("controls:cases = ", c("5:1","3:1","1:1"))
+outComputePower = c("myFile1", "myFile2")
+outDir = rep("~/myDir", 2)
+legendText <- paste0("controls:cases = ", c("5:1","3:1"))
 plotPowerTri(outComputePower, outDir=outDir, legendText = legendText)
 }
 
