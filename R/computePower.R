@@ -770,7 +770,8 @@ biomSubset <- function(Y, Ncomplete, nCasesWithS, controlCaseRatio, p, cohort){
 computePower <- function(nCases, nControls, nCasesWithS,
                          controlCaseRatio=NULL,
                          VEoverall, risk0,
-                         VElat0=seq(0, VEoverall, len=20), VElat1=rep(VEoverall, 20),
+                         VElat0=seq(0, VEoverall, len=20),
+                         VElat1=rep(VEoverall, 20),
                          VElowest=NULL,
                          Plat0=0.2, Plat2=0.6,
                          P0=Plat0, P2=Plat2,
@@ -1052,7 +1053,7 @@ computePower <- function(nCases, nControls, nCasesWithS,
     RRt <- risk1_2/risk1_0
 
     # output list for trichotomous/dichotomous biomarker
-    pwr <- list("power"=power, "RRt"=RRt, "risk1_2"=risk1_2, "risk1_0"=risk1_0, "VElat2"=VElat2, "VElat0"=VElat0,
+    pwr <- list("power"=power, "RRt"=RRt, "risk1_2"=risk1_2, "risk1_0"=risk1_0, "VElat2"=VElat2, "VElat1"=VElat1, "VElat0"=VElat0,
                 "Plat2"=Plat2, "Plat0"=Plat0, "P2"=P2, "P0"=P0, "alphaLat"=alphaLat, "betaLat"=betaLat,
                 "sens"=sens, "spec"=spec, "FP0"=FP0, "FN2"=FN2)
 

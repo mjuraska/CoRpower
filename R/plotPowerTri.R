@@ -90,7 +90,7 @@ plotPowerTri <- function(outComputePower, outDir=NULL, legendText) {
   RRt <- pwr$RRt
   VElat0 <- pwr$VElat0
   VElat2 <- pwr$VElat2
-  VElat1 <- rep(pwr$VEoverall, length(VElat0))
+  VElat1 <- pwr$VElat1
   alpha <- pwr$alpha
   Plat0 <- pwr$Plat0
   Plat2 <- pwr$Plat2
@@ -116,27 +116,27 @@ plotPowerTri <- function(outComputePower, outDir=NULL, legendText) {
 
   m <- nrow(RRt)
   RRtgrid <- seq(RRt[1,1],RRt[m,1],len=5)
-  axis(1,at=RRtgrid,labels=round(RRtgrid,2))
+  axis(1, at=RRtgrid, labels=format(RRtgrid, digits=2, nsmall=2))
   axis(2,at=c(0,.1,.2,.3,.4,.5,.6,.7,.8,.9,1.0),labels=c(0,.1,.2,.3,.4,.5,.6,.7,.8,.9,1.0))
   tick1 <- which.min(abs(RRt[,1]-RRtgrid[1]))
   tick2 <- which.min(abs(RRt[,1]-RRtgrid[2]))
   tick3 <- which.min(abs(RRt[,1]-RRtgrid[3]))
   tick4 <- which.min(abs(RRt[,1]-RRtgrid[4]))
   tick5 <- which.min(abs(RRt[,1]-RRtgrid[5]))
-  axis(1, at=RRtgrid, labels=round(c(VElat0[tick1], VElat0[tick2], VElat0[tick3], VElat0[tick4], VElat0[tick5]),2), line=1.5, tick=FALSE)
+  axis(1, at=RRtgrid, labels=format(c(VElat0[tick1], VElat0[tick2], VElat0[tick3], VElat0[tick4], VElat0[tick5]), digits=2, nsmall=2), line=1.5, tick=FALSE)
   if(biomType == "dichotomous") {
-    axis(1, at=RRtgrid, labels=round(c(VElat2[tick1], VElat2[tick2], VElat2[tick3], VElat2[tick4], VElat2[tick5]),2), line=3, tick=FALSE)
+    axis(1, at=RRtgrid, labels=format(c(VElat2[tick1], VElat2[tick2], VElat2[tick3], VElat2[tick4], VElat2[tick5]), digits=2, nsmall=2), line=3, tick=FALSE)
   } else {
-    axis(1, at=RRtgrid, labels=round(c(VElat1[tick1], VElat1[tick2], VElat1[tick3], VElat1[tick4], VElat1[tick5]),2), line=3, tick=FALSE)
-    axis(1, at=RRtgrid, labels=round(c(VElat2[tick1], VElat2[tick2], VElat2[tick3], VElat2[tick4], VElat2[tick5]),2), line=4.5, tick=FALSE)
+    axis(1, at=RRtgrid, labels=format(c(VElat1[tick1], VElat1[tick2], VElat1[tick3], VElat1[tick4], VElat1[tick5]), digits=2, nsmall=2), line=3, tick=FALSE)
+    axis(1, at=RRtgrid, labels=format(c(VElat2[tick1], VElat2[tick2], VElat2[tick3], VElat2[tick4], VElat2[tick5]), digits=2, nsmall=2), line=4.5, tick=FALSE)
   }
-  mtext(expression(RR[t]), 1, line=1, at=-0.05, cex=1.2)
-  mtext(expression(VE[0]^{lat}), 1, line=2.8, at=-0.05, cex=1.2)
+  mtext(expression(RR[t]), 1, line=1, at=min(RRtgrid) - 0.15 * (max(RRtgrid) - min(RRtgrid)), cex=1.2)
+  mtext(expression(VE[0]^{lat}), 1, line=2.8, at=min(RRtgrid) - 0.15 * (max(RRtgrid) - min(RRtgrid)), cex=1.2)
   if(biomType == "dichotomous") {
-    mtext(expression(VE[2]^{lat}), 1, line=4.3, at=-0.05, cex=1.2)
+    mtext(expression(VE[2]^{lat}), 1, line=4.3, at=min(RRtgrid) - 0.15 * (max(RRtgrid) - min(RRtgrid)), cex=1.2)
   } else {
-    mtext(expression(VE[1]^{lat}), 1, line=4.3, at=-0.05, cex=1.2)
-    mtext(expression(VE[2]^{lat}), 1, line=5.8, at=-0.05, cex=1.2)
+    mtext(expression(VE[1]^{lat}), 1, line=4.3, at=min(RRtgrid) - 0.15 * (max(RRtgrid) - min(RRtgrid)), cex=1.2)
+    mtext(expression(VE[2]^{lat}), 1, line=5.8, at=min(RRtgrid) - 0.15 * (max(RRtgrid) - min(RRtgrid)), cex=1.2)
   }
   mtext(expression("Vaccine Group CoR Relative Risk"~ RR[t]),1, line=7, at=mean(RRtgrid), cex=1.2)
 
