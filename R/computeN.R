@@ -57,9 +57,6 @@ computeN <- function(Nrand, tau, taumax, VEtauToTaumax, VE0toTau, risk0, dropout
   # RRoverall = RRtauToTaumax = P(T <= taumax|T > tau, Z=1)/P(T <= taumax|T > tau, Z=0)
   RRoverall <- 1 - VEtauToTaumax
 
-  # Hypothetical placebo-group endpoint risk between enrollment and time tau (default is in months):
-  risk0Mo0toTaumax <- risk0*(1 + tau/taumax)
-
   # Specify relative risk in the early period between enrollment and time tau,
   # defined as RR0toTau = P(T <= tau|Z=1) / P(T <= tau|Z=0)
   RR0toTau <- 1 - VE0toTau
@@ -72,7 +69,7 @@ computeN <- function(Nrand, tau, taumax, VEtauToTaumax, VE0toTau, risk0, dropout
   #    between tau and taumax (this will only approximately hold)
 
   # Calculate thetat and thetac on the same time-scale as that of tau and taumax:
-  thetat <- -log(1-risk0Mo0toTaumax)/taumax
+  thetat <- uniroot(fIncRate, interval=0:1, risk0=risk0, tau=tau, taumax=taumax)$root
   thetac <- -log(1-dropoutRisk)/taumax
 
   # Calculate the number of subjects in the vaccine group at risk at tau
@@ -133,4 +130,9 @@ computeN <- function(Nrand, tau, taumax, VEtauToTaumax, VE0toTau, risk0, dropout
   return(list(N = round(N), nCases = nCases, nControls = nControls, nCasesWithS = nCasesWithS))
 }
 
-
+# used for obtaining 'incRate' as a solution to the equation fIncRate(incRate, ...) = 0
+# the rationale is that since 'risk0' = P(T <= taumax | T > tau, Z = 0) and T ~ Exp(incRate), we can back-calculate 'incRate'
+# for a known 'risk0' (and a known 'tau' and 'taumax')
+fIncRate <- function(incRate, risk0, tau, taumax){
+  return((pexp(taumax, rate=incRate) - pexp(tau, rate=incRate)) / (1 - pexp(tau, rate=incRate)) - risk0)
+}
