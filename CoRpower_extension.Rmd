@@ -1,0 +1,112 @@
+---
+title: "CoRpower Extension for CoVE"
+author: "Stephanie Wu"
+date: "March 25, 2019"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+## Algorithms for generating X, Y, S(1), and a BIP for cases and controls in the placebo group
+The output is the full data rather than the observed data, so the $R$ indicator is not included. This accommodates sub-sampling for different designs, e.g., different case:control ratios, case-cohort studies, etc.
+
+### Algorithm for continuous biomarker \(\, S^{\ast}(1)\)
+
+<ol>
+<li> Specify $P^{lat}_{lowestVE}$, $\rho$, $\sigma^2_{obs}$, $VE_{lowest}$, $risk_0$, $N_{complete}$, $n_{cases}$, $n^S_{cases}$, $K$
+  <ul> 
+  <li> $\rho = \sigma^2_{tr} / \sigma^2_{obs}$
+  <li> $N_{complete}$ = number at risk at $\tau$:
+  \begin{align*}
+  N_{complete} &= N_{randomized}*P(T>\tau, C>\tau | Z = 0)\\
+  &= N_{randomized}*P(T>\tau | Z=0)*P(C>\tau | Z=0) \quad \text{ because } T, C \text{ independent}
+  \end{align*}
+  <li> $K$ = case-control ratio
+  </ul>
+  
+<li> Simulate $Y$ by creating a vector with $n_{cases}$ 1's followed by $n_{controls}$ 0's.
+<li> Simulate $X^*$: 
+  <ul>
+  <li> Cases: from a grid of values ranging from -3 to 3, sample $n_{cases}$ with replacement from:
+  \begin{align*}
+  f_{X^{\ast}}(x^{\ast}|Y=1,Y^{\tau}=0,Z=0) &= P(X^*=x^*|Y(0)=1)\\
+  &= \frac{P(Y(0)=1|X^*=x^*)P(X^*=x^*)}{P(Y(0)=1)}\\
+  &= \frac{risk^{lat}_0(x^*)P(X^*=x^*)}{risk^{lat}_0}\\
+  &= P(X^*=x^*) \quad \text{because } risk^{lat}_0(x^*)=risk^{lat}_0=risk_0
+  \end{align*}
+  <li> Controls: from a grid of values ranging from -3 to 3, sample $n_{controls}$ with replacement from:
+  \begin{align*}
+  f_{X^{\ast}}(x^{\ast}|Y=0,Y^{\tau}=0,Z=0) &= P(X^*=x^*|Y(0)=0)\\
+  &= \frac{P(Y(0)=0|X^*=x^*)P(X^*=x^*)}{P(Y(0)=0)}\\
+  &= \frac{(1-risk^{lat}_0(x^*))P(X^*=x^*)}{1-risk^{lat}_0}\\
+  &= P(X^*=x^*) \quad \text{because } risk^{lat}_0(x^*)=risk^{lat}_0=risk_0
+  \end{align*}
+  <li> $P(X^*=x^*)$ is fully specified because $X^* \sim N(0, \sigma^2_{tr})$
+  </ul>
+<li> Simulate $S^*(1)$: $S^*(1)=X^*+\epsilon,$ where $\epsilon \sim N(0, \sigma^2_e)$ and $\sigma_e^2=(1-\rho)\sigma^2_{obs}$. $\epsilon$ is simulated by `rnorm(Ncomplete, mean=0, sd=sqrt(sigma2e))` 
+</ol>
+
+### Algorithm for trichotomous biomarker \(\, S(1)\) using Approach 2
+
+<ol>
+<li> Specify $P^{lat}_0$, $P^{lat}_2$, $P_0$, $P_2$, $\rho$, $\sigma^2_{obs}$, $risk_0$, $N_{complete}$, $n_{cases}$, $n^S_{cases}$, $K$
+<li> Calculation of $(Sens, Spec, FP^0, FP^1, FN^1, FN^2)$:
+  <ol type="i">
+  <li> Assuming the classical measurement error model, where $X^{\ast} \sim \mathsf{N}(0,\sigma^2_{tr})$,  solve
+  $$P^{lat}_0 = P(X^{\ast} \leq \theta_0) \quad \textrm{and} \quad P^{lat}_2 = P(X^{\ast} > \theta_2)$$
+  for $\theta_0$ and $\theta_2$
+  <li> Generate $B$ realizations of $X^{\ast}$ and $S^{\ast} = X^{\ast} + e$, where $e \sim \mathsf{N}(0,\sigma^2_{e})$, and
+  $X^{\ast}$ independent of $e$
+      + $B = 20,000$ by default
+  <li> Using $\theta_0$ and $\theta_2$ from Step i., define
+  \begin{align*}
+  Spec(\phi_0) &= P(S^{\ast} \leq \phi_0 \mid X^{\ast} \leq \theta_0)\\
+  FN^1(\phi_0) &= P(S^{\ast} \leq \phi_0 \mid X^{\ast} \in (\theta_0,\theta_2])\\
+  FN^2(\phi_0) &= P(S^{\ast} \leq \phi_0 \mid X^{\ast} > \theta_2)\\
+  Sens(\phi_2) &= P(S^{\ast} > \phi_2 \mid X^{\ast} > \theta_2)\\
+  FP^1(\phi_2) &= P(S^{\ast} > \phi_2 \mid X^{\ast} \in (\theta_0,\theta_2])\\
+  FP^0(\phi_2) &= P(S^{\ast} > \phi_2 \mid X^{\ast} \leq \theta_0)
+  \end{align*}
+        
+  Estimate $Spec(\phi_0)$ by
+  $$\widehat{Spec}(\phi_0) = \frac{\#\{S^{\ast}_b \leq \phi_0, X^{\ast}_b \leq \theta_0\}}{\#\{X^{\ast}_b \leq \theta_0\}}\,$$ etc.
+  <li> Find $\phi_0 = \phi^{\ast}_0$ and $\phi_2 = \phi^{\ast}_2$ that numerically solve
+  \begin{align*}
+  P_0 &= \widehat{Spec}(\phi_0)P^{lat}_0 + \widehat{FN}^1(\phi_0)P^{lat}_1 + \widehat{FN}^2(\phi_0)P^{lat}_2\\
+  P_2 &= \widehat{Sens}(\phi_2)P^{lat}_2 + \widehat{FP}^1(\phi_2)P^{lat}_1 + \widehat{FP}^0(\phi_2)P^{lat}_0
+  \end{align*}
+  and compute
+  \[
+  Spec = \widehat{Spec}(\phi^{\ast}_0),\; Sens = \widehat{Sens}(\phi^{\ast}_2),\; \textrm{etc.}
+  \]
+  </ol>      
+
+<li> Number of observations in each latent subgroup: $N_x = n_{complete} P^{lat}_x$
+<li> Simulate X: 
+  <ul>
+  <li> Cases: $\left(n_{cases}(0),n_{cases}(1),n_{cases}(2)\right) \sim \mathsf{Mult}(n_{cases},(p_0,p_1,p_2))$, where
+  \begin{align*}
+  p_x=P(X=x|Y=1,Y^{\tau}=0,Z=0) &= P(X=x|Y(0)=1)\\ 
+  &= \frac{P(Y(0)=1|X=x)P(X=x)}{P(Y(0)=1)}\\
+  &= \frac{risk^{lat}_0(x^*)P^{lat}_{x*}}{risk^{lat}_0}\\
+  &= P^{lat}_{x*} \quad \text{because } risk^{lat}_0(x^*)=risk^{lat}_0=risk_0
+  \end{align*}
+  <li> Controls: $n_{controls}(x) = N_x - n_{cases}(x)$
+  </ul>
+<li> Simulate $Y$: Vector with $n_{cases}(0)$ 1's, followed by $n_{controls}(0)$ 0's, followed by $n_{cases}(1)$ 1's, etc.
+<li> Simulate $S(1)$: For each of the $N_x$ subjects, generate $S(1)_i$ by a draw from $\mathsf{Mult}(1,(p_0,p_1,p_2))$, where $p_k=P(S(1)=k|X=x)$ is given by $Sens, Spec$, etc.  
+</ol>
+
+### Algorithm for simulating a BIP
+<ul>
+<li> We have $X^* \sim N(0, \sigma^2_{tr})$, $BIP \sim N(0, \sigma^2_d)$, $S^*(1) = X^* + \epsilon$, $BIP = X^* + \delta$, $\epsilon \sim N(0, \sigma^2_e)$, $\delta \sim N(0, \sigma^2_d)$, $\epsilon, \delta, X^*$ independent
+<li> Simulate $BIP$: $BIP = X^* + \delta$, where $\delta$ is simulated by `rnorm(Ncomplete, mean=0, sd=sqrt(sigma2d))`, where $\sigma^2_d = Var(\delta)$
+<li> Given a specified correlation, solve for $\sigma^2_d$:
+\begin{align*}
+corr(BIP, S^*(1)) &= corr(X^*+\delta, X^*+\epsilon)\\
+&= \frac{Var(X^*)}{\sqrt{Var(X^*+\delta)Var(X^*+\epsilon)}}\\
+&= \frac{Var(X^*)}{\sqrt{(Var(X^*)+Var(\delta))(Var(X^*)+Var(\epsilon))}} \quad \text{because of independence}\\
+&= \frac{\sigma^2_{tr}}{\sqrt{(\sigma^2_{tr}+Var(\delta))(\sigma^2_{tr}+\sigma^2_e)}}\\
+\iff (\sigma^2_{tr}+Var(\delta))(\sigma^2_{tr}+\sigma^2_e) &= (\sigma^2_{tr}/corr(BIP, S^*(1)))^2\\
+\iff Var(\delta) &= \frac{(\sigma^2_{tr}/corr(BIP, S^*(1)))^2}{\sigma^2_{tr}+\sigma^2_e} - \sigma^2_{tr}
+\end{align*}
