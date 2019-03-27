@@ -207,7 +207,43 @@ checkProbabilityViolation <- function(VEoverall,RRlat2,PlatVElowest,VElowest, bi
     stop("Input parameters violate probability constraints for trichotomous biomarker calculations.
          Consider making Plat0 smaller and/or VElat0 larger.")
   }
+}
+
+checkSaveDataParams <- function(corr, nCasesPla, nControlsPla, rho, sampleLengths, biomType, spec, sens, FP0, FN2) {
+  # Checks that sample size input parameters are valid.
+  #
+  # Args:
+  #   corr: correlation between BIP and S
+  #   nCasesPla: all cases in the placebo group at-risk at tau and a case by taumax
+  #   nControlsPla:  all controls in the placebo group at-risk at tau and not diseased at the end of follow-up taumax
+  #   rho: protecion-relevant fraction of the variance of S or S*
+  #   sampleLengths: Numeric vector denoting lengths of the sample size input parameters
+  #   biomType: Character string specifying type of biomarker used. Default is "continuous";
+  #             other choices are "trichotomous" and "dichotomous"
+  #
+  # Returns:
+  #   Error if corr, nCasesPla, or nControlsPla is not specified,
+  #   or if corr is not a valid correlation, or if any input parameters are unacceptable vectors,
+  #   or if the biomarker is trichotomous or dichotomous and Approach 2 is not used
+  
+  if(is.null(corr) | is.null(nCasesPla) | is.null(nControlsPla)) {
+    stop("If full data is to be saved, input parameters corr, nCasesPla, and nControlsPla must be specified.")
   }
+  
+  if(corr < -1 | corr > 1) {
+    stop("Full data was chosen to be outputted and the input parameter corr is not a valid correlation.")
+  }
+  
+  if(length(rho)>1 | length(nCasesPla)>1 | length(nControlsPla)>1 | max(sampleLengths) > 1) {
+    stop("If full data is to be saved, all input parameters except for VElat0, VElat1, and VElowest must be scalars.")
+  
+  if(biomType == "trichotomous" | biomType == "dichotomous") {
+    Approach2 <- (all(is.null(spec), is.null(sens), is.null(FP0), is.null(FN2)))
+    if(!Approach2) {
+      stop("If full data is to be saved and the biomarker is trichotomous or dichotomous, Approach 2 must be used.")
+    }
+  }
+}  
 
 computeSensSpecFPFN <- function(sigma2obs,rho,Plat0,Plat2,P0,P2, saveData) {
   # For trichotomous biomarker specified using Approach 2, maps input parameters rho and sigma2obs
@@ -550,6 +586,7 @@ biomSubset <- function(Y, NcompleteTx, nCasesTxWithS, controlCaseRatio, p, cohor
 #'
 #' To save output in an \code{.RData} file, both \code{saveDir} and \code{saveFile} must be specified.
 #' 
+#' if \code{saveData} is specified, \code{corr}, \code{nCasesPla}, and \code{nControlsPla} must also be specified.
 #' If \code{saveData} is specified and the biomarker is trichotomous or dichotomous, Approach 2 must be used. In addition, only \code{VElat0} AND \code{VElat1} may be vectors. All other input parameters must be scalars.
 #' If \code{saveData} is specified and the biomarker is continous, only \code{VElowest} can be a vector. All other input parameters must be scalars.
 #'
@@ -819,9 +856,12 @@ computePower <- function(nCasesTx, nControlsTx, nCasesTxWithS,
   
   # If full data (X, Y, S1, Z, and a BIP for treatment and placebo) is to be outputted, initialize output list.
   # Also calculate NcompletePla: number in the placebo group observed to be at risk when the immune response is measured and that do not drop out 
+  # Check for errors and input violations
   if(!is.null(saveData)) {
     fullData <- list()
     NcompletePla <- nCasesPla + nControlsPla
+    # check parameters are valid for saving full data as an output
+    checkSaveDataParams(corr, nCasesPla, nControlsPla, rho, sampleLengths, biomType, spec, sens, FP0, FN2)
   }
   
   # Compute VElat2:
@@ -838,7 +878,6 @@ computePower <- function(nCasesTx, nControlsTx, nCasesTxWithS,
   
   # check all values of RRlat2 are between 0 and 1 and that PlatVElowest meets bounds
   checkProbabilityViolation(VEoverall,RRlat2,PlatVElowest,VElowest, biomType)
-  
   
   sigma2e <- (1-rho)*sigma2obs
   sigma2tr <- rho*sigma2obs  # variance of true biomarker X
