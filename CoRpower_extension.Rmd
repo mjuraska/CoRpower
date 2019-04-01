@@ -31,21 +31,21 @@ The output is the full data rather than the observed data, so the $R$ indicator 
   <ul>
   <li> Cases: from a grid of values ranging from -3 to 3, sample $n_{cases}$ with replacement from:
   \begin{align*}
-  f_{X^{\ast}}(x^{\ast}|Y=1,Y^{\tau}=0,Z=0) &= P(X^*=x^*|Y(0)=1)\\
-  &= \frac{P(Y(0)=1|X^*=x^*)P(X^*=x^*)}{P(Y(0)=1)}\\
-  &= \frac{risk^{lat}_0(x^*)P(X^*=x^*)}{risk^{lat}_0}\\
-  &= P(X^*=x^*) \quad \text{because } risk^{lat}_0(x^*)=risk^{lat}_0=risk_0
+  f_{X^{\ast}}(x^{\ast}|Y=1,Y^{\tau}=0,Z=0) &= f_{X^{\ast}}(x^{\ast}|Y(0)=1)\\
+  &= \frac{P(Y(0)=1|X^*=x^*)f_{X^{\ast}}(x^{\ast})}{P(Y(0)=1)}\\
+  &= \frac{risk^{lat}_0(x^*)f_{X^{\ast}}(x^{\ast})}{risk_0}\\
+  &= f_{X^{\ast}}(x^{\ast}) \quad \text{because } risk^{lat}_0(x^*)=risk_0
   \end{align*}
   <li> Controls: from a grid of values ranging from -3 to 3, sample $n_{controls}$ with replacement from:
   \begin{align*}
-  f_{X^{\ast}}(x^{\ast}|Y=0,Y^{\tau}=0,Z=0) &= P(X^*=x^*|Y(0)=0)\\
-  &= \frac{P(Y(0)=0|X^*=x^*)P(X^*=x^*)}{P(Y(0)=0)}\\
-  &= \frac{(1-risk^{lat}_0(x^*))P(X^*=x^*)}{1-risk^{lat}_0}\\
-  &= P(X^*=x^*) \quad \text{because } risk^{lat}_0(x^*)=risk^{lat}_0=risk_0
+  f_{X^{\ast}}(x^{\ast}|Y=0,Y^{\tau}=0,Z=0) &= f_{X^{\ast}}(x^{\ast}|Y(0)=0)\\
+  &= \frac{P(Y(0)=0|X^*=x^*)f_{X^{\ast}}(x^{\ast})}{P(Y(0)=0)}\\
+  &= \frac{(1-risk^{lat}_0(x^*))f_{X^{\ast}}(x^{\ast})}{1-risk_0}\\
+  &= f_{X^{\ast}}(x^{\ast}) \quad \text{because } risk^{lat}_0(x^*)=risk_0
   \end{align*}
-  <li> $P(X^*=x^*)$ is fully specified because $X^* \sim N(0, \sigma^2_{tr})$
+  <li> $f_{X^{\ast}}(x^{\ast})$ is fully specified because $X^* \sim N(0, \sigma^2_{tr})$
   </ul>
-<li> Simulate $S^*(1)$: $S^*(1)=X^*+\epsilon,$ where $\epsilon \sim N(0, \sigma^2_e)$ and $\sigma_e^2=(1-\rho)\sigma^2_{obs}$. $\epsilon$ is simulated by `rnorm(Ncomplete, mean=0, sd=sqrt(sigma2e))` 
+<li> Simulate $S^*(1)$: $S^*(1)=X^*+\epsilon,$ where $\epsilon \sim N(0, \sigma^2_e)$ and $\sigma_e^2=(1-\rho)\sigma^2_{obs}$. $\epsilon$ is independent of $X^*$ and is simulated by `rnorm(Ncomplete, mean=0, sd=sqrt(sigma2e))` 
 </ol>
 
 ### Algorithm for trichotomous biomarker \(\, S(1)\) using Approach 2
@@ -90,10 +90,17 @@ The output is the full data rather than the observed data, so the $R$ indicator 
   \begin{align*}
   p_x=P(X=x|Y=1,Y^{\tau}=0,Z=0) &= P(X=x|Y(0)=1)\\ 
   &= \frac{P(Y(0)=1|X=x)P(X=x)}{P(Y(0)=1)}\\
-  &= \frac{risk^{lat}_0(x^*)P^{lat}_{x*}}{risk^{lat}_0}\\
-  &= P^{lat}_{x*} \quad \text{because } risk^{lat}_0(x^*)=risk^{lat}_0=risk_0
+  &= \frac{risk^{lat}_0(x)P^{lat}_{x}}{risk_0}\\
+  &= P^{lat}_{x} \quad \text{because } risk^{lat}_0(x)=risk_0
   \end{align*}
-  <li> Controls: $n_{controls}(x) = N_x - n_{cases}(x)$
+  <li> Controls: $\left(n_{controls}(0),n_{controls}(1),n_{controls}(2)\right) \sim \mathsf{Mult}(n_{controls},(p_0,p_1,p_2))$, where
+  \begin{align*}
+  p_x=P(X=x|Y=0,Y^{\tau}=0,Z=0) &= P(X=x|Y(0)=0)\\ 
+  &= \frac{P(Y(0)=0|X=x)P(X=x)}{P(Y(0)=0)}\\
+  &= \frac{(1-risk^{lat}_0(x))P^{lat}_{x}}{(1-risk_0)}\\
+  &= P^{lat}_{x} \quad \text{because } risk^{lat}_0(x)=risk_0
+  \end{align*}
+  <li> $n_{controls}(x) = N_x - n_{cases}(x)$
   </ul>
 <li> Simulate $Y$: Vector with $n_{cases}(0)$ 1's, followed by $n_{controls}(0)$ 0's, followed by $n_{cases}(1)$ 1's, etc.
 <li> Simulate $S(1)$: For each of the $N_x$ subjects, generate $S(1)_i$ by a draw from $\mathsf{Mult}(1,(p_0,p_1,p_2))$, where $p_k=P(S(1)=k|X=x)$ is given by $Sens, Spec$, etc.  
@@ -104,7 +111,7 @@ The output is the full data rather than the observed data, so the $R$ indicator 
 <ul>
 <li> We have $X^* \sim N(0, \sigma^2_{tr})$, $\epsilon \sim N(0, \sigma^2_e)$, $X^*$ and $\epsilon$ independent, and $S^*(1) := X^* + \epsilon$
 <li> We define a continuous $BIP := X^* + \delta$, where $\delta \sim N(0, \sigma^2_d)$ with an unknown $\sigma^2_d$, assuming $\delta, \epsilon$, and $X^*$ are independent
-<li> Given the user-specified correlation argument `\corr`$:= \corr(BIP, S^*(1))$ in `computePower()`, solve the following equation for $\sigma^2_d$:
+<li> Given the user-specified correlation argument `corr`$:= \corr(BIP, S^*(1))$ in `computePower()`, solve the following equation for $\sigma^2_d$:
 \begin{align*}
 corr (BIP, S^*(1)) &= corr(X^*+\delta, X^*+\epsilon)\\
 &= \frac{var(X^*)}{\sqrt{var(X^*+\delta)var(X^*+\epsilon)}}\\
@@ -130,6 +137,6 @@ with the conditional probabilities $P\{S(1)=x \mid X=k\}$, $x, k=0,1,2$, specifi
 <li> We obtain $\var S(1)$ analogously as $\var X$ above
 <li> We use $\var X$ and $\var S(1)$ for specifying the variance of the underlying continuous variables in the additive measurement model, i.e., $S^* = X^* + \epsilon$, where $X^*$ and $\epsilon$ are independent, $X^* \sim N(0, \sigma^2_{tr})$, $\epsilon \sim N(0, \sigma^2_e)$, $\sigma^2_{tr} = \var X$, and $\sigma^2_e = \sigma^2_{obs} - \sigma^2_{tr} = \var S(1) - \var X > 0$
 <li> We define a continuous $BIP := X^* + \delta$, where $\delta \sim N(0, \sigma^2_d)$ with an unknown $\sigma^2_d$, assuming $\delta, \epsilon$, and $X^*$ are independent
-<li> Given the user-specified correlation argument `\corr`$:= \corr(BIP, S^*(1))$ in `computePower()`, we solve for $\sigma^2_d$ as above
+<li> Given the user-specified correlation argument `corr`$:= \corr(BIP, S^*(1))$ in `computePower()`, we solve for $\sigma^2_d$ as above
 <li> Using $\sigma^2_d$ obtained in the previous step, simulate the $BIP$ following $BIP = X^* + \delta$, where $\delta$ is simulated by `rnorm(Ncomplete, mean=0, sd=sqrt(sigma2d))`
 </ul>
