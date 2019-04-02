@@ -6,8 +6,8 @@ output:
   html_document: default
 ---
 
-\newcommand{\var}{\mathrm{var}\,}
-\newcommand{\corr}{\mathrm{corr}\,}
+\DeclareMathOperator{\corr}{corr}
+\DeclareMathOperator{\var}{var}
 
 ## Algorithms for generating X, Y, S(1), and a BIP for cases and controls in the placebo group
 The output is the full data rather than the observed data, so the $R$ indicator is not included. This accommodates sub-sampling for different designs, e.g., different case:control ratios, case-cohort studies, etc.
@@ -48,10 +48,12 @@ The output is the full data rather than the observed data, so the $R$ indicator 
 <li> Simulate $S^*(1)$: $S^*(1)=X^*+\epsilon,$ where $\epsilon \sim N(0, \sigma^2_e)$ and $\sigma_e^2=(1-\rho)\sigma^2_{obs}$. $\epsilon$ is independent of $X^*$ and is simulated by `rnorm(Ncomplete, mean=0, sd=sqrt(sigma2e))` 
 </ol>
 
-### Algorithm for trichotomous biomarker \(\, S(1)\) using Approach 2
+### Algorithm for trichotomous biomarker \(\, S(1)\) 
+#### Using Approach 2
 
 <ol>
-<li> Specify $P^{lat}_0$, $P^{lat}_2$, $P_0$, $P_2$, $\rho$, $\sigma^2_{obs}$, $risk_0$, $N_{complete}$, $n_{cases}$, $n^S_{cases}$, $K$
+<li> Specify $P^{lat}_0$, $P^{lat}_2$, $P_0$, $P_2$, $risk_0$, $N_{complete}$, $n_{cases}$, $n^S_{cases}$, $K$
+<li> Specify $\rho$ and $\sigma^2_{obs}$ 
 <li> Calculation of $(Sens, Spec, FP^0, FP^1, FN^1, FN^2)$:
   <ol type="i">
   <li> Assuming the classical measurement error model, where $X^{\ast} \sim \mathsf{N}(0,\sigma^2_{tr})$,  solve
@@ -83,6 +85,33 @@ The output is the full data rather than the observed data, so the $R$ indicator 
   \]
   </ol>      
 
+<li> Number of observations in each latent subgroup: $N_x = N_{complete} P^{lat}_x$
+<li> Simulate X: 
+  <ul>
+  <li> Cases: $\left(n_{cases}(0),n_{cases}(1),n_{cases}(2)\right) \sim \mathsf{Mult}(n_{cases},(p_0,p_1,p_2))$, where
+  \begin{align*}
+  p_x=P(X=x|Y=1,Y^{\tau}=0,Z=0) &= P(X=x|Y(0)=1)\\ 
+  &= \frac{P(Y(0)=1|X=x)P(X=x)}{P(Y(0)=1)}\\
+  &= \frac{risk^{lat}_0(x)P^{lat}_{x}}{risk_0}\\
+  &= P^{lat}_{x} \quad \text{because } risk^{lat}_0(x)=risk_0
+  \end{align*}
+  <li> Controls: $\left(n_{controls}(0),n_{controls}(1),n_{controls}(2)\right) \sim \mathsf{Mult}(n_{controls},(p_0,p_1,p_2))$, where
+  \begin{align*}
+  p_x=P(X=x|Y=0,Y^{\tau}=0,Z=0) &= P(X=x|Y(0)=0)\\ 
+  &= \frac{P(Y(0)=0|X=x)P(X=x)}{P(Y(0)=0)}\\
+  &= \frac{(1-risk^{lat}_0(x))P^{lat}_{x}}{(1-risk_0)}\\
+  &= P^{lat}_{x} \quad \text{because } risk^{lat}_0(x)=risk_0
+  \end{align*}
+  <li> $n_{controls}(x) = N_x - n_{cases}(x)$
+  </ul>
+<li> Simulate $Y$: Vector with $n_{cases}(0)$ 1's, followed by $n_{controls}(0)$ 0's, followed by $n_{cases}(1)$ 1's, etc.
+<li> Simulate $S(1)$: For each of the $N_x$ subjects, generate $S(1)_i$ by a draw from $\mathsf{Mult}(1,(p_0,p_1,p_2))$, where $p_k=P(S(1)=k|X=x)$ is given by $Sens, Spec$, etc.  
+</ol>
+
+#### Using Approach 1
+<ol>
+<li> Specify $P^{lat}_0$, $P^{lat}_2$, $P_0$, $P_2$, $risk_0$, $N_{complete}$, $n_{cases}$, $n^S_{cases}$, $K$
+<li> Specify two of the three $(Sens, FP^0, FP^1)$ and two of the three $(Spec, FN^2, FN^1)$. E.g., specify $Sens$ and $Spec$ and $FP^0 = FN^2 = 0$
 <li> Number of observations in each latent subgroup: $N_x = n_{complete} P^{lat}_x$
 <li> Simulate X: 
   <ul>
@@ -107,18 +136,21 @@ The output is the full data rather than the observed data, so the $R$ indicator 
 </ol>
 
 ### Algorithm for simulating a continuous baseline immunogenicity predictor (BIP)
-#### Trichotomous \(\, S(1)\) using Approach 2 or continuous \(\, S^*(1)\)
+#### Continuous \(\, S^*(1)\) or trichotomous \(\, S(1)\) using Approach 2
 <ul>
 <li> We have $X^* \sim N(0, \sigma^2_{tr})$, $\epsilon \sim N(0, \sigma^2_e)$, $X^*$ and $\epsilon$ independent, and $S^*(1) := X^* + \epsilon$
 <li> We define a continuous $BIP := X^* + \delta$, where $\delta \sim N(0, \sigma^2_d)$ with an unknown $\sigma^2_d$, assuming $\delta, \epsilon$, and $X^*$ are independent
 <li> Given the user-specified correlation argument `corr`$:= \corr(BIP, S^*(1))$ in `computePower()`, solve the following equation for $\sigma^2_d$:
+
 \begin{align*}
-corr (BIP, S^*(1)) &= corr(X^*+\delta, X^*+\epsilon)\\
-&= \frac{var(X^*)}{\sqrt{var(X^*+\delta)var(X^*+\epsilon)}}\\
-&= \frac{var(X^*)}{\sqrt{(var(X^*)+var(\delta))(var(X^*)+var(\epsilon))}} \quad \text{because of independence}\\
-&= \frac{\sigma^2_{tr}}{\sqrt{(\sigma^2_{tr}+var(\delta))(\sigma^2_{tr}+\sigma^2_e)}}\\
-\iff (\sigma^2_{tr}+var(\delta))(\sigma^2_{tr}+\sigma^2_e) &= (\sigma^2_{tr}/corr(BIP, S^*(1)))^2\\
-\iff var(\delta) &= \frac{(\sigma^2_{tr}/corr(BIP, S^*(1)))^2}{\sigma^2_{tr}+\sigma^2_e} - \sigma^2_{tr}
+\DeclareMathOperator{\corr}{corr}
+\DeclareMathOperator{\var}{var}
+\corr(BIP, S^*(1)) &= \corr(X^*+\delta, X^*+\epsilon)\\
+&= \frac{\var(X^*)}{\sqrt{\var(X^*+\delta)\var(X^*+\epsilon)}}\\
+&= \frac{\var(X^*)}{\sqrt{(\var(X^*)+\var(\delta))(\var(X^*)+\var(\epsilon))}} \quad \text{because of independence}\\
+&= \frac{\sigma^2_{tr}}{\sqrt{(\sigma^2_{tr}+\var(\delta))(\sigma^2_{tr}+\sigma^2_e)}}\\
+\iff (\sigma^2_{tr}+\var(\delta))(\sigma^2_{tr}+\sigma^2_e) &= (\sigma^2_{tr}/ \corr(BIP, S^*(1)))^2\\
+\iff \var(\delta) &= \frac{(\sigma^2_{tr}/\corr(BIP, S^*(1)))^2}{\sigma^2_{tr}+\sigma^2_e} - \sigma^2_{tr}
 \end{align*}
 <li> Using $\sigma^2_d$ obtained in the previous step, simulate the $BIP$ following $BIP = X^* + \delta$, where $\delta$ is simulated by `rnorm(Ncomplete, mean=0, sd=sqrt(sigma2d))`
 </ul>
@@ -129,11 +161,11 @@ corr (BIP, S^*(1)) &= corr(X^*+\delta, X^*+\epsilon)\\
 $$
 \var X = \sum_{k=0}^2 k^2 P^{lat}_k - \left( \sum_{k=0}^2 k P^{lat}_k \right)^2
 $$
-<li> Next, we have a trichotomous $S(1)$ with a distribution defined by $P_x$, $x=0,1,2$, where
+<li> Next, we have a trichotomous $S(1)$ with a distribution defined by $P_s$, $s=0,1,2$, where
 $$
-P_x  = \sum_{k=0}^2 P\{S(1)=x \mid X=k\} P^{lat}_k,
+P_s  = \sum_{k=0}^2 P\{S(1)=s \mid X=k\} P^{lat}_k,
 $$
-with the conditional probabilities $P\{S(1)=x \mid X=k\}$, $x, k=0,1,2$, specified by the user
+with the conditional probabilities $P\{S(1)=s \mid X=k\}$, $s, k=0,1,2$, specified by the user
 <li> We obtain $\var S(1)$ analogously as $\var X$ above
 <li> We use $\var X$ and $\var S(1)$ for specifying the variance of the underlying continuous variables in the additive measurement model, i.e., $S^* = X^* + \epsilon$, where $X^*$ and $\epsilon$ are independent, $X^* \sim N(0, \sigma^2_{tr})$, $\epsilon \sim N(0, \sigma^2_e)$, $\sigma^2_{tr} = \var X$, and $\sigma^2_e = \sigma^2_{obs} - \sigma^2_{tr} = \var S(1) - \var X > 0$
 <li> We define a continuous $BIP := X^* + \delta$, where $\delta \sim N(0, \sigma^2_d)$ with an unknown $\sigma^2_d$, assuming $\delta, \epsilon$, and $X^*$ are independent

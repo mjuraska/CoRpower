@@ -177,11 +177,15 @@ Controls: from a grid of values ranging from -3 to 3, sample <span class="math i
 Simulate <span class="math inline">\(S^*(1)\)</span>: <span class="math inline">\(S^*(1)=X^*+\epsilon,\)</span> where <span class="math inline">\(\epsilon \sim N(0, \sigma^2_e)\)</span> and <span class="math inline">\(\sigma_e^2=(1-\rho)\sigma^2_{obs}\)</span>. <span class="math inline">\(\epsilon\)</span> is independent of <span class="math inline">\(X^*\)</span> and is simulated by <code>rnorm(Ncomplete, mean=0, sd=sqrt(sigma2e))</code>
 </ol>
 </div>
-<div id="algorithm-for-trichotomous-biomarker-s1-using-approach-2" class="section level3">
-<h3>Algorithm for trichotomous biomarker <span class="math inline">\(\, S(1)\)</span> using Approach 2</h3>
+<div id="algorithm-for-trichotomous-biomarker-s1" class="section level3">
+<h3>Algorithm for trichotomous biomarker <span class="math inline">\(\, S(1)\)</span></h3>
+<div id="using-approach-2" class="section level4">
+<h4>Using Approach 2</h4>
 <ol>
 <li>
-Specify <span class="math inline">\(P^{lat}_0\)</span>, <span class="math inline">\(P^{lat}_2\)</span>, <span class="math inline">\(P_0\)</span>, <span class="math inline">\(P_2\)</span>, <span class="math inline">\(\rho\)</span>, <span class="math inline">\(\sigma^2_{obs}\)</span>, <span class="math inline">\(risk_0\)</span>, <span class="math inline">\(N_{complete}\)</span>, <span class="math inline">\(n_{cases}\)</span>, <span class="math inline">\(n^S_{cases}\)</span>, <span class="math inline">\(K\)</span>
+Specify <span class="math inline">\(P^{lat}_0\)</span>, <span class="math inline">\(P^{lat}_2\)</span>, <span class="math inline">\(P_0\)</span>, <span class="math inline">\(P_2\)</span>, <span class="math inline">\(risk_0\)</span>, <span class="math inline">\(N_{complete}\)</span>, <span class="math inline">\(n_{cases}\)</span>, <span class="math inline">\(n^S_{cases}\)</span>, <span class="math inline">\(K\)</span>
+<li>
+Specify <span class="math inline">\(\rho\)</span> and <span class="math inline">\(\sigma^2_{obs}\)</span>
 <li>
 Calculation of <span class="math inline">\((Sens, Spec, FP^0, FP^1, FN^1, FN^2)\)</span>:
 <ol type="i">
@@ -210,6 +214,44 @@ and compute <span class="math display">\[
   Spec = \widehat{Spec}(\phi^{\ast}_0),\; Sens = \widehat{Sens}(\phi^{\ast}_2),\; \textrm{etc.}
   \]</span>
 </ol>
+<li>
+Number of observations in each latent subgroup: <span class="math inline">\(N_x = N_{complete} P^{lat}_x\)</span>
+<li>
+Simulate X:
+<ul>
+<li>
+Cases: <span class="math inline">\(\left(n_{cases}(0),n_{cases}(1),n_{cases}(2)\right) \sim \mathsf{Mult}(n_{cases},(p_0,p_1,p_2))\)</span>, where
+<span class="math display">\[\begin{align*}
+  p_x=P(X=x|Y=1,Y^{\tau}=0,Z=0) &amp;= P(X=x|Y(0)=1)\\ 
+  &amp;= \frac{P(Y(0)=1|X=x)P(X=x)}{P(Y(0)=1)}\\
+  &amp;= \frac{risk^{lat}_0(x)P^{lat}_{x}}{risk_0}\\
+  &amp;= P^{lat}_{x} \quad \text{because } risk^{lat}_0(x)=risk_0
+  \end{align*}\]</span>
+<li>
+Controls: <span class="math inline">\(\left(n_{controls}(0),n_{controls}(1),n_{controls}(2)\right) \sim \mathsf{Mult}(n_{controls},(p_0,p_1,p_2))\)</span>, where
+<span class="math display">\[\begin{align*}
+  p_x=P(X=x|Y=0,Y^{\tau}=0,Z=0) &amp;= P(X=x|Y(0)=0)\\ 
+  &amp;= \frac{P(Y(0)=0|X=x)P(X=x)}{P(Y(0)=0)}\\
+  &amp;= \frac{(1-risk^{lat}_0(x))P^{lat}_{x}}{(1-risk_0)}\\
+  &amp;= P^{lat}_{x} \quad \text{because } risk^{lat}_0(x)=risk_0
+  \end{align*}\]</span>
+<li>
+<span class="math inline">\(n_{controls}(x) = N_x - n_{cases}(x)\)</span>
+</ul>
+<li>
+Simulate <span class="math inline">\(Y\)</span>: Vector with <span class="math inline">\(n_{cases}(0)\)</span> 1’s, followed by <span class="math inline">\(n_{controls}(0)\)</span> 0’s, followed by <span class="math inline">\(n_{cases}(1)\)</span> 1’s, etc.
+<li>
+Simulate <span class="math inline">\(S(1)\)</span>: For each of the <span class="math inline">\(N_x\)</span> subjects, generate <span class="math inline">\(S(1)_i\)</span> by a draw from <span class="math inline">\(\mathsf{Mult}(1,(p_0,p_1,p_2))\)</span>, where <span class="math inline">\(p_k=P(S(1)=k|X=x)\)</span> is given by <span class="math inline">\(Sens, Spec\)</span>, etc.<br />
+
+</ol>
+</div>
+<div id="using-approach-1" class="section level4">
+<h4>Using Approach 1</h4>
+<ol>
+<li>
+Specify <span class="math inline">\(P^{lat}_0\)</span>, <span class="math inline">\(P^{lat}_2\)</span>, <span class="math inline">\(P_0\)</span>, <span class="math inline">\(P_2\)</span>, <span class="math inline">\(risk_0\)</span>, <span class="math inline">\(N_{complete}\)</span>, <span class="math inline">\(n_{cases}\)</span>, <span class="math inline">\(n^S_{cases}\)</span>, <span class="math inline">\(K\)</span>
+<li>
+Specify two of the three <span class="math inline">\((Sens, FP^0, FP^1)\)</span> and two of the three <span class="math inline">\((Spec, FN^2, FN^1)\)</span>. E.g., specify <span class="math inline">\(Sens\)</span> and <span class="math inline">\(Spec\)</span> and <span class="math inline">\(FP^0 = FN^2 = 0\)</span>
 <li>
 Number of observations in each latent subgroup: <span class="math inline">\(N_x = n_{complete} P^{lat}_x\)</span>
 <li>
@@ -241,24 +283,27 @@ Simulate <span class="math inline">\(S(1)\)</span>: For each of the <span class=
 
 </ol>
 </div>
+</div>
 <div id="algorithm-for-simulating-a-continuous-baseline-immunogenicity-predictor-bip" class="section level3">
 <h3>Algorithm for simulating a continuous baseline immunogenicity predictor (BIP)</h3>
-<div id="trichotomous-s1-using-approach-2-or-continuous-s1" class="section level4">
-<h4>Trichotomous <span class="math inline">\(\, S(1)\)</span> using Approach 2 or continuous <span class="math inline">\(\, S^*(1)\)</span></h4>
+<div id="continuous-s1-or-trichotomous-s1-using-approach-2" class="section level4">
+<h4>Continuous <span class="math inline">\(\, S^*(1)\)</span> or trichotomous <span class="math inline">\(\, S(1)\)</span> using Approach 2</h4>
 <ul>
 <li>
 We have <span class="math inline">\(X^* \sim N(0, \sigma^2_{tr})\)</span>, <span class="math inline">\(\epsilon \sim N(0, \sigma^2_e)\)</span>, <span class="math inline">\(X^*\)</span> and <span class="math inline">\(\epsilon\)</span> independent, and <span class="math inline">\(S^*(1) := X^* + \epsilon\)</span>
 <li>
 We define a continuous <span class="math inline">\(BIP := X^* + \delta\)</span>, where <span class="math inline">\(\delta \sim N(0, \sigma^2_d)\)</span> with an unknown <span class="math inline">\(\sigma^2_d\)</span>, assuming <span class="math inline">\(\delta, \epsilon\)</span>, and <span class="math inline">\(X^*\)</span> are independent
 <li>
-Given the user-specified correlation argument <code>corr</code><span class="math inline">\(:= {\mathrm{corr}\,}(BIP, S^*(1))\)</span> in <code>computePower()</code>, solve the following equation for <span class="math inline">\(\sigma^2_d\)</span>:
+<p>Given the user-specified correlation argument <code>corr</code><span class="math inline">\(:= \operatorname{corr}(BIP, S^*(1))\)</span> in <code>computePower()</code>, solve the following equation for <span class="math inline">\(\sigma^2_d\)</span>:</p>
 <span class="math display">\[\begin{align*}
-corr (BIP, S^*(1)) &amp;= corr(X^*+\delta, X^*+\epsilon)\\
-&amp;= \frac{var(X^*)}{\sqrt{var(X^*+\delta)var(X^*+\epsilon)}}\\
-&amp;= \frac{var(X^*)}{\sqrt{(var(X^*)+var(\delta))(var(X^*)+var(\epsilon))}} \quad \text{because of independence}\\
-&amp;= \frac{\sigma^2_{tr}}{\sqrt{(\sigma^2_{tr}+var(\delta))(\sigma^2_{tr}+\sigma^2_e)}}\\
-\iff (\sigma^2_{tr}+var(\delta))(\sigma^2_{tr}+\sigma^2_e) &amp;= (\sigma^2_{tr}/corr(BIP, S^*(1)))^2\\
-\iff var(\delta) &amp;= \frac{(\sigma^2_{tr}/corr(BIP, S^*(1)))^2}{\sigma^2_{tr}+\sigma^2_e} - \sigma^2_{tr}
+\DeclareMathOperator{\corr}{corr}
+\DeclareMathOperator{\var}{var}
+\corr(BIP, S^*(1)) &amp;= \corr(X^*+\delta, X^*+\epsilon)\\
+&amp;= \frac{\var(X^*)}{\sqrt{\var(X^*+\delta)\var(X^*+\epsilon)}}\\
+&amp;= \frac{\var(X^*)}{\sqrt{(\var(X^*)+\var(\delta))(\var(X^*)+\var(\epsilon))}} \quad \text{because of independence}\\
+&amp;= \frac{\sigma^2_{tr}}{\sqrt{(\sigma^2_{tr}+\var(\delta))(\sigma^2_{tr}+\sigma^2_e)}}\\
+\iff (\sigma^2_{tr}+\var(\delta))(\sigma^2_{tr}+\sigma^2_e) &amp;= (\sigma^2_{tr}/ \corr(BIP, S^*(1)))^2\\
+\iff \var(\delta) &amp;= \frac{(\sigma^2_{tr}/\corr(BIP, S^*(1)))^2}{\sigma^2_{tr}+\sigma^2_e} - \sigma^2_{tr}
 \end{align*}\]</span>
 <li>
 Using <span class="math inline">\(\sigma^2_d\)</span> obtained in the previous step, simulate the <span class="math inline">\(BIP\)</span> following <span class="math inline">\(BIP = X^* + \delta\)</span>, where <span class="math inline">\(\delta\)</span> is simulated by <code>rnorm(Ncomplete, mean=0, sd=sqrt(sigma2d))</code>
@@ -269,20 +314,20 @@ Using <span class="math inline">\(\sigma^2_d\)</span> obtained in the previous s
 <ul>
 <li>
 We have a trichotomous <span class="math inline">\(X\)</span> with a user-specified distribution defined by <span class="math inline">\(P^{lat}_x\)</span>, <span class="math inline">\(x=0,1,2\)</span>, which implies that <span class="math display">\[
-{\mathrm{var}\,}X = \sum_{k=0}^2 k^2 P^{lat}_k - \left( \sum_{k=0}^2 k P^{lat}_k \right)^2
+\operatorname{var}X = \sum_{k=0}^2 k^2 P^{lat}_k - \left( \sum_{k=0}^2 k P^{lat}_k \right)^2
 \]</span>
 <li>
-Next, we have a trichotomous <span class="math inline">\(S(1)\)</span> with a distribution defined by <span class="math inline">\(P_x\)</span>, <span class="math inline">\(x=0,1,2\)</span>, where <span class="math display">\[
-P_x  = \sum_{k=0}^2 P\{S(1)=x \mid X=k\} P^{lat}_k,
-\]</span> with the conditional probabilities <span class="math inline">\(P\{S(1)=x \mid X=k\}\)</span>, <span class="math inline">\(x, k=0,1,2\)</span>, specified by the user
+Next, we have a trichotomous <span class="math inline">\(S(1)\)</span> with a distribution defined by <span class="math inline">\(P_s\)</span>, <span class="math inline">\(s=0,1,2\)</span>, where <span class="math display">\[
+P_s  = \sum_{k=0}^2 P\{S(1)=s \mid X=k\} P^{lat}_k,
+\]</span> with the conditional probabilities <span class="math inline">\(P\{S(1)=s \mid X=k\}\)</span>, <span class="math inline">\(s, k=0,1,2\)</span>, specified by the user
 <li>
-We obtain <span class="math inline">\({\mathrm{var}\,}S(1)\)</span> analogously as <span class="math inline">\({\mathrm{var}\,}X\)</span> above
+We obtain <span class="math inline">\(\operatorname{var}S(1)\)</span> analogously as <span class="math inline">\(\operatorname{var}X\)</span> above
 <li>
-We use <span class="math inline">\({\mathrm{var}\,}X\)</span> and <span class="math inline">\({\mathrm{var}\,}S(1)\)</span> for specifying the variance of the underlying continuous variables in the additive measurement model, i.e., <span class="math inline">\(S^* = X^* + \epsilon\)</span>, where <span class="math inline">\(X^*\)</span> and <span class="math inline">\(\epsilon\)</span> are independent, <span class="math inline">\(X^* \sim N(0, \sigma^2_{tr})\)</span>, <span class="math inline">\(\epsilon \sim N(0, \sigma^2_e)\)</span>, <span class="math inline">\(\sigma^2_{tr} = {\mathrm{var}\,}X\)</span>, and <span class="math inline">\(\sigma^2_e = \sigma^2_{obs} - \sigma^2_{tr} = {\mathrm{var}\,}S(1) - {\mathrm{var}\,}X &gt; 0\)</span>
+We use <span class="math inline">\(\operatorname{var}X\)</span> and <span class="math inline">\(\operatorname{var}S(1)\)</span> for specifying the variance of the underlying continuous variables in the additive measurement model, i.e., <span class="math inline">\(S^* = X^* + \epsilon\)</span>, where <span class="math inline">\(X^*\)</span> and <span class="math inline">\(\epsilon\)</span> are independent, <span class="math inline">\(X^* \sim N(0, \sigma^2_{tr})\)</span>, <span class="math inline">\(\epsilon \sim N(0, \sigma^2_e)\)</span>, <span class="math inline">\(\sigma^2_{tr} = \operatorname{var}X\)</span>, and <span class="math inline">\(\sigma^2_e = \sigma^2_{obs} - \sigma^2_{tr} = \operatorname{var}S(1) - \operatorname{var}X &gt; 0\)</span>
 <li>
 We define a continuous <span class="math inline">\(BIP := X^* + \delta\)</span>, where <span class="math inline">\(\delta \sim N(0, \sigma^2_d)\)</span> with an unknown <span class="math inline">\(\sigma^2_d\)</span>, assuming <span class="math inline">\(\delta, \epsilon\)</span>, and <span class="math inline">\(X^*\)</span> are independent
 <li>
-Given the user-specified correlation argument <code>corr</code><span class="math inline">\(:= {\mathrm{corr}\,}(BIP, S^*(1))\)</span> in <code>computePower()</code>, we solve for <span class="math inline">\(\sigma^2_d\)</span> as above
+Given the user-specified correlation argument <code>corr</code><span class="math inline">\(:= \operatorname{corr}(BIP, S^*(1))\)</span> in <code>computePower()</code>, we solve for <span class="math inline">\(\sigma^2_d\)</span> as above
 <li>
 Using <span class="math inline">\(\sigma^2_d\)</span> obtained in the previous step, simulate the <span class="math inline">\(BIP\)</span> following <span class="math inline">\(BIP = X^* + \delta\)</span>, where <span class="math inline">\(\delta\)</span> is simulated by <code>rnorm(Ncomplete, mean=0, sd=sqrt(sigma2d))</code>
 </ul>
