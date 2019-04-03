@@ -157,15 +157,14 @@ The output is the full data rather than the observed data, so the $R$ indicator 
 
 #### Trichotomous \(\, S(1)\) using Approach 1
 <ul>
-<li> We have a trichotomous $X$ with a user-specified distribution defined by $P^{lat}_x$, $x=0,1,2$, which implies that
+<li> We have a trichotomous $X$ with a user-specified distribution defined by $P^{lat}_x$, $x=0,1,2$ (via input arguments `Plat0` and `Plat2`), which implies that
 $$
 \var X = \sum_{k=0}^2 k^2 P^{lat}_k - \left( \sum_{k=0}^2 k P^{lat}_k \right)^2
 $$
-<li> Next, we have a trichotomous $S(1)$ with a distribution defined by $P_s$, $s=0,1,2$, where
+<li> Next, we have a trichotomous $S(1)$ with a user-specified distribution defined by $P_s$, $s=0,1,2$ (via input arguments `P0` and `P2`), where
 $$
-P_s  = \sum_{k=0}^2 P\{S(1)=s \mid X=k\} P^{lat}_k,
+P_s  = \sum_{k=0}^2 P\{S(1)=s \mid X=k\} P^{lat}_k, \quad s=0,1,2.
 $$
-with the conditional probabilities $P\{S(1)=s \mid X=k\}$, $s, k=0,1,2$, specified by the user
 <li> We obtain $\var S(1)$ analogously as $\var X$ above
 <li> We use $\var X$ and $\var S(1)$ for specifying the variance of the underlying continuous variables in the additive measurement model, i.e., $S^* = X^* + \epsilon$, where $X^*$ and $\epsilon$ are independent, $X^* \sim N(0, \sigma^2_{tr})$, $\epsilon \sim N(0, \sigma^2_e)$, $\sigma^2_{tr} = \var X$, and $\sigma^2_e = \sigma^2_{obs} - \sigma^2_{tr} = \var S(1) - \var X > 0$
 <li> We define a continuous $BIP := X^* + \delta$, where $\delta \sim N(0, \sigma^2_d)$ with an unknown $\sigma^2_d$, assuming $\delta, \epsilon$, and $X^*$ are independent
