@@ -347,53 +347,61 @@ Simulate <span class="math inline">\(S(1)\)</span>: For each of the <span class=
 </ol>
 </div>
 </div>
-<div id="algorithm-for-simulating-a-continuous-baseline-immunogenicity-predictor-bip" class="section level3">
-<h3>Algorithm for simulating a continuous baseline immunogenicity predictor (BIP)</h3>
-<div id="continuous-s1-or-trichotomous-s1-using-approach-2" class="section level4">
-<h4>Continuous <span class="math inline">\(\, S^*(1)\)</span> or trichotomous <span class="math inline">\(\, S(1)\)</span> using Approach 2</h4>
-<ul>
+<div id="algorithm-for-simulating-a-baseline-immunogenicity-predictor-bip" class="section level3">
+<h3>Algorithm for simulating a baseline immunogenicity predictor (BIP)</h3>
+<div id="trichotomous-x-s1-and-bip-using-approach-1" class="section level4">
+<h4>Trichotomous <span class="math inline">\(\, X, S(1),\)</span> and <span class="math inline">\(\, BIP\)</span> using Approach 1</h4>
+<ol>
 <li>
-We have <span class="math inline">\(X^* \sim N(0, \sigma^2_{tr})\)</span>, <span class="math inline">\(\epsilon \sim N(0, \sigma^2_e)\)</span>, <span class="math inline">\(X^*\)</span> and <span class="math inline">\(\epsilon\)</span> independent, and <span class="math inline">\(S^*(1) := X^* + \epsilon\)</span>
+The user specifies a classification rule <span class="math inline">\(P(BIP=i \mid S(1)=j)\)</span>, <span class="math inline">\(i,j=0,1,2\)</span>.
 <li>
-We define a continuous <span class="math inline">\(BIP := X^* + \delta\)</span>, where <span class="math inline">\(\delta \sim N(0, \sigma^2_d)\)</span> with an unknown <span class="math inline">\(\sigma^2_d\)</span>, assuming <span class="math inline">\(\delta, \epsilon\)</span>, and <span class="math inline">\(X^*\)</span> are independent
+For a subject with biomarker measurement <span class="math inline">\(S_k(1)\)</span>, generate <span class="math inline">\(BIP_k\)</span> by a draw from <span class="math inline">\(\mathsf{Mult}(1, (q_0, q_1, q_2))\)</span>, where <span class="math inline">\(q_i=P(BIP_k=i \mid S(1)=S_k(1))\)</span>, <span class="math inline">\(i=0,1,2\)</span>.
+</ol>
+</div>
+<div id="trichotomous-x-s1-and-bip-using-approach-2" class="section level4">
+<h4>Trichotomous <span class="math inline">\(\, X, S(1),\)</span> and <span class="math inline">\(\, BIP\)</span> using Approach 2</h4>
+<p><em>Note: All variables with * are continuous.</em></p>
+<ol>
 <li>
-<p>Given the user-specified correlation argument <code>corr</code><span class="math inline">\(:= \operatorname{corr}(BIP, S^*(1))\)</span> in <code>computePower()</code>, solve the following equation for <span class="math inline">\(\sigma^2_d\)</span>:</p>
+The user specifies <span class="math inline">\(\operatorname{corr}(BIP^*, S^*(1))\)</span>.
+<li>
+Assuming that <span class="math inline">\(BIP^*\)</span> follows an additive measurement error model, i.e., <span class="math inline">\(BIP^* := S^*(1) + \delta\)</span>, where <span class="math inline">\(\delta \sim N(0, \sigma^2_{\delta})\)</span> with an unknown <span class="math inline">\(\sigma^2_{\delta}\)</span>, and <span class="math inline">\(\delta, \epsilon\)</span>, and <span class="math inline">\(X^*\)</span> are independent, solve the following equation for <span class="math inline">\(\operatorname{var}\delta = \sigma^2_{\delta}\)</span>: <span class="math display">\[
+\operatorname{corr}(BIP^*, S^*(1)) = \sqrt\frac{\operatorname{var}X^* + \operatorname{var}\epsilon}{\operatorname{var}X^* + \operatorname{var}\epsilon + \operatorname{var}\delta}
+\]</span>
+<li>
+For the fixed <span class="math inline">\(\phi^{\ast}_0\)</span> and <span class="math inline">\(\phi^{\ast}_2\)</span> derived above, define
 <span class="math display">\[\begin{align*}
-\DeclareMathOperator{\corr}{corr}
-\DeclareMathOperator{\var}{var}
-\corr(BIP, S^*(1)) &amp;= \corr(X^*+\delta, X^*+\epsilon)\\
-&amp;= \frac{\var(X^*)}{\sqrt{\var(X^*+\delta)\var(X^*+\epsilon)}}\\
-&amp;= \frac{\var(X^*)}{\sqrt{(\var(X^*)+\var(\delta))(\var(X^*)+\var(\epsilon))}} \quad \text{because of independence}\\
-&amp;= \frac{\sigma^2_{tr}}{\sqrt{(\sigma^2_{tr}+\var(\delta))(\sigma^2_{tr}+\sigma^2_e)}}\\
-\iff (\sigma^2_{tr}+\var(\delta))(\sigma^2_{tr}+\sigma^2_e) &amp;= (\sigma^2_{tr}/ \corr(BIP, S^*(1)))^2\\
-\iff \var(\delta) &amp;= \frac{(\sigma^2_{tr}/\corr(BIP, S^*(1)))^2}{\sigma^2_{tr}+\sigma^2_e} - \sigma^2_{tr}
+Spec_{BIP}(\xi_0) &amp;= P(BIP^{\ast} \leq \xi_0 \mid S^{\ast} \leq \phi^{\ast}_0)\\
+FN^1_{BIP}(\xi_0) &amp;= P(BIP^{\ast} \leq \xi_0 \mid S^{\ast} \in (\phi^{\ast}_0,\phi^{\ast}_2])\\
+FN^2_{BIP}(\xi_0) &amp;= P(BIP^{\ast} \leq \xi_0 \mid S^{\ast} &gt; \phi^{\ast}_2)\\
+Sens_{BIP}(\xi_2) &amp;= P(BIP^{\ast} &gt; \xi_2 \mid S^{\ast} &gt; \phi^{\ast}_2)\\
+FP^1_{BIP}(\xi_2) &amp;= P(BIP^{\ast} &gt; \xi_2 \mid S^{\ast} \in (\phi^{\ast}_0,\phi^{\ast}_2])\\
+FP^0_{BIP}(\xi_2) &amp;= P(BIP^{\ast} &gt; \xi_2 \mid S^{\ast} \leq \phi^{\ast}_0)
 \end{align*}\]</span>
 <li>
-Using <span class="math inline">\(\sigma^2_d\)</span> obtained in the previous step, simulate the <span class="math inline">\(BIP\)</span> following <span class="math inline">\(BIP = X^* + \delta\)</span>, where <span class="math inline">\(\delta\)</span> is simulated by <code>rnorm(Ncomplete, mean=0, sd=sqrt(sigma2d))</code>
-</ul>
+Using the same technique as in the derivation of <span class="math inline">\(\phi^{\ast}_0\)</span> and <span class="math inline">\(\phi^{\ast}_2\)</span> above, find <span class="math inline">\(\xi_0=\xi^{\ast}_0\)</span> and <span class="math inline">\(\xi_2=\xi^{\ast}_2\)</span> that numerically solve
+<span class="math display">\[\begin{align*}
+P_0 &amp;= \widehat{Spec}_{BIP}(\xi_0)P_0 + \widehat{FN}_{BIP}^1(\xi_0)P_1 + \widehat{FN}_{BIP}^2(\xi_0)P_2\\
+P_2 &amp;= \widehat{Sens}_{BIP}(\xi_2)P_2 + \widehat{FP}_{BIP}^1(\xi_2)P_1 + \widehat{FP}_{BIP}^0(\xi_2)P_0
+\end{align*}\]</span>
+and compute <span class="math display">\[
+Spec_{BIP} = \widehat{Spec}_{BIP}(\xi^{\ast}_0),\; Sens_{BIP} = \widehat{Sens}_{BIP}(\xi^{\ast}_2),\; \textrm{etc.}
+\]</span>
+<li>
+For a subject with biomarker measurement <span class="math inline">\(S_k(1)\)</span>, generate <span class="math inline">\(BIP_k\)</span> by a draw from <span class="math inline">\(\mathsf{Mult}(1, (q_0, q_1, q_2))\)</span>, where <span class="math inline">\(q_i\)</span>, <span class="math inline">\(i=0,1,2\)</span>, are determined by <span class="math inline">\(Sens_{BIP}\)</span>, <span class="math inline">\(Spec_{BIP}\)</span>, etc. obtained in Step 4.
+</ol>
 </div>
-<div id="trichotomous-s1-using-approach-1" class="section level4">
-<h4>Trichotomous <span class="math inline">\(\, S(1)\)</span> using Approach 1</h4>
-<ul>
+<div id="continuous-x-s1-and-bip" class="section level4">
+<h4>Continuous <span class="math inline">\(\, X^*, S^*(1),\)</span> and <span class="math inline">\(\, BIP^*\)</span></h4>
+<ol>
 <li>
-We have a trichotomous <span class="math inline">\(X\)</span> with a user-specified distribution defined by <span class="math inline">\(P^{lat}_x\)</span>, <span class="math inline">\(x=0,1,2\)</span> (via input arguments <code>Plat0</code> and <code>Plat2</code>), which implies that <span class="math display">\[
-\operatorname{var}X = \sum_{k=0}^2 k^2 P^{lat}_k - \left( \sum_{k=0}^2 k P^{lat}_k \right)^2
+The user specifies <span class="math inline">\(\operatorname{corr}(BIP^*, S^*(1))\)</span>.
+<li>
+Assuming that <span class="math inline">\(BIP^*\)</span> follows an additive measurement error model, i.e., <span class="math inline">\(BIP^* := S^*(1) + \delta\)</span>, where <span class="math inline">\(\delta \sim N(0, \sigma^2_{\delta})\)</span> with an unknown <span class="math inline">\(\sigma^2_{\delta}\)</span>, and <span class="math inline">\(\delta, \epsilon\)</span>, and <span class="math inline">\(X^*\)</span> are independent, solve the following equation for <span class="math inline">\(\operatorname{var}\delta = \sigma^2_{\delta}\)</span>: <span class="math display">\[
+\operatorname{corr}(BIP^*, S^*(1)) = \sqrt\frac{\operatorname{var}X^* + \operatorname{var}\epsilon}{\operatorname{var}X^* + \operatorname{var}\epsilon + \operatorname{var}\delta}
 \]</span>
 <li>
-Next, we have a trichotomous <span class="math inline">\(S(1)\)</span> with a user-specified distribution defined by <span class="math inline">\(P_s\)</span>, <span class="math inline">\(s=0,1,2\)</span> (via input arguments <code>P0</code> and <code>P2</code>), where <span class="math display">\[
-P_s  = \sum_{k=0}^2 P\{S(1)=s \mid X=k\} P^{lat}_k, \quad s=0,1,2.
-\]</span>
-<li>
-We obtain <span class="math inline">\(\operatorname{var}S(1)\)</span> analogously as <span class="math inline">\(\operatorname{var}X\)</span> above
-<li>
-We use <span class="math inline">\(\operatorname{var}X\)</span> and <span class="math inline">\(\operatorname{var}S(1)\)</span> for specifying the variance of the underlying continuous variables in the additive measurement model, i.e., <span class="math inline">\(S^* = X^* + \epsilon\)</span>, where <span class="math inline">\(X^*\)</span> and <span class="math inline">\(\epsilon\)</span> are independent, <span class="math inline">\(X^* \sim N(0, \sigma^2_{tr})\)</span>, <span class="math inline">\(\epsilon \sim N(0, \sigma^2_e)\)</span>, <span class="math inline">\(\sigma^2_{tr} = \operatorname{var}X\)</span>, and <span class="math inline">\(\sigma^2_e = \sigma^2_{obs} - \sigma^2_{tr} = \operatorname{var}S(1) - \operatorname{var}X &gt; 0\)</span>
-<li>
-We define a continuous <span class="math inline">\(BIP := X^* + \delta\)</span>, where <span class="math inline">\(\delta \sim N(0, \sigma^2_d)\)</span> with an unknown <span class="math inline">\(\sigma^2_d\)</span>, assuming <span class="math inline">\(\delta, \epsilon\)</span>, and <span class="math inline">\(X^*\)</span> are independent
-<li>
-Given the user-specified correlation argument <code>corr</code><span class="math inline">\(:= \operatorname{corr}(BIP, S^*(1))\)</span> in <code>computePower()</code>, we solve for <span class="math inline">\(\sigma^2_d\)</span> as above
-<li>
-Using <span class="math inline">\(\sigma^2_d\)</span> obtained in the previous step, simulate the <span class="math inline">\(BIP\)</span> following <span class="math inline">\(BIP = X^* + \delta\)</span>, where <span class="math inline">\(\delta\)</span> is simulated by <code>rnorm(Ncomplete, mean=0, sd=sqrt(sigma2d))</code>
-</ul>
+<p>For a subject with biomarker measurement <span class="math inline">\(S^*_k(1)\)</span>, generate <span class="math inline">\(BIP^*_k\)</span> as <span class="math inline">\(BIP^*_k = S^*_k(1) + \delta\)</span> using <span class="math inline">\(\sigma^2_{\delta} = \operatorname{var}\delta\)</span> obtained in Step 2.</p>
 </div>
 </div>
 </div>

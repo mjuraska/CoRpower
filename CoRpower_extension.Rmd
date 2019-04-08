@@ -135,39 +135,48 @@ The output is the full data rather than the observed data, so the $R$ indicator 
 <li> Simulate $S(1)$: For each of the $N_x$ subjects, generate $S(1)_i$ by a draw from $\mathsf{Mult}(1,(p_0,p_1,p_2))$, where $p_k=P(S(1)=k|X=x)$ is given by $Sens, Spec$, etc.  
 </ol>
 
-### Algorithm for simulating a continuous baseline immunogenicity predictor (BIP)
-#### Continuous \(\, S^*(1)\) or trichotomous \(\, S(1)\) using Approach 2
-<ul>
-<li> We have $X^* \sim N(0, \sigma^2_{tr})$, $\epsilon \sim N(0, \sigma^2_e)$, $X^*$ and $\epsilon$ independent, and $S^*(1) := X^* + \epsilon$
-<li> We define a continuous $BIP := X^* + \delta$, where $\delta \sim N(0, \sigma^2_d)$ with an unknown $\sigma^2_d$, assuming $\delta, \epsilon$, and $X^*$ are independent
-<li> Given the user-specified correlation argument `corr`$:= \corr(BIP, S^*(1))$ in `computePower()`, solve the following equation for $\sigma^2_d$:
+### Algorithm for simulating a baseline immunogenicity predictor (BIP)
+#### Trichotomous \(\, X, S(1),\) and \(\, BIP\) using Approach 1
+<ol>
+<li> The user specifies a classification rule $P(BIP=i \mid S(1)=j)$, $i,j=0,1,2$.
+<li> For a subject with biomarker measurement $S_k(1)$, generate $BIP_k$ by a draw from $\mathsf{Mult}(1, (q_0, q_1, q_2))$, where $q_i=P(BIP_k=i \mid S(1)=S_k(1))$, $i=0,1,2$.
+</ol>
 
+#### Trichotomous \(\, X, S(1),\) and \(\, BIP\) using Approach 2
+*Note: All variables with \* are continuous.*
+
+<ol>
+<li> The user specifies $\corr(BIP^*, S^*(1))$.
+<li> Assuming that $BIP^*$ follows an additive measurement error model, i.e., $BIP^* := S^*(1) + \delta$, where $\delta \sim N(0, \sigma^2_{\delta})$ with an unknown $\sigma^2_{\delta}$, and $\delta, \epsilon$, and $X^*$ are independent, solve the following equation for $\var \delta = \sigma^2_{\delta}$:
+$$
+\corr(BIP^*, S^*(1)) = \sqrt\frac{\var X^* + \var\epsilon}{\var X^* + \var\epsilon + \var \delta}
+$$
+<li> For the fixed $\phi^{\ast}_0$ and $\phi^{\ast}_2$ derived above, define
 \begin{align*}
-\DeclareMathOperator{\corr}{corr}
-\DeclareMathOperator{\var}{var}
-\corr(BIP, S^*(1)) &= \corr(X^*+\delta, X^*+\epsilon)\\
-&= \frac{\var(X^*)}{\sqrt{\var(X^*+\delta)\var(X^*+\epsilon)}}\\
-&= \frac{\var(X^*)}{\sqrt{(\var(X^*)+\var(\delta))(\var(X^*)+\var(\epsilon))}} \quad \text{because of independence}\\
-&= \frac{\sigma^2_{tr}}{\sqrt{(\sigma^2_{tr}+\var(\delta))(\sigma^2_{tr}+\sigma^2_e)}}\\
-\iff (\sigma^2_{tr}+\var(\delta))(\sigma^2_{tr}+\sigma^2_e) &= (\sigma^2_{tr}/ \corr(BIP, S^*(1)))^2\\
-\iff \var(\delta) &= \frac{(\sigma^2_{tr}/\corr(BIP, S^*(1)))^2}{\sigma^2_{tr}+\sigma^2_e} - \sigma^2_{tr}
+Spec_{BIP}(\xi_0) &= P(BIP^{\ast} \leq \xi_0 \mid S^{\ast} \leq \phi^{\ast}_0)\\
+FN^1_{BIP}(\xi_0) &= P(BIP^{\ast} \leq \xi_0 \mid S^{\ast} \in (\phi^{\ast}_0,\phi^{\ast}_2])\\
+FN^2_{BIP}(\xi_0) &= P(BIP^{\ast} \leq \xi_0 \mid S^{\ast} > \phi^{\ast}_2)\\
+Sens_{BIP}(\xi_2) &= P(BIP^{\ast} > \xi_2 \mid S^{\ast} > \phi^{\ast}_2)\\
+FP^1_{BIP}(\xi_2) &= P(BIP^{\ast} > \xi_2 \mid S^{\ast} \in (\phi^{\ast}_0,\phi^{\ast}_2])\\
+FP^0_{BIP}(\xi_2) &= P(BIP^{\ast} > \xi_2 \mid S^{\ast} \leq \phi^{\ast}_0)
 \end{align*}
-<li> Using $\sigma^2_d$ obtained in the previous step, simulate the $BIP$ following $BIP = X^* + \delta$, where $\delta$ is simulated by `rnorm(Ncomplete, mean=0, sd=sqrt(sigma2d))`
-</ul>
+<li> Using the same technique as in the derivation of $\phi^{\ast}_0$ and $\phi^{\ast}_2$ above, find $\xi_0=\xi^{\ast}_0$ and $\xi_2=\xi^{\ast}_2$ that numerically solve
+\begin{align*}
+P_0 &= \widehat{Spec}_{BIP}(\xi_0)P_0 + \widehat{FN}_{BIP}^1(\xi_0)P_1 + \widehat{FN}_{BIP}^2(\xi_0)P_2\\
+P_2 &= \widehat{Sens}_{BIP}(\xi_2)P_2 + \widehat{FP}_{BIP}^1(\xi_2)P_1 + \widehat{FP}_{BIP}^0(\xi_2)P_0
+\end{align*}
+and compute
+$$
+Spec_{BIP} = \widehat{Spec}_{BIP}(\xi^{\ast}_0),\; Sens_{BIP} = \widehat{Sens}_{BIP}(\xi^{\ast}_2),\; \textrm{etc.}
+$$
+<li> For a subject with biomarker measurement $S_k(1)$, generate $BIP_k$ by a draw from $\mathsf{Mult}(1, (q_0, q_1, q_2))$, where $q_i$, $i=0,1,2$, are determined by $Sens_{BIP}$, $Spec_{BIP}$, etc. obtained in Step 4.
+</ol>
 
-#### Trichotomous \(\, S(1)\) using Approach 1
-<ul>
-<li> We have a trichotomous $X$ with a user-specified distribution defined by $P^{lat}_x$, $x=0,1,2$ (via input arguments `Plat0` and `Plat2`), which implies that
+#### Continuous \(\, X^*, S^*(1),\) and \(\, BIP^*\)
+<ol>
+<li> The user specifies $\corr(BIP^*, S^*(1))$.
+<li> Assuming that $BIP^*$ follows an additive measurement error model, i.e., $BIP^* := S^*(1) + \delta$, where $\delta \sim N(0, \sigma^2_{\delta})$ with an unknown $\sigma^2_{\delta}$, and $\delta, \epsilon$, and $X^*$ are independent, solve the following equation for $\var \delta = \sigma^2_{\delta}$:
 $$
-\var X = \sum_{k=0}^2 k^2 P^{lat}_k - \left( \sum_{k=0}^2 k P^{lat}_k \right)^2
+\corr(BIP^*, S^*(1)) = \sqrt\frac{\var X^* + \var\epsilon}{\var X^* + \var\epsilon + \var \delta}
 $$
-<li> Next, we have a trichotomous $S(1)$ with a user-specified distribution defined by $P_s$, $s=0,1,2$ (via input arguments `P0` and `P2`), where
-$$
-P_s  = \sum_{k=0}^2 P\{S(1)=s \mid X=k\} P^{lat}_k, \quad s=0,1,2.
-$$
-<li> We obtain $\var S(1)$ analogously as $\var X$ above
-<li> We use $\var X$ and $\var S(1)$ for specifying the variance of the underlying continuous variables in the additive measurement model, i.e., $S^* = X^* + \epsilon$, where $X^*$ and $\epsilon$ are independent, $X^* \sim N(0, \sigma^2_{tr})$, $\epsilon \sim N(0, \sigma^2_e)$, $\sigma^2_{tr} = \var X$, and $\sigma^2_e = \sigma^2_{obs} - \sigma^2_{tr} = \var S(1) - \var X > 0$
-<li> We define a continuous $BIP := X^* + \delta$, where $\delta \sim N(0, \sigma^2_d)$ with an unknown $\sigma^2_d$, assuming $\delta, \epsilon$, and $X^*$ are independent
-<li> Given the user-specified correlation argument `corr`$:= \corr(BIP, S^*(1))$ in `computePower()`, we solve for $\sigma^2_d$ as above
-<li> Using $\sigma^2_d$ obtained in the previous step, simulate the $BIP$ following $BIP = X^* + \delta$, where $\delta$ is simulated by `rnorm(Ncomplete, mean=0, sd=sqrt(sigma2d))`
-</ul>
+<li> For a subject with biomarker measurement $S^*_k(1)$, generate $BIP^*_k$ as $BIP^*_k = S^*_k(1) + \delta$ using $\sigma^2_{\delta} = \var \delta$ obtained in Step 2.
