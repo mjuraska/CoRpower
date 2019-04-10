@@ -291,7 +291,10 @@ getVaryingParam <- function(sampleSizes, Platx, sensSpec, controlCaseRatio, p, r
   } else if (length(PlatVElowest) > 1) {
     varyingParamName <- "PlatVElowest"
     varyingParam$PlatVElowest <- PlatVElowest
-  } 
+  } else {
+    varyingParamName <- 3
+    varyingParam <- 3
+  }
   
   return(list("varyingParamName" = varyingParamName, "varyingParam" = varyingParam))
 }
@@ -1243,10 +1246,8 @@ computePower <- function(nCasesTx, nControlsTx, nCasesTxWithS,
   varyingParam <- vary$varyingParam
   varyingParamName <- vary$varyingParamName
   
-  # If full data (X, Y, S1, Z, and a BIP for treatment and placebo) is to be outputted, initialize output list
-  # and check for errors and input violations
+  # If full data (X, Y, S1, Z, and a BIP for treatment and placebo) is to be outputted, check for errors and input violations
   if(!is.null(saveDataDir)) {
-    fullData <- list()
     # check parameters are valid for saving full data as an output
     checkSaveDataParams(Approach2, biomType, corr, nCasesPla, nControlsPla, sensBIP, specBIP, FP0BIP, FN2BIP, P0BIP, P2BIP)
   }
@@ -1254,6 +1255,11 @@ computePower <- function(nCasesTx, nControlsTx, nCasesTxWithS,
   pwrAll <- list()
   
   for(i in 1:length(varyingParam[[1]])) {
+    
+    # If full data (X, Y, S1, Z, and a BIP for treatment and placebo) is to be outputted, initialize output list
+    if(!is.null(saveDataDir)) {
+      fullData <- list()
+    }  
     
     if ("nCasesTx" %in% varyingParamName) {
       nCasesTx <-  varyingParam$nCasesTx[i]
@@ -1552,7 +1558,7 @@ computePower <- function(nCasesTx, nControlsTx, nCasesTxWithS,
         paramValues <- c(paramValues, param[[j]][i])
       }
       fileName <- paste0("_", paste0(name,"_",paramValues, collapse="_"))
-    } else if (!is.null(length(varyingParam))) {
+    } else if (is.list(varyingParam)) {
       paramValues <- numeric()
       for(j in 1:length(varyingParam)) {
         paramValues <- c(paramValues, varyingParam[[j]][i])
@@ -1587,6 +1593,7 @@ computePower <- function(nCasesTx, nControlsTx, nCasesTxWithS,
         save(fullData, file=paste0(file.path(saveDataDir, paste0("fullData",fileName)),".RData"))
       }
     }
+    rm(fullData)
   }
   
   return(pwrAll)
