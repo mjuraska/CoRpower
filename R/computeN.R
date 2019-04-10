@@ -1,3 +1,10 @@
+# used for obtaining 'incRate' as a solution to the equation fIncRate(incRate, ...) = 0
+# the rationale is that since 'risk0' = P(T <= taumax | T > tau, Z = 0) and T ~ Exp(incRate), we can back-calculate 'incRate'
+# for a known 'risk0' (and a known 'tau' and 'taumax')
+fIncRate <- function(incRate, risk0, tau, taumax){
+  return((pexp(taumax, rate=incRate) - pexp(tau, rate=incRate)) / (1 - pexp(tau, rate=incRate)) - risk0)
+}
+
 #' Estimation of Size and Numbers of Cases and Controls in the Target Population of Active Treatment Recipients At Risk at the Biomarker Sampling Timepoint
 #'
 #' If the power calculation is done at the study design stage, the function estimates the size and numbers of cases and controls in the target population of active treatment recipients observed to be
@@ -128,11 +135,4 @@ computeN <- function(Nrand, tau, taumax, VEtauToTaumax, VE0toTau, risk0, dropout
   nCasesWithS <- round(propCasesWithS*nCases)
 
   return(list(N = round(N), nCases = nCases, nControls = nControls, nCasesWithS = nCasesWithS))
-}
-
-# used for obtaining 'incRate' as a solution to the equation fIncRate(incRate, ...) = 0
-# the rationale is that since 'risk0' = P(T <= taumax | T > tau, Z = 0) and T ~ Exp(incRate), we can back-calculate 'incRate'
-# for a known 'risk0' (and a known 'tau' and 'taumax')
-fIncRate <- function(incRate, risk0, tau, taumax){
-  return((pexp(taumax, rate=incRate) - pexp(tau, rate=incRate)) / (1 - pexp(tau, rate=incRate)) - risk0)
 }

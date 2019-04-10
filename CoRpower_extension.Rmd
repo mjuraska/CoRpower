@@ -1,58 +1,51 @@
 ---
 title: "CoRpower Extension for CoVE"
-author: "Stephanie Wu"
-date: "March 25, 2019"
 output:
-  html_document: default
+  html_document:
+    number_sections: true
 ---
 
 \DeclareMathOperator{\corr}{corr}
 \DeclareMathOperator{\var}{var}
 
-## Algorithms for generating X, Y, S(1), and a BIP for cases and controls in the placebo group
+**Algorithms for generating X, Y, S(1), and a BIP for cases and controls in the placebo group**  
 The output is the full data rather than the observed data, so the $R$ indicator is not included. This accommodates sub-sampling for different designs, e.g., different case:control ratios, case-cohort studies, etc.
 
-### Algorithm for continuous biomarker \(\, S^{\ast}(1)\)
-
+# Algorithm for trichotomous biomarker \(\, S(1)\) 
+## Using Approach 1
 <ol>
-<li> Specify $P^{lat}_{lowestVE}$, $\rho$, $\sigma^2_{obs}$, $VE_{lowest}$, $risk_0$, $N_{complete}$, $n_{cases}$, $n^S_{cases}$, $K$
-  <ul> 
-  <li> $\rho = \sigma^2_{tr} / \sigma^2_{obs}$
-  <li> $N_{complete}$ = number at risk at $\tau$:
-  \begin{align*}
-  N_{complete} &= N_{randomized}*P(T>\tau, C>\tau | Z = 0)\\
-  &= N_{randomized}*P(T>\tau | Z=0)*P(C>\tau | Z=0) \quad \text{ because } T, C \text{ independent}
-  \end{align*}
-  <li> $K$ = case-control ratio
-  </ul>
-  
-<li> Simulate $Y$ by creating a vector with $n_{cases}$ 1's followed by $n_{controls}$ 0's.
-<li> Simulate $X^*$: 
+<li> Specify $P^{lat}_0$, $P^{lat}_2$, $P_0$, $P_2$, $risk_0$, $n_{cases, 0}$, $n_{controls, 0}$, $K$
   <ul>
-  <li> Cases: from a grid of values ranging from -3 to 3, sample $n_{cases}$ with replacement from:
-  \begin{align*}
-  f_{X^{\ast}}(x^{\ast}|Y=1,Y^{\tau}=0,Z=0) &= f_{X^{\ast}}(x^{\ast}|Y(0)=1)\\
-  &= \frac{P(Y(0)=1|X^*=x^*)f_{X^{\ast}}(x^{\ast})}{P(Y(0)=1)}\\
-  &= \frac{risk^{lat}_0(x^*)f_{X^{\ast}}(x^{\ast})}{risk_0}\\
-  &= f_{X^{\ast}}(x^{\ast}) \quad \text{because } risk^{lat}_0(x^*)=risk_0
-  \end{align*}
-  <li> Controls: from a grid of values ranging from -3 to 3, sample $n_{controls}$ with replacement from:
-  \begin{align*}
-  f_{X^{\ast}}(x^{\ast}|Y=0,Y^{\tau}=0,Z=0) &= f_{X^{\ast}}(x^{\ast}|Y(0)=0)\\
-  &= \frac{P(Y(0)=0|X^*=x^*)f_{X^{\ast}}(x^{\ast})}{P(Y(0)=0)}\\
-  &= \frac{(1-risk^{lat}_0(x^*))f_{X^{\ast}}(x^{\ast})}{1-risk_0}\\
-  &= f_{X^{\ast}}(x^{\ast}) \quad \text{because } risk^{lat}_0(x^*)=risk_0
-  \end{align*}
-  <li> $f_{X^{\ast}}(x^{\ast})$ is fully specified because $X^* \sim N(0, \sigma^2_{tr})$
+  <li> $N_{complete, 0} = n_{cases, 0} + n_{controls, 0}$
   </ul>
-<li> Simulate $S^*(1)$: $S^*(1)=X^*+\epsilon,$ where $\epsilon \sim N(0, \sigma^2_e)$ and $\sigma_e^2=(1-\rho)\sigma^2_{obs}$. $\epsilon$ is independent of $X^*$ and is simulated by `rnorm(Ncomplete, mean=0, sd=sqrt(sigma2e))` 
+<li> Specify $Sens$, $Spec$, $FP^0$, and $FN^2$
+<li> Number of observations in each latent subgroup: $N_x = N_{complete, 0} P^{lat}_x$
+<li> Simulate X: 
+  <ul>
+  <li> Cases: $\left(n_{cases, 0}(0),n_{cases,0}(1),n_{cases,0}(2)\right) \sim \mathsf{Mult}(n_{cases,0},(p_0,p_1,p_2))$, where
+  \begin{align*}
+  p_x=P(X=x|Y=1,Y^{\tau}=0,Z=0) &= P(X=x|Y(0)=1)\\ 
+  &= \frac{P(Y(0)=1|X=x)P(X=x)}{P(Y(0)=1)}\\
+  &= \frac{risk^{lat}_0(x)P^{lat}_{x}}{risk_0}\\
+  &= P^{lat}_{x} \quad \text{because } risk^{lat}_0(x)=risk_0
+  \end{align*}
+  <li> Controls: $\left(n_{controls,0}(0),n_{controls,0}(1),n_{controls,0}(2)\right) \sim \mathsf{Mult}(n_{controls,0},(p_0,p_1,p_2))$, where
+  \begin{align*}
+  p_x=P(X=x|Y=0,Y^{\tau}=0,Z=0) &= P(X=x|Y(0)=0)\\ 
+  &= \frac{P(Y(0)=0|X=x)P(X=x)}{P(Y(0)=0)}\\
+  &= \frac{(1-risk^{lat}_0(x))P^{lat}_{x}}{(1-risk_0)}\\
+  &= P^{lat}_{x} \quad \text{because } risk^{lat}_0(x)=risk_0
+  \end{align*}
+  <li> $n_{controls,0}(x) = N_x - n_{cases,0}(x)$
+  </ul>
+<li> Simulate $Y$: Vector with $n_{cases,0}(0)$ 1's, followed by $n_{controls,0}(0)$ 0's, followed by $n_{cases,0}(1)$ 1's, etc.
+<li> Simulate $S(1)$: For each of the $N_x$ subjects, generate $S(1)_i$ by a draw from $\mathsf{Mult}(1,(p_0,p_1,p_2))$, where $p_k=P(S(1)=k|X=x)$ is given by $Sens, Spec$, etc.  
 </ol>
 
-### Algorithm for trichotomous biomarker \(\, S(1)\) 
-#### Using Approach 2
+## Using Approach 2
 
 <ol>
-<li> Specify $P^{lat}_0$, $P^{lat}_2$, $P_0$, $P_2$, $risk_0$, $N_{complete}$, $n_{cases}$, $n^S_{cases}$, $K$
+<li> Specify $P^{lat}_0$, $P^{lat}_2$, $P_0$, $P_2$, $risk_0$, $N_{complete,0}$, $n_{cases,0}$, $n^S_{cases}$, $K$
 <li> Specify $\rho$ and $\sigma^2_{obs}$ 
 <li> Calculation of $(Sens, Spec, FP^0, FP^1, FN^1, FN^2)$:
   <ol type="i">
@@ -85,64 +78,46 @@ The output is the full data rather than the observed data, so the $R$ indicator 
   \]
   </ol>      
 
-<li> Number of observations in each latent subgroup: $N_x = N_{complete} P^{lat}_x$
-<li> Simulate X: 
-  <ul>
-  <li> Cases: $\left(n_{cases}(0),n_{cases}(1),n_{cases}(2)\right) \sim \mathsf{Mult}(n_{cases},(p_0,p_1,p_2))$, where
-  \begin{align*}
-  p_x=P(X=x|Y=1,Y^{\tau}=0,Z=0) &= P(X=x|Y(0)=1)\\ 
-  &= \frac{P(Y(0)=1|X=x)P(X=x)}{P(Y(0)=1)}\\
-  &= \frac{risk^{lat}_0(x)P^{lat}_{x}}{risk_0}\\
-  &= P^{lat}_{x} \quad \text{because } risk^{lat}_0(x)=risk_0
-  \end{align*}
-  <li> Controls: $\left(n_{controls}(0),n_{controls}(1),n_{controls}(2)\right) \sim \mathsf{Mult}(n_{controls},(p_0,p_1,p_2))$, where
-  \begin{align*}
-  p_x=P(X=x|Y=0,Y^{\tau}=0,Z=0) &= P(X=x|Y(0)=0)\\ 
-  &= \frac{P(Y(0)=0|X=x)P(X=x)}{P(Y(0)=0)}\\
-  &= \frac{(1-risk^{lat}_0(x))P^{lat}_{x}}{(1-risk_0)}\\
-  &= P^{lat}_{x} \quad \text{because } risk^{lat}_0(x)=risk_0
-  \end{align*}
-  <li> $n_{controls}(x) = N_x - n_{cases}(x)$
-  </ul>
-<li> Simulate $Y$: Vector with $n_{cases}(0)$ 1's, followed by $n_{controls}(0)$ 0's, followed by $n_{cases}(1)$ 1's, etc.
-<li> Simulate $S(1)$: For each of the $N_x$ subjects, generate $S(1)_i$ by a draw from $\mathsf{Mult}(1,(p_0,p_1,p_2))$, where $p_k=P(S(1)=k|X=x)$ is given by $Sens, Spec$, etc.  
+<li> Use steps 3-6 under Approach 1 
 </ol>
 
-#### Using Approach 1
+# Algorithm for continuous biomarker \(\, S^{\ast}(1)\)
+
 <ol>
-<li> Specify $P^{lat}_0$, $P^{lat}_2$, $P_0$, $P_2$, $risk_0$, $N_{complete}$, $n_{cases}$, $n^S_{cases}$, $K$
-<li> Specify two of the three $(Sens, FP^0, FP^1)$ and two of the three $(Spec, FN^2, FN^1)$. E.g., specify $Sens$ and $Spec$ and $FP^0 = FN^2 = 0$
-<li> Number of observations in each latent subgroup: $N_x = n_{complete} P^{lat}_x$
-<li> Simulate X: 
-  <ul>
-  <li> Cases: $\left(n_{cases}(0),n_{cases}(1),n_{cases}(2)\right) \sim \mathsf{Mult}(n_{cases},(p_0,p_1,p_2))$, where
-  \begin{align*}
-  p_x=P(X=x|Y=1,Y^{\tau}=0,Z=0) &= P(X=x|Y(0)=1)\\ 
-  &= \frac{P(Y(0)=1|X=x)P(X=x)}{P(Y(0)=1)}\\
-  &= \frac{risk^{lat}_0(x)P^{lat}_{x}}{risk_0}\\
-  &= P^{lat}_{x} \quad \text{because } risk^{lat}_0(x)=risk_0
-  \end{align*}
-  <li> Controls: $\left(n_{controls}(0),n_{controls}(1),n_{controls}(2)\right) \sim \mathsf{Mult}(n_{controls},(p_0,p_1,p_2))$, where
-  \begin{align*}
-  p_x=P(X=x|Y=0,Y^{\tau}=0,Z=0) &= P(X=x|Y(0)=0)\\ 
-  &= \frac{P(Y(0)=0|X=x)P(X=x)}{P(Y(0)=0)}\\
-  &= \frac{(1-risk^{lat}_0(x))P^{lat}_{x}}{(1-risk_0)}\\
-  &= P^{lat}_{x} \quad \text{because } risk^{lat}_0(x)=risk_0
-  \end{align*}
-  <li> $n_{controls}(x) = N_x - n_{cases}(x)$
+<li> Specify $P^{lat}_{lowestVE}$, $\rho$, $\sigma^2_{obs}$, $VE_{lowest}$, $risk_0$, $n_{cases,0}$, $n_{controls, 0}$, $n^S_{cases}$, $K$
+  <ul> 
+  <li> $N_{complete, 0} = n_{cases, 0} + n_{controls, 0}$
   </ul>
-<li> Simulate $Y$: Vector with $n_{cases}(0)$ 1's, followed by $n_{controls}(0)$ 0's, followed by $n_{cases}(1)$ 1's, etc.
-<li> Simulate $S(1)$: For each of the $N_x$ subjects, generate $S(1)_i$ by a draw from $\mathsf{Mult}(1,(p_0,p_1,p_2))$, where $p_k=P(S(1)=k|X=x)$ is given by $Sens, Spec$, etc.  
+<li> Simulate $Y$ by creating a vector with $n_{cases,0}$ 1's followed by $n_{controls,0}$ 0's.
+<li> Simulate $X^*$: 
+  <ul>
+  <li> Cases: from a grid of values ranging from -3 to 3, sample $n_{cases,0}$ with replacement from:
+  \begin{align*}
+  f_{X^{\ast}}(x^{\ast}|Y=1,Y^{\tau}=0,Z=0) &= f_{X^{\ast}}(x^{\ast}|Y(0)=1)\\
+  &= \frac{P(Y(0)=1|X^*=x^*)f_{X^{\ast}}(x^{\ast})}{P(Y(0)=1)}\\
+  &= \frac{risk^{lat}_0(x^*)f_{X^{\ast}}(x^{\ast})}{risk_0}\\
+  &= f_{X^{\ast}}(x^{\ast}) \quad \text{because } risk^{lat}_0(x^*)=risk_0
+  \end{align*}
+  <li> Controls: from a grid of values ranging from -3 to 3, sample $n_{controls,0}$ with replacement from:
+  \begin{align*}
+  f_{X^{\ast}}(x^{\ast}|Y=0,Y^{\tau}=0,Z=0) &= f_{X^{\ast}}(x^{\ast}|Y(0)=0)\\
+  &= \frac{P(Y(0)=0|X^*=x^*)f_{X^{\ast}}(x^{\ast})}{P(Y(0)=0)}\\
+  &= \frac{(1-risk^{lat}_0(x^*))f_{X^{\ast}}(x^{\ast})}{1-risk_0}\\
+  &= f_{X^{\ast}}(x^{\ast}) \quad \text{because } risk^{lat}_0(x^*)=risk_0
+  \end{align*}
+  <li> $f_{X^{\ast}}(x^{\ast})$ is fully specified because $X^* \sim N(0, \sigma^2_{tr})$
+  </ul>
+<li> Simulate $S^*(1)$: $S^*(1)=X^*+\epsilon,$ where $\epsilon \sim N(0, \sigma^2_e)$ and $\sigma_e^2=(1-\rho)\sigma^2_{obs}$. $\epsilon$ is independent of $X^*$ and is simulated by `rnorm(Ncomplete, mean=0, sd=sqrt(sigma2e))` 
 </ol>
 
-### Algorithm for simulating a baseline immunogenicity predictor (BIP)
-#### Trichotomous \(\, X, S(1),\) and \(\, BIP\) using Approach 1
+# Algorithm for simulating a baseline immunogenicity predictor (BIP)
+## Trichotomous \(\, X, S(1),\) and \(\, BIP\) using Approach 1
 <ol>
 <li> The user specifies a classification rule $P(BIP=i \mid S(1)=j)$, $i,j=0,1,2$.
 <li> For a subject with biomarker measurement $S_k(1)$, generate $BIP_k$ by a draw from $\mathsf{Mult}(1, (q_0, q_1, q_2))$, where $q_i=P(BIP_k=i \mid S(1)=S_k(1))$, $i=0,1,2$.
 </ol>
 
-#### Trichotomous \(\, X, S(1),\) and \(\, BIP\) using Approach 2
+## Trichotomous \(\, X, S(1),\) and \(\, BIP\) using Approach 2
 *Note: All variables with \* are continuous.*
 
 <ol>
@@ -172,7 +147,7 @@ $$
 <li> For a subject with biomarker measurement $S_k(1)$, generate $BIP_k$ by a draw from $\mathsf{Mult}(1, (q_0, q_1, q_2))$, where $q_i$, $i=0,1,2$, are determined by $Sens_{BIP}$, $Spec_{BIP}$, etc. obtained in Step 4.
 </ol>
 
-#### Continuous \(\, X^*, S^*(1),\) and \(\, BIP^*\)
+## Continuous \(\, X^*, S^*(1),\) and \(\, BIP^*\)
 <ol>
 <li> The user specifies $\corr(BIP^*, S^*(1))$.
 <li> Assuming that $BIP^*$ follows an additive measurement error model, i.e., $BIP^* := S^*(1) + \delta$, where $\delta \sim N(0, \sigma^2_{\delta})$ with an unknown $\sigma^2_{\delta}$, and $\delta, \epsilon$, and $X^*$ are independent, solve the following equation for $\var \delta = \sigma^2_{\delta}$:
