@@ -1,18 +1,17 @@
 ---
-title: "CoRpower Extension for CoVE"
-output:
-  html_document:
-    number_sections: true
+title: "`CoRpower`'s Algorithms for Simulating Placebo Group and Baseline Immunogenicity Predictor Data"
+output: html_document
 ---
 
 \DeclareMathOperator{\corr}{corr}
 \DeclareMathOperator{\var}{var}
 
-**Algorithms for generating X, Y, S(1), and a BIP for cases and controls in the placebo group**  
-The output is the full data rather than the observed data, so the $R$ indicator is not included. This accommodates sub-sampling for different designs, e.g., different case:control ratios, case-cohort studies, etc.
+## Introduction
+The `CoRpower` package assumes that $P(Y^{\tau}(1)=Y^{\tau}(0))=1$ for the biomarker sampling timepoint $\tau$, which renders the CoR parameter $P(Y=1 \mid S=s_1, Z=1, Y^{\tau}=0)$ equal to $P(Y=1 \mid S=s_1, Z=1, Y^{\tau}(1)=Y^{\tau}(0)=0)$, which links the CoR and biomarker-specific VE parameters. Estimation of the latter requires outcome data in placebo recipients, and some estimation methods additionally require availability of a baseline immunogenicity predictor (BIP) of $S(1)$, the biomarker response at $\tau$ under assignment to vaccine. In order to link power calculations for detecting a correlate of risk (CoR) and a correlate of VE (coVE), `CoRpower` allows to export simulated data sets that are used in `CoRpower`'s calculations and that are extended to include placebo-group and BIP data for harmonized use by methods assessing biomarker-specific VE. This vignette aims to describe `CoRpower`'s algorithms, and the underlying assumptions, for simulating placebo-group and BIP data. The exported data sets include full rectangular data to allow the user to consider various biomarker sub-sampling designs, e.g., different biomarker case:control sampling ratios, or case-control vs. case-cohort designs.
 
-# Algorithm for trichotomous biomarker \(\, S(1)\) 
-## Using Approach 1
+***
+## Algorithms for Simulating Placebo Group Data
+### Trichotomous \(\, X\) and \(\, S(1)\) Using Approach 1
 <ol>
 <li> Specify $P^{lat}_0$, $P^{lat}_2$, $P_0$, $P_2$, $risk_0$, $n_{cases, 0}$, $n_{controls, 0}$, $K$
   <ul>
@@ -20,7 +19,7 @@ The output is the full data rather than the observed data, so the $R$ indicator 
   </ul>
 <li> Specify $Sens$, $Spec$, $FP^0$, and $FN^2$
 <li> Number of observations in each latent subgroup: $N_x = N_{complete, 0} P^{lat}_x$
-<li> Simulate X: 
+<li> Simulate $X$ under the assumption of homogeneous risk in the placebo group: 
   <ul>
   <li> Cases: $\left(n_{cases, 0}(0),n_{cases,0}(1),n_{cases,0}(2)\right) \sim \mathsf{Mult}(n_{cases,0},(p_0,p_1,p_2))$, where
   \begin{align*}
@@ -39,11 +38,10 @@ The output is the full data rather than the observed data, so the $R$ indicator 
   <li> $n_{controls,0}(x) = N_x - n_{cases,0}(x)$
   </ul>
 <li> Simulate $Y$: Vector with $n_{cases,0}(0)$ 1's, followed by $n_{controls,0}(0)$ 0's, followed by $n_{cases,0}(1)$ 1's, etc.
-<li> Simulate $S(1)$: For each of the $N_x$ subjects, generate $S(1)_i$ by a draw from $\mathsf{Mult}(1,(p_0,p_1,p_2))$, where $p_k=P(S(1)=k|X=x)$ is given by $Sens, Spec$, etc.  
+<li> Simulate $S(1)$: For each of the $N_x$ subjects, generate $S(1)$ by a draw from $\mathsf{Mult}(1,(p_0,p_1,p_2))$, where $p_k=P(S(1)=k|X=x)$ is given by $Sens, Spec$, etc.  
 </ol>
 
-## Using Approach 2
-
+### Trichotomous \(\, X\) and \(\, S(1)\) Using Approach 2
 <ol>
 <li> Specify $P^{lat}_0$, $P^{lat}_2$, $P_0$, $P_2$, $risk_0$, $N_{complete,0}$, $n_{cases,0}$, $n^S_{cases}$, $K$
 <li> Specify $\rho$ and $\sigma^2_{obs}$ 
@@ -78,18 +76,17 @@ The output is the full data rather than the observed data, so the $R$ indicator 
   \]
   </ol>      
 
-<li> Use steps 3-6 under Approach 1 
+<li> Follow Steps 3--6 under Approach 1
 </ol>
 
-# Algorithm for continuous biomarker \(\, S^{\ast}(1)\)
-
+### Continuous \(\, X^*\) and \(\, S^*(1)\)
 <ol>
 <li> Specify $P^{lat}_{lowestVE}$, $\rho$, $\sigma^2_{obs}$, $VE_{lowest}$, $risk_0$, $n_{cases,0}$, $n_{controls, 0}$, $n^S_{cases}$, $K$
   <ul> 
   <li> $N_{complete, 0} = n_{cases, 0} + n_{controls, 0}$
   </ul>
 <li> Simulate $Y$ by creating a vector with $n_{cases,0}$ 1's followed by $n_{controls,0}$ 0's.
-<li> Simulate $X^*$: 
+<li> Simulate $X^*$ under the assumption of homogeneous risk in the placebo group:
   <ul>
   <li> Cases: from a grid of values ranging from -3 to 3, sample $n_{cases,0}$ with replacement from:
   \begin{align*}
@@ -110,14 +107,15 @@ The output is the full data rather than the observed data, so the $R$ indicator 
 <li> Simulate $S^*(1)$: $S^*(1)=X^*+\epsilon,$ where $\epsilon \sim N(0, \sigma^2_e)$ and $\sigma_e^2=(1-\rho)\sigma^2_{obs}$. $\epsilon$ is independent of $X^*$ and is simulated by `rnorm(Ncomplete, mean=0, sd=sqrt(sigma2e))` 
 </ol>
 
-# Algorithm for simulating a baseline immunogenicity predictor (BIP)
-## Trichotomous \(\, X, S(1),\) and \(\, BIP\) using Approach 1
+***
+## Algorithms for Simulating a Baseline Immunogenicity Predictor (BIP)
+### Trichotomous \(\, X, S(1),\) and \(\, BIP\) Using Approach 1
 <ol>
-<li> The user specifies a classification rule $P(BIP=i \mid S(1)=j)$, $i,j=0,1,2$.
+<li> The user specifies a classification rule defined by $P(BIP=i \mid S(1)=j)$, $i,j=0,1,2$.
 <li> For a subject with biomarker measurement $S_k(1)$, generate $BIP_k$ by a draw from $\mathsf{Mult}(1, (q_0, q_1, q_2))$, where $q_i=P(BIP_k=i \mid S(1)=S_k(1))$, $i=0,1,2$.
 </ol>
 
-## Trichotomous \(\, X, S(1),\) and \(\, BIP\) using Approach 2
+### Trichotomous \(\, X, S(1),\) and \(\, BIP\) Using Approach 2
 *Note: All variables with \* are continuous.*
 
 <ol>
@@ -147,7 +145,7 @@ $$
 <li> For a subject with biomarker measurement $S_k(1)$, generate $BIP_k$ by a draw from $\mathsf{Mult}(1, (q_0, q_1, q_2))$, where $q_i$, $i=0,1,2$, are determined by $Sens_{BIP}$, $Spec_{BIP}$, etc. obtained in Step 4.
 </ol>
 
-## Continuous \(\, X^*, S^*(1),\) and \(\, BIP^*\)
+### Continuous \(\, X^*, S^*(1),\) and \(\, BIP^*\)
 <ol>
 <li> The user specifies $\corr(BIP^*, S^*(1))$.
 <li> Assuming that $BIP^*$ follows an additive measurement error model, i.e., $BIP^* := S^*(1) + \delta$, where $\delta \sim N(0, \sigma^2_{\delta})$ with an unknown $\sigma^2_{\delta}$, and $\delta, \epsilon$, and $X^*$ are independent, solve the following equation for $\var \delta = \sigma^2_{\delta}$:
