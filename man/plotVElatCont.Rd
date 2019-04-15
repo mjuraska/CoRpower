@@ -7,7 +7,7 @@
 plotVElatCont(outComputePower, outDir = NULL)
 }
 \arguments{
-\item{outComputePower}{a list containing output from \code{\link{computePower}} or a character string specifying the \code{.RData} file containing \code{\link{computePower}} output}
+\item{outComputePower}{a list of lists of length \code{1} containing output from \code{\link{computePower}} or a character string specifying the \code{.RData} file containing \code{\link{computePower}} output}
 
 \item{outDir}{a character string specifying path to output \code{.RData} file, necessary if \cr\code{outComputePower} is a character string. Default is \code{NULL}.}
 }
@@ -40,25 +40,27 @@ potential correlates of efficacy/protection.
 # Example scenario with continuous biomarker, where values of rho are varied
 
 # Set input parameters for computePower function
-nCases <- 10
-nControls <- 300
-nCasesWithS <- 10
+nCasesTx <- 10
+nControlsTx <- 300
+nCasesTxWithS <- 10
 controlCaseRatio <- 3
 VEoverall <- 0.75
 risk0 <- 0.034
 PlatVElowest <- 0.2
 VElowest <- seq(0, VEoverall, len=8)
+Plat0 <- P0 <- 0.2
+Plat2 <- P2 <- 0.6
 M <- 13
 alpha <- 0.05
 sigma2obs <- 1
-rho <- c(1, 0.7, 0.4)
+rho <- 1
 biomType <- "continuous"
 
 # Output from computePower function is stored in an object as a list
-pwr <- computePower(nCases=nCases, nCasesWithS=nCasesWithS, nControls=nControls,
+pwr <- computePower(nCasesTx=nCasesTx, nControlsTx=nControlsTx, nCasesTxWithS=nCasesTxWithS,
                     controlCaseRatio=controlCaseRatio, risk0=risk0, VEoverall=VEoverall,
-                    PlatVElowest=PlatVElowest, VElowest=VElowest, M=M, alpha=alpha,
-                    sigma2obs=sigma2obs, rho=rho, biomType=biomType)
+                    PlatVElowest=PlatVElowest, VElowest=VElowest, Plat0=Plat0, Plat2=Plat2,
+                    P0=P0, P2=P2, M=M, alpha=alpha, sigma2obs=sigma2obs, rho=rho, biomType=biomType)
 
 # Set parameters for plotPowerCont function
 # outComputePower is a list containing output from the computePower function
@@ -70,7 +72,7 @@ plotVElatCont(outComputePower=outComputePower)
 computePower(..., saveDir = "myDir", saveFile = "myFile.RData")
 # outComputePower is a character string specifying the file containing the computePower output
 # outDir is a character string specifying the outComputePower file directory
-outComputePower = "myFile"
+outComputePower = "myFile.RData"
 outDir = "~/myDir"
 plotVElatCont(outComputePower, outDir=outDir)
 }

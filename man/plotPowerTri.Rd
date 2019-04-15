@@ -7,7 +7,7 @@
 plotPowerTri(outComputePower, outDir = NULL, legendText)
 }
 \arguments{
-\item{outComputePower}{either a list or list of lists containing output from \code{\link{computePower}} or a character vector specifying the \code{.RData} file(s) containing \code{\link{computePower}} output}
+\item{outComputePower}{either a list of lists containing output from \code{\link{computePower}} or a character vector specifying the \code{.RData} file(s) containing \code{\link{computePower}} output}
 
 \item{outDir}{a character vector specifying path(s) to output \code{.RData} file(s), necessary if \cr
 \code{outComputePower} is a character vector. Default is \code{NULL}.}
@@ -29,10 +29,10 @@ the \eqn{RR_t} values that are plotted on the x-axis.
 # Example scenario with trichotomous biomarker, where values of controlCaseRatio are varied
 
 # Set input parameters for computePower function
-nCases <- 10
-nControls <- 300
-nCasesWithS <- 10
-controlCaseRatio <- 5
+nCasesTx <- 10
+nControlsTx <- 300
+nCasesTxWithS <- 10
+controlCaseRatio <- c(5,3)
 VEoverall <- 0.75
 risk0 <- 0.034
 VElat0 <- seq(0, VEoverall, len=5)
@@ -45,15 +45,8 @@ M <- 50
 alpha <- 0.05
 biomType <- "trichotomous"
 
-# Output from computePower function is stored in an object as a list
-pwr1 <- computePower(nCases=nCases, nControls=nControls, nCasesWithS=nCasesWithS,
-                     controlCaseRatio=controlCaseRatio, risk0=risk0,
-                     VEoverall=VEoverall, Plat0=Plat0, Plat2=Plat2, P0=P0, P2=P2,
-                     VElat0=VElat0, VElat1=VElat1, M=M, alpha=alpha, spec=spec,
-                     FP0=FP0, sens=sens, FN2=FN2, biomType=biomType)
-
-controlCaseRatio <- 3
-pwr2 <- computePower(nCases=nCases, nControls=nControls, nCasesWithS=nCasesWithS,
+# Output from computePower function is stored in an object as a list of lists
+pwr <- computePower(nCasesTx=nCasesTx, nControlsTx=nControlsTx, nCasesTxWithS=nCasesTxWithS,
                      controlCaseRatio=controlCaseRatio, risk0=risk0,
                      VEoverall=VEoverall, Plat0=Plat0, Plat2=Plat2, P0=P0, P2=P2,
                      VElat0=VElat0, VElat1=VElat1, M=M, alpha=alpha, spec=spec,
@@ -61,14 +54,14 @@ pwr2 <- computePower(nCases=nCases, nControls=nControls, nCasesWithS=nCasesWithS
 
 # Set parameters for plotPowerTri function
 # outComputePower is a list of lists containing outputs from the computePower function
-outComputePower <- list(pwr1, pwr2)
+outComputePower <- pwr
 legendText <- paste0("controls:cases = ", c("5:1","3:1"))
 plotPowerTri(outComputePower=outComputePower, legendText=legendText)
 
 \dontrun{
 # outComputePower is a character vector specifying the files containing computePower output
 # outDir is a character vector specifying the outComputePower file directories
-outComputePower = c("myFile1", "myFile2")
+outComputePower = c("myFile_controlCaseRatio_5.RData", "myFile_controlCaseRatio_3.RData")
 outDir = rep("~/myDir", 2)
 legendText <- paste0("controls:cases = ", c("5:1","3:1"))
 plotPowerTri(outComputePower, outDir=outDir, legendText = legendText)

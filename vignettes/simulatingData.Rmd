@@ -1,6 +1,11 @@
 ---
 title: "`CoRpower`'s Algorithms for Simulating Placebo Group and Baseline Immunogenicity Predictor Data"
-output: html_document
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Simulating Placebo and Baseline Immunogenicity Predictor Data}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
 
 \DeclareMathOperator{\corr}{corr}

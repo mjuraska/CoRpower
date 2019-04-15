@@ -410,7 +410,7 @@ computeRisks <- function(biomType, RRoverall, risk0, sens, spec, FP0, FN2, FP1, 
 
 simTrich <- function(risk1lat_0, risk1lat_1, risk1lat_2, Plat0, Plat1, Plat2, sens, spec, FP0, FN2, FP1, FN1,
                      nCasesTx, nCasesTxWithS, NcompleteTx, nCasesPla, NcompletePla,
-                     controlCaseRatio, p, cohort, tpsMethod, alpha, saveDataDir,
+                     biomType, controlCaseRatio, p, cohort, tpsMethod, alpha, saveDataDir,
                      sensBIP, specBIP, FP0BIP, FN2BIP, FP1BIP, FN1BIP) {
   # Simulates data and conducts a hypothesis test for a trichotomous or dichotomous biomarker
   #
@@ -618,7 +618,7 @@ simTrich <- function(risk1lat_0, risk1lat_1, risk1lat_2, Plat0, Plat1, Plat2, se
 }
 
 simCont <- function(nCasesTx, NcompleteTx, nCasesTxWithS, nCasesPla, NcompletePla,
-                    alphalat, beta, sigma2tr, sigma2e, nu, PlatVElowest, VElowest,
+                    alphalat, beta, sigma2obs, sigma2tr, sigma2e, nu, PlatVElowest, VElowest,
                     risk0, controlCaseRatio, p, cohort, tpsMethod, alpha, corr, saveDataDir) {
   # Simulates data and conducts a hypothesis test for a continuous biomarker
   #
@@ -1199,7 +1199,8 @@ biomSubset <- function(Y, NcompleteTx, nCasesTxWithS, controlCaseRatio, p, cohor
 #'              FP0=FP0, sens=sens, FN2=FN2, biomType=biomType)
 #'
 #' \dontrun{
-#' ## Trichotomous biomarker, Approach 2, varying rho, saving simulated data (including placebo and BIP data)##
+#' ## Trichotomous biomarker, Approach 2, varying rho ## 
+#' ## Saving simulated data (including placebo and BIP data)
 #' ## Specify rho, sigma2obs, saveDataDir, saveDataFile, corr
 #'
 #' nCasesTx <- 32
@@ -1564,7 +1565,7 @@ computePower <- function(nCasesTx, nControlsTx, nCasesTxWithS,
           data <- simTrich(risk1lat_0[k], risk1lat_1[k], risk1lat_2[k], Plat0, Plat1, Plat2,
                            sens, spec, FP0, FN2, FP1, FN1,
                            nCasesTx, nCasesTxWithS, NcompleteTx, nCasesPla, NcompletePla,
-                           controlCaseRatio, p, cohort, tpsMethod, alpha, saveDataDir,
+                           biomType, controlCaseRatio, p, cohort, tpsMethod, alpha, saveDataDir,
                            sensBIP, specBIP, FP0BIP, FN2BIP, FP1BIP, FN1BIP)
           powerstrinary[k] <- powerstrinary[k] + data$addPower
 
@@ -1646,7 +1647,7 @@ computePower <- function(nCasesTx, nControlsTx, nCasesTxWithS,
           # also on the number of controls fixed at controlCaseRatio*nCasesTx
 
           data <- simCont(nCasesTx, NcompleteTx, nCasesTxWithS, nCasesPla, NcompletePla,
-                          alphalat, beta, sigma2tr, sigma2e, nu, PlatVElowest, VElowest[k],
+                          alphalat, beta, sigma2obs, sigma2tr, sigma2e, nu, PlatVElowest, VElowest[k],
                           risk0, controlCaseRatio, p, cohort, tpsMethod, alpha, corr, saveDataDir)
           powerscont[k] <- powerscont[k] + data$addPower
 

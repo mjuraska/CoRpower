@@ -28,16 +28,19 @@
 #' risk0 <- 0.034
 #' PlatVElowest <- 0.2
 #' VElowest <- seq(0, VEoverall, len=5)
+#' Plat0 <- P0 <- 0.2
+#' Plat2 <- P2 <- 0.6
 #' M <- 22
 #' alpha <- 0.05
 #' sigma2obs <- 1
 #' rho <- c(1, 0.7, 0.4)
 #' biomType <- "continuous"
 #'
-#' # Output from computePower function is stored in an object as a list
+#' # Output from computePower function is stored in an object as a list of lists
 #' pwr <- computePower(nCasesTx=nCasesTx, nCasesTxWithS=nCasesTxWithS, nControlsTx=nControlsTx,
 #'                     controlCaseRatio=controlCaseRatio, risk0=risk0, VEoverall=VEoverall,
-#'                     PlatVElowest=PlatVElowest, VElowest=VElowest, M=M, alpha=alpha,
+#'                     PlatVElowest=PlatVElowest, VElowest=VElowest, 
+#'                     Plat0=Plat0, Plat2=Plat2, P0=P0, P2=P2, M=M, alpha=alpha,
 #'                     sigma2obs=sigma2obs, rho=rho, biomType=biomType)
 #'
 #' # Set parameters for plotPowerCont function

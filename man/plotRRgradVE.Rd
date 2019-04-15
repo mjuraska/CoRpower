@@ -7,7 +7,7 @@
 plotRRgradVE(outComputePower, outDir = NULL, legendText)
 }
 \arguments{
-\item{outComputePower}{either a list or list of lists containing output from \code{\link{computePower}} or a character vector specifying the \code{.RData} file(s) containing \code{\link{computePower}} output}
+\item{outComputePower}{either a list of lists containing output from \code{\link{computePower}} or a character vector specifying the \code{.RData} file(s) containing \code{\link{computePower}} output}
 
 \item{outDir}{a character vector specifying path(s) to output \code{.RData} file(s), necessary if \cr\code{outComputePower} is a character vector. Default is \code{NULL}.}
 
@@ -30,9 +30,9 @@ the correlate of risk effect size is closer to the null than the relative vaccin
 # Example scenario with trichotomous biomarker, where values of rho are varied
 
 # Set input parameters for computePower function
-nCases <- 10
-nControls <- 300
-nCasesWithS <- 10
+nCasesTx <- 10
+nControlsTx <- 300
+nCasesTxWithS <- 10
 controlCaseRatio <- 3
 VEoverall <- 0.75
 risk0 <- 0.034
@@ -47,14 +47,14 @@ rho <- c(1, 0.7, 0.4)
 biomType <- "trichotomous"
 
 # Output from computePower function is stored in an object as a list
-pwr <- computePower(nCases=nCases, nControls=nControls, nCasesWithS=nCasesWithS,
+pwr <- computePower(nCasesTx=nCasesTx, nControlsTx=nControlsTx, nCasesTxWithS=nCasesTxWithS,
                     controlCaseRatio=controlCaseRatio, risk0=risk0, VEoverall=VEoverall,
                     Plat0=Plat0, Plat2=Plat2, P0=P0, P2=P2, VElat0=VElat0,
                     VElat1=VElat1, M=M, alpha=alpha, sigma2obs=sigma2obs, rho=rho,
                     biomType=biomType)
 
 # Set parameters for plotPowerCont function
-# outComputePower is a list containing output from the computePower function
+# outComputePower is a list of lists containing output from the computePower function
 outComputePower <- pwr
 legendText <- paste0("rho = ", c(1, 0.7, 0.4))
 plotRRgradVE(outComputePower=outComputePower, legendText=legendText)
@@ -62,9 +62,10 @@ plotRRgradVE(outComputePower=outComputePower, legendText=legendText)
 \dontrun{
 # Output from computePower function is saved in an RData file
 computePower(..., saveDir = "myDir", saveFile = "myFile.RData")
+
 # outComputePower is a character string specifying the file containing the computePower output
 # outDir is a character string specifying the outComputePower file directory
-outComputePower = "myFile"
+outComputePower = c("myFile_rho_1.RData", "myFile_rho_0.7.RData", "myFile_rho_0.4.RData")
 outDir = "~/myDir"
 legendText <- paste0("rho = ", c(1, 0.7, 0.4))
 plotRRgradVE(outComputePower, outDir=outDir, legendText = legendText)
