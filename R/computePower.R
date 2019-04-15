@@ -129,10 +129,10 @@ checkFileSavingParams <- function(saveFile, saveDataFile, varyingParam) {
   #   Error if saveFile or saveDataFile is a vector whose length does not match the length of the varying parameter 
   #   or if a component of saveFile or saveDataFile does not include ".RData"
   
-  if (length(saveDataFile) != 1 & length(saveFileData) != length(varyingParam[1])) {
+  if (length(saveDataFile) != 1 & length(saveDataFile) != length(varyingParam[1])) {
     stop("saveDataFile is a vector and its length is not equal to the length of the vectorized input parameter")
   }
-  if (length(saveFile) != 1 & length(saveData) != length(varyingParam[1])) {
+  if (length(saveFile) != 1 & length(saveFile) != length(varyingParam[1])) {
     stop("saveFile is a vector and its length is not equal to the length of the vectorized input parameter")
   }
   for (i in length(saveFile)) {
@@ -1199,8 +1199,8 @@ biomSubset <- function(Y, NcompleteTx, nCasesTxWithS, controlCaseRatio, p, cohor
 #'              FP0=FP0, sens=sens, FN2=FN2, biomType=biomType)
 #'
 #' \dontrun{
-#' ## Trichotomous biomarker, Approach 2, varying rho ##
-#' ## Specify rho and sigma2obs
+#' ## Trichotomous biomarker, Approach 2, varying rho, saving simulated data (including placebo and BIP data)##
+#' ## Specify rho, sigma2obs, saveDataDir, saveDataFile, corr
 #'
 #' nCasesTx <- 32
 #' nControlsTx <- 1000
@@ -1219,10 +1219,14 @@ biomSubset <- function(Y, NcompleteTx, nCasesTxWithS, controlCaseRatio, p, cohor
 #' sigma2obs <- 1
 #' rho <- c(1, 0.9, 0.7, 0.5)
 #' biomType <- "trichotomous"
+#' saveDataDir <- "~/myDir"
+#' saveDataFile <- "myDataFile.RData"
+#' corr <- 0.7
 #' computePower(nCasesTx=nCasesTx, nControlsTx=nControlsTx, nCasesTxWithS=nCasesTxWithS,
 #'              controlCaseRatio=controlCaseRatio, VEoverall=VEoverall, risk0=risk0,
 #'              VElat0=VElat0, VElat1=VElat1, Plat0=Plat0, Plat2=Plat2, P0=P0, P2=P2,
-#'              M=M, alpha=alpha, sigma2obs=sigma2obs, rho=rho, biomType=biomType)
+#'              M=M, alpha=alpha, sigma2obs=sigma2obs, rho=rho, biomType=biomType,
+#'              saveDataDir=saveDataDir, saveDataFile=saveDataFile, corr=corr)
 #'
 #'
 #' ## dichotomous biomarker, Approach 2, varying rho ##
@@ -1286,22 +1290,11 @@ biomSubset <- function(Y, NcompleteTx, nCasesTxWithS, controlCaseRatio, p, cohor
 #' rho <- 0.9
 #' biomType <- "continuous"
 #' cohort <- TRUE
-#' p <- 0.01
+#' p <- c(0.01, 0.02, 0.03)
 #' computePower(nCasesTx=nCasesTx, nControlsTx=nControlsTx, nCasesTxWithS=nCasesTxWithS,
 #'              VEoverall=VEoverall, risk0=risk0, PlatVElowest=PlatVElowest,
 #'              VElowest=VElowest, M=M, alpha=alpha, sigma2obs=sigma2obs,
 #'              rho=rho, biomType=biomType, cohort=cohort, p=p)
-#' p <- 0.02
-#' computePower(nCasesTx=nCasesTx, nControlsTx=nControlsTx, nCasesTxWithS=nCasesTxWithS,
-#'              VEoverall=VEoverall, risk0=risk0, PlatVElowest=PlatVElowest,
-#'              VElowest=VElowest, M=M, alpha=alpha, sigma2obs=sigma2obs,
-#'              rho=rho, biomType=biomType, cohort=cohort, p=p)
-#' p <- 0.03
-#' computePower(nCasesTx=nCasesTx, nControlsTx=nControlsTx, nCasesTxWithS=nCasesTxWithS,
-#'              VEoverall=VEoverall, risk0=risk0, PlatVElowest=PlatVElowest,
-#'              VElowest=VElowest, M=M, alpha=alpha, sigma2obs=sigma2obs,
-#'              rho=rho, biomType=biomType, cohort=cohort, p=p)
-#'
 #'
 #' ## Continuous biomarker, saving output, varying sample sizes ##
 #'
@@ -1319,7 +1312,7 @@ biomSubset <- function(Y, NcompleteTx, nCasesTxWithS, controlCaseRatio, p, cohor
 #' rho <- c(1, 0.9, 0.7, 0.5)
 #' biomType <- "continuous"
 #' saveDir <- "~/myDir"
-#' saveFile <- "MyFile"
+#' saveFile <- "MyFile.RData"
 #' computePower(nCasesTx=nCasesTx, nCasesTxWithS=nCasesTxWithS, nControlsTx=nControlsTx,
 #'              controlCaseRatio=controlCaseRatio, VEoverall=VEoverall,
 #'              risk0=risk0, PlatVElowest=PlatVElowest, VElowest=VElowest,
@@ -1727,8 +1720,8 @@ computePower <- function(nCasesTx, nControlsTx, nCasesTxWithS,
       } else {
         save(fullData, file=paste0(file.path(saveDataDir, paste0("fullData",fileName)),".RData"))
       }
+      rm(fullData)
     }
-    rm(fullData)
   }
 
   return(pwrAll)
