@@ -4,7 +4,7 @@
 #' relative risk and the lowest vaccine efficacy level for the true biomarker. All curves assume \code{rho=1}, and treatment (vaccine)
 #' efficacy ranges from 0 to 1. The legend is completely determined by the function.
 #'
-#' @param outComputePower a list containing output from \code{\link{computePower}} or a character string specifying the \code{.RData} file containing \code{\link{computePower}} output
+#' @param outComputePower a list of lists of length \code{1} containing output from \code{\link{computePower}} or a character string specifying the \code{.RData} file containing \code{\link{computePower}} output
 #' @param outDir a character string specifying path to output \code{.RData} file, necessary if \cr\code{outComputePower} is a character string. Default is \code{NULL}.
 #'
 #' @details
@@ -30,25 +30,27 @@
 #' # Example scenario with continuous biomarker, where values of rho are varied
 #'
 #' # Set input parameters for computePower function
-#' nCases <- 10
-#' nControls <- 300
-#' nCasesWithS <- 10
+#' nCasesTx <- 10
+#' nControlsTx <- 300
+#' nCasesTxWithS <- 10
 #' controlCaseRatio <- 3
 #' VEoverall <- 0.75
 #' risk0 <- 0.034
 #' PlatVElowest <- 0.2
 #' VElowest <- seq(0, VEoverall, len=8)
+#' Plat0 <- P0 <- 0.2
+#' Plat2 <- P2 <- 0.6
 #' M <- 13
 #' alpha <- 0.05
 #' sigma2obs <- 1
-#' rho <- c(1, 0.7, 0.4)
+#' rho <- 1
 #' biomType <- "continuous"
 #'
 #' # Output from computePower function is stored in an object as a list
-#' pwr <- computePower(nCases=nCases, nCasesWithS=nCasesWithS, nControls=nControls,
+#' pwr <- computePower(nCasesTx=nCasesTx, nControlsTx=nControlsTx, nCasesTxWithS=nCasesTxWithS,
 #'                     controlCaseRatio=controlCaseRatio, risk0=risk0, VEoverall=VEoverall,
-#'                     PlatVElowest=PlatVElowest, VElowest=VElowest, M=M, alpha=alpha,
-#'                     sigma2obs=sigma2obs, rho=rho, biomType=biomType)
+#'                     PlatVElowest=PlatVElowest, VElowest=VElowest, Plat0=Plat0, Plat2=Plat2,
+#'                     P0=P0, P2=P2, M=M, alpha=alpha, sigma2obs=sigma2obs, rho=rho, biomType=biomType)
 #'
 #' # Set parameters for plotPowerCont function
 #' # outComputePower is a list containing output from the computePower function
@@ -61,7 +63,7 @@
 
 #' # outComputePower is a character string specifying the file containing the computePower output
 #' # outDir is a character string specifying the outComputePower file directory
-#' outComputePower = "myFile"
+#' outComputePower = "myFile.RData"
 #' outDir = "~/myDir"
 #' plotVElatCont(outComputePower, outDir=outDir)
 #' }
@@ -72,14 +74,19 @@
 #'
 #' @export
 plotVElatCont <- function(outComputePower, outDir=NULL) {
-  if(any(sapply(outComputePower, is.list)) | length(outDir)>1) {
-    stop("outComputePower must be a single list, not a list of lists, and outDir must be of length 1")
+  if (length(outComputePower) > 1) {
+    stop("outComputePower must be of length 1")
+  } else if (length(outDir) > 1) {
+    stop("outDir must be of length 1")
   } else if(is.list(outComputePower)) {
-    pwr <- outComputePower
+    pwr <- outComputePower[[1]]
   } else if(is.character(outComputePower) & is.null(outDir)) {
     stop("outComputePower is a character vector so outDir needs to be specified")
   } else if(is.character(outComputePower)) {
-    load(paste0(file.path(outDir[1], outComputePower[1]),".RData"))
+    if (substr(outComputePower, start = nchar(outComputePower) - 5, stop = nchar(outComputePower)) != ".RData") {
+      stop("File name in outComputePower must include .RData")
+    }
+    load(file.path(outDir, outComputePower)) 
   } else {
     stop("outComputePower must be of type list or character")
   }

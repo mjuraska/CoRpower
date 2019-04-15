@@ -4,7 +4,7 @@
 #' The correlate of risk effect size is quantified as the relative risk ratio of the clinical endpoint per standard deviation increase for a
 #' noise-free biomarker.
 #'
-#' @param outComputePower either a list or list of lists containing output from \code{\link{computePower}} or a character vector specifying the \code{.RData} file(s) containing \code{\link{computePower}} output
+#' @param outComputePower either a list of lists containing output from \code{\link{computePower}} or a character vector specifying the \code{.RData} file(s) containing \code{\link{computePower}} output
 #' @param outDir a character vector specifying path(s) to output \code{.RData} file(s), necessary if \cr
 #' \code{outComputePower} is a character vector. Default is \code{NULL}.
 #' @param legendText a character vector specifying the entirety of the legend text. The order of the elements (i.e., parameter values) must match that of the \code{\link{computePower}} input parameters in order for legend labels to be accurate.
@@ -20,9 +20,9 @@
 #' # Example scenario with continuous biomarker, where values of rho are varied
 #'
 #' # Set input parameters for computePower function
-#' nCases <- 10
-#' nControls <- 300
-#' nCasesWithS <- 10
+#' nCasesTx <- 10
+#' nControlsTx <- 300
+#' nCasesTxWithS <- 10
 #' controlCaseRatio <- 5
 #' VEoverall <- 0.75
 #' risk0 <- 0.034
@@ -35,25 +35,25 @@
 #' biomType <- "continuous"
 #'
 #' # Output from computePower function is stored in an object as a list
-#' pwr <- computePower(nCases=nCases, nCasesWithS=nCasesWithS, nControls=nControls,
+#' pwr <- computePower(nCasesTx=nCasesTx, nCasesTxWithS=nCasesTxWithS, nControlsTx=nControlsTx,
 #'                     controlCaseRatio=controlCaseRatio, risk0=risk0, VEoverall=VEoverall,
 #'                     PlatVElowest=PlatVElowest, VElowest=VElowest, M=M, alpha=alpha,
 #'                     sigma2obs=sigma2obs, rho=rho, biomType=biomType)
 #'
 #' # Set parameters for plotPowerCont function
-#' # outComputePower is a list containing output from the computePower function
+#' # outComputePower is a list of lists containing output from the computePower function
 #' outComputePower <- pwr
 #' legendText <- paste0("rho = ", c(1, 0.7, 0.4))
 #' plotPowerCont(outComputePower=outComputePower, legendText=legendText)
 #'
 #' \dontrun{
-#' # Output from computePower function is saved in an RData file
+#' # Output from computePower function is saved in RData files
 #' computePower(..., saveDir = "myDir", saveFile = "myFile.RData")
 
 #' # outComputePower is a character string specifying the file containing the
 #' # computePower output
 #' # outDir is a character string specifying the outComputePower file directory
-#' outComputePower = "myFile"
+#' outComputePower = c("myFile_rho_1.RData", "myFile_rho_0.7.RData", "myFile_rho_0.4.RData")
 #' outDir = "~/myDir"
 #' legendText <- paste0("rho = ", c(1, 0.7, 0.4))
 #' plotPowerCont(outComputePower, outDir=outDir, legendText = legendText)
@@ -66,16 +66,16 @@
 #' @export
 plotPowerCont <- function(outComputePower, outDir=NULL, legendText) {
 
-  multiple <- TRUE
   if(any(sapply(outComputePower, is.list))) {  # check if list of lists
     pwr <- outComputePower[[1]]  # load first output list
-  } else if(is.list(outComputePower)) {  # check if single list
-    pwr <- outComputePower
-    multiple <- FALSE
   } else if(is.character(outComputePower) & is.null(outDir)) {  # check outDir is specified
     stop("outComputePower is a character vector so outDir needs to be specified")
   } else if(is.character(outComputePower)) {  # check if character
-    load(paste0(file.path(outDir[1], outComputePower[1]),".RData"))  # load first output list
+    fileName <- outComputePower[[1]]
+    if (substr(fileName, start = nchar(fileName) - 5, stop = nchar(fileName)) != ".RData") {
+      stop("File name(s) in outComputePower must include .RData")
+    }
+    load(file.path(outDir[1], fileName))  # load first output list
   } else {
     stop("outComputePower must be of type list or character")
   }
@@ -85,7 +85,7 @@ plotPowerCont <- function(outComputePower, outDir=NULL, legendText) {
   rho <- pwr$rho
   alpha <- pwr$alpha
 
-  if(multiple==TRUE) {
+  if(length(outComputePower) > 1) {
     for(i in 2:length(outComputePower)) {
       if(is.list(outComputePower)) {
         pwr <- outComputePower[[i]]
@@ -93,10 +93,11 @@ plotPowerCont <- function(outComputePower, outDir=NULL, legendText) {
         load(paste0(file.path(outDir[i], outComputePower[i]),".RData"))
       }
       addPower <- pwr$power
-      power <- rbind(power, addPower)
+      power <- cbind(power, addPower)
     }
   }
-  power <- t(power)
+  
+  power <- as.matrix(power)
 
   par(cex.axis=1.2,cex.lab=1.2,cex.main=1.2,las=1,oma=c(3,3,4,4))
   plot(RRc,power[,1],ylim=c(0,1),type='n',xlab=expression("Vaccine Group CoR Relative Risk "~RR[c]~" per 1 SD Increase in S* with "~rho==1),ylab="Power",axes=FALSE)
