@@ -39,7 +39,7 @@
 #' # Output from computePower function is stored in an object as a list of lists
 #' pwr <- computePower(nCasesTx=nCasesTx, nCasesTxWithS=nCasesTxWithS, nControlsTx=nControlsTx,
 #'                     controlCaseRatio=controlCaseRatio, risk0=risk0, VEoverall=VEoverall,
-#'                     PlatVElowest=PlatVElowest, VElowest=VElowest, 
+#'                     PlatVElowest=PlatVElowest, VElowest=VElowest,
 #'                     Plat0=Plat0, Plat2=Plat2, P0=P0, P2=P2, M=M, alpha=alpha,
 #'                     sigma2obs=sigma2obs, rho=rho, biomType=biomType)
 #'
@@ -56,8 +56,8 @@
 #' # outComputePower is a character string specifying the file containing the
 #' # computePower output
 #' # outDir is a character string specifying the outComputePower file directory
-#' outComputePower = c("myFile_rho_1.RData", "myFile_rho_0.7.RData", "myFile_rho_0.4.RData")
-#' outDir = "~/myDir"
+#' outComputePower <- paste0("myFile_rho_", c(1, 0.7, 0.4), ".RData")
+#' outDir <- "~/myDir"
 #' legendText <- paste0("rho = ", c(1, 0.7, 0.4))
 #' plotPowerCont(outComputePower, outDir=outDir, legendText = legendText)
 #' }
@@ -99,7 +99,7 @@ plotPowerCont <- function(outComputePower, outDir=NULL, legendText) {
       power <- cbind(power, addPower)
     }
   }
-  
+
   power <- as.matrix(power)
 
   par(cex.axis=1.2,cex.lab=1.2,cex.main=1.2,las=1,oma=c(3,3,4,4))

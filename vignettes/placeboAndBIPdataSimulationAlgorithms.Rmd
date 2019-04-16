@@ -3,7 +3,7 @@ title: "`CoRpower`'s Algorithms for Simulating Placebo Group and Baseline Immuno
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Simulating Placebo and Baseline Immunogenicity Predictor Data}
+  %\VignetteIndexEntry{Algorithms for Simulating Placebo Group and Baseline Immunogenicity Predictor Data}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -12,7 +12,7 @@ vignette: >
 \DeclareMathOperator{\var}{var}
 
 ## Introduction
-The `CoRpower` package assumes that $P(Y^{\tau}(1)=Y^{\tau}(0))=1$ for the biomarker sampling timepoint $\tau$, which renders the CoR parameter $P(Y=1 \mid S=s_1, Z=1, Y^{\tau}=0)$ equal to $P(Y=1 \mid S=s_1, Z=1, Y^{\tau}(1)=Y^{\tau}(0)=0)$, which links the CoR and biomarker-specific VE parameters. Estimation of the latter requires outcome data in placebo recipients, and some estimation methods additionally require availability of a baseline immunogenicity predictor (BIP) of $S(1)$, the biomarker response at $\tau$ under assignment to vaccine. In order to link power calculations for detecting a correlate of risk (CoR) and a correlate of VE (coVE), `CoRpower` allows to export simulated data sets that are used in `CoRpower`'s calculations and that are extended to include placebo-group and BIP data for harmonized use by methods assessing biomarker-specific VE. This vignette aims to describe `CoRpower`'s algorithms, and the underlying assumptions, for simulating placebo-group and BIP data. The exported data sets include full rectangular data to allow the user to consider various biomarker sub-sampling designs, e.g., different biomarker case:control sampling ratios, or case-control vs. case-cohort designs.
+The `CoRpower` package assumes that $P(Y^{\tau}(1)=Y^{\tau}(0))=1$ for the biomarker sampling timepoint $\tau$, which renders the CoR parameter $P(Y=1 \mid S=s_1, Z=1, Y^{\tau}=0)$ equal to $P(Y=1 \mid S=s_1, Z=1, Y^{\tau}(1)=Y^{\tau}(0)=0)$, which links the CoR and biomarker-specific treatment efficacy (TE) parameters. Estimation of the latter requires outcome data in placebo recipients, and some estimation methods additionally require availability of a baseline immunogenicity predictor (BIP) of $S(1)$, the biomarker response at $\tau$ under assignment to treatment. In order to link power calculations for detecting a correlate of risk (CoR) and a correlate of TE (coTE), `CoRpower` allows to export simulated data sets that are used in `CoRpower`'s calculations and that are extended to include placebo-group and BIP data for harmonized use by methods assessing biomarker-specific TE. This vignette aims to describe `CoRpower`'s algorithms, and the underlying assumptions, for simulating placebo-group and BIP data. The exported data sets include full rectangular data to allow the user to consider various biomarker sub-sampling designs, e.g., different biomarker case:control sampling ratios, or case-control vs. case-cohort designs.
 
 ***
 ## Algorithms for Simulating Placebo Group Data

@@ -63,8 +63,8 @@
 
 #' # outComputePower is a character string specifying the file containing the computePower output
 #' # outDir is a character string specifying the outComputePower file directory
-#' outComputePower = "myFile.RData"
-#' outDir = "~/myDir"
+#' outComputePower <- "myFile.RData"
+#' outDir <- "~/myDir"
 #' plotVElatCont(outComputePower, outDir=outDir)
 #' }
 #'
@@ -86,7 +86,7 @@ plotVElatCont <- function(outComputePower, outDir=NULL) {
     if (substr(outComputePower, start = nchar(outComputePower) - 5, stop = nchar(outComputePower)) != ".RData") {
       stop("File name in outComputePower must include .RData")
     }
-    load(file.path(outDir, outComputePower)) 
+    load(file.path(outDir, outComputePower))
   } else {
     stop("outComputePower must be of type list or character")
   }

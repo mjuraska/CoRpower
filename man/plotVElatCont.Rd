@@ -72,8 +72,8 @@ plotVElatCont(outComputePower=outComputePower)
 computePower(..., saveDir = "myDir", saveFile = "myFile.RData")
 # outComputePower is a character string specifying the file containing the computePower output
 # outDir is a character string specifying the outComputePower file directory
-outComputePower = "myFile.RData"
-outDir = "~/myDir"
+outComputePower <- "myFile.RData"
+outDir <- "~/myDir"
 plotVElatCont(outComputePower, outDir=outDir)
 }
 

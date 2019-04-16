@@ -54,8 +54,8 @@
 #'
 #' # outComputePower is a character string specifying the file containing the computePower output
 #' # outDir is a character string specifying the outComputePower file directory
-#' outComputePower = c("myFile_rho_1.RData", "myFile_rho_0.7.RData", "myFile_rho_0.4.RData")
-#' outDir = "~/myDir"
+#' outComputePower <- paste0("myFile_rho_", c(1, 0.7, 0.4), ".RData")
+#' outDir <- "~/myDir"
 #' legendText <- paste0("rho = ", c(1, 0.7, 0.4))
 #' plotRRgradVE(outComputePower, outDir=outDir, legendText = legendText)
 #' }
@@ -102,7 +102,7 @@ plotRRgradVE <- function(outComputePower, outDir=NULL, legendText) {
       RRt <- cbind(RRt, pwr$RRt)
     }
   }
-  
+
   power <- as.matrix(power)
 
   par(cex.axis=1.2,cex.lab=1.2,cex.main=1.2,las=1,oma=c(4,3,4,4), mar=c(4,5,2,2))

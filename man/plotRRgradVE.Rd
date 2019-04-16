@@ -65,8 +65,8 @@ computePower(..., saveDir = "myDir", saveFile = "myFile.RData")
 
 # outComputePower is a character string specifying the file containing the computePower output
 # outDir is a character string specifying the outComputePower file directory
-outComputePower = c("myFile_rho_1.RData", "myFile_rho_0.7.RData", "myFile_rho_0.4.RData")
-outDir = "~/myDir"
+outComputePower <- paste0("myFile_rho_", c(1, 0.7, 0.4), ".RData")
+outDir <- "~/myDir"
 legendText <- paste0("rho = ", c(1, 0.7, 0.4))
 plotRRgradVE(outComputePower, outDir=outDir, legendText = legendText)
 }

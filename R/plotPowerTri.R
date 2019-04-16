@@ -52,8 +52,8 @@
 
 #' # outComputePower is a character vector specifying the files containing computePower output
 #' # outDir is a character vector specifying the outComputePower file directories
-#' outComputePower = c("myFile_controlCaseRatio_5.RData", "myFile_controlCaseRatio_3.RData")
-#' outDir = rep("~/myDir", 2)
+#' outComputePower <- paste0("myFile_controlCaseRatio_", c(5, 3), ".RData")
+#' outDir <- rep("~/myDir", 2)
 #' legendText <- paste0("controls:cases = ", c("5:1","3:1"))
 #' plotPowerTri(outComputePower, outDir=outDir, legendText = legendText)
 #' }
@@ -102,7 +102,7 @@ plotPowerTri <- function(outComputePower, outDir=NULL, legendText) {
       power <- cbind(power, addPower)
     }
   }
-  
+
   power <- as.matrix(power)
 
   par(cex.axis=1.2,cex.lab=1.2,cex.main=1.2,las=1,oma=c(4,3,3,4))
