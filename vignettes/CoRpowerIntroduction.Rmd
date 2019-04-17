@@ -1,6 +1,5 @@
 ---
-title: "Introduction to CoRpower"
-date: "`r Sys.Date()`"
+title: "Introduction to `CoRpower`"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Introduction to CoRpower}
@@ -8,7 +7,7 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-The `CoRpower` package performs power calculations for correlates of risk, as described in [Gilbert, Janes, and Huang (2016). Power/Sample Size Calculations for Assessing Correlates of Risk in Clinical Efficacy Trials] The power calculations accomodate three types of biomarkers: 
+The `CoRpower` package performs power calculations for correlates of risk, as described in [Gilbert, Janes, and Huang (2016). Power/Sample Size Calculations for Assessing Correlates of Risk in Clinical Efficacy Trials] The power calculations accommodate three types of biomarkers: 
 
 - trichotomous
 - dichotomous

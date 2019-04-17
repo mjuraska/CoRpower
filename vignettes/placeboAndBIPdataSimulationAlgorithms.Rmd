@@ -1,6 +1,5 @@
 ---
 title: "`CoRpower`'s Algorithms for Simulating Placebo Group and Baseline Immunogenicity Predictor Data"
-date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Algorithms for Simulating Placebo Group and Baseline Immunogenicity Predictor Data}
