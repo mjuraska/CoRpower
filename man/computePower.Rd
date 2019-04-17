@@ -147,7 +147,7 @@ For a continuous biomarker, each output list has the following components:
   \item \code{rho}: a numeric vector specifying distinct protection-relevant fractions of the variance of the observed biomarker
 }
 
-If \code{saveDataDir} is specified, the simulated data, including placebo group and BIP data, are saved in \code{saveDataFile} (an \code{.RData} file)
+If \code{saveDataDir} is specified, the simulated data, including placebo group and BIP data, are saved in one or more \code{.RData} file(s)
 containing a list of lists of data frames.
 The components of the outer list consist each of one Monte-Carlo iteration of simulated data for all values of \code{VElat0} or \code{VElat1} if
 the biomarker is trichotomous, or of \code{VElowest} if the biomarker is continuous. Each data frame corresponds to one simulated trial.
@@ -190,12 +190,12 @@ Arguments for a case-control without replacement sampling design: \code{controlC
 Arguments for a case-cohort Bernoulli sampling design: \code{cohort = TRUE}, \code{p}
 
 To save output from the power calculations in an \code{.RData} file, \code{saveDir} must be specified. The default file name is \code{CoRpower.RData};
-a different file name may be specified as a single character string, to which the value of the varying argument(s) will be appended for descriptive file naming purposes,
+a different file name may be specified by \code{saveFile} as a single character string, to which the value of the varying argument(s) will be appended for descriptive file naming purposes,
 or, alternatively, a character vector may be specified with full file names (a single file will be produced for each value of the varying argument(s)).
 
-To link power calculations for detecting a correlate of risk and a correlate of treatment efficacy, simulated data sets used in the power calculations can be exported with extensions including
-placebo-group and BIP data for harmonized use by methods assessing
-biomarker-specific treatment efficacy. The vignette "Algorithms for Simulating Placebo Group and Baseline Immunogenicity Predictor Data" provides more information on the algorithms and underlying assumptions for
+To link power calculations for detecting a correlate of risk and a correlate of treatment efficacy, simulated data sets used in the power calculations can be exported 
+with extensions including placebo-group and BIP data for harmonized use by methods assessing biomarker-specific treatment efficacy. 
+The vignette "Algorithms for Simulating Placebo Group and Baseline Immunogenicity Predictor Data" provides more information on the algorithms and underlying assumptions for
 simulating placebo-group and BIP data.
 The exported data sets include full rectangular data to allow the user to consider various biomarker sub-sampling designs. To generate and export such data,
 \code{saveDataDir}, \code{nCasesPla}, and \code{nControlsPla} must be specified. In addition, if the biomarker is trichotomous and Approach 1 is used,
@@ -203,6 +203,7 @@ The exported data sets include full rectangular data to allow the user to consid
 if the biomarker is trichotomous and Approach 2 is used, or if it is continuous, \code{corr} must be specified.
 Arguments pertaining to the simulated data export may also be vectorized in the following groups, independently of the above varying arguments:
    \itemize{
+    \item \code{nCasesPla}, \code{nControlsPla} (together with \code{nCasesTx}, \code{nControlsTx}, and \code{nCasesTxWithS})
     \item \code{sensBIP}, \code{specBIP}, \code{FP0BIP}, \code{FN2BIP}
     \item \code{P0BIP}, \code{P2BIP}
     \item \code{corr}
@@ -210,9 +211,11 @@ Arguments pertaining to the simulated data export may also be vectorized in the 
 Only one of the three groups may be vectors at a time, otherwise an error will be generated. Each component of these vectors will result in the generation of
 a separate BIP variable, in the same order, in the output data.
 
-The default file name for the outputted data sets is \code{fullData.RData}. A different file name may be specified as a single character string,
-to which the value of the varying argument will be appended for descriptive file naming purposes,
+The default file name for the outputted data sets is \code{fullData.RData}. A different file name may be specified by \code{saveDataFile} 
+as a single character string, to which the value of the "varying argument" for the power calculations will be appended for descriptive file naming purposes, 
 or, alternatively, a character vector may be specified with full file names (a single file will be produced for each value of the varying argument(s)).
+Note: if the "varying argument" is \code{controlCaseRatio} or \code{p}, only one file will be generated because these arguments do not affect 
+the simulation of the full data; therefore, \code{saveDataFile} must be a character string in these cases.
 }
 \examples{
 
