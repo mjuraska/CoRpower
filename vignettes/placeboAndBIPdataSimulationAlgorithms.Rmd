@@ -158,3 +158,4 @@ $$
 \corr(BIP^*, S^*(1)) = \sqrt\frac{\var X^* + \var\epsilon}{\var X^* + \var\epsilon + \var \delta}
 $$
 <li> For a subject with biomarker measurement $S^*_k(1)$, generate $BIP^*_k$ as $BIP^*_k = S^*_k(1) + \delta$ using $\sigma^2_{\delta} = \var \delta$ obtained in Step 2.
+</ol>
