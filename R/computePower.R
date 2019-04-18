@@ -1112,14 +1112,16 @@ biomSubset <- function(Y, NcompleteTx, nCasesTxWithS, controlCaseRatio, p, cohor
 #' \code{saveDataDir}, \code{nCasesPla}, and \code{nControlsPla} must be specified. In addition, if the biomarker is trichotomous and Approach 1 is used,
 #' \code{sensBIP}, \code{specBIP}, \code{FP0BIP}, \code{FN2BIP}, \code{P0BIP}, and \code{P2BIP} must be specified;
 #' if the biomarker is trichotomous and Approach 2 is used, or if it is continuous, \code{corr} must be specified.
-#' Arguments pertaining to the simulated data export may also be vectorized in the following groups, independently of the above varying arguments:
+#' Arguments pertaining to the simulated data export may also be vectorized in the following groups:
 #'    \itemize{
-#'     \item \code{nCasesPla}, \code{nControlsPla} (together with \code{nCasesTx}, \code{nControlsTx}, and \code{nCasesTxWithS})
+#'     \item \code{nCasesPla}, \code{nControlsPla}
 #'     \item \code{sensBIP}, \code{specBIP}, \code{FP0BIP}, \code{FN2BIP}
 #'     \item \code{P0BIP}, \code{P2BIP}
 #'     \item \code{corr}
 #'   }
-#' Only one of the three groups may be vectors at a time, otherwise an error will be generated. Each component of these vectors will result in the generation of
+#' \code{nCasesPla} and \code{nControlsPla} must be vectorized together with \code{nCasesTx}, \code{nControlsTx}, and \code{nCasesTxWithS}, 
+#' but the other three groups can be vectorized independently of the above varying arguments. 
+#' Only one of the four groups may be vectors at a time, otherwise an error will be generated. Each component of these vectors will result in the generation of
 #' a separate BIP variable, in the same order, in the output data.
 #'
 #' The default file name for the outputted data sets is \code{fullData.RData}. A different file name may be specified by \code{saveDataFile} 
@@ -1132,10 +1134,10 @@ biomSubset <- function(Y, NcompleteTx, nCasesTxWithS, controlCaseRatio, p, cohor
 #' where the outer list ranges over specified values of the varying argument(s) whose components denote distinct scenarios, and the inner list is the output list for each power scenario.
 #' For a dichotomous or trichotomous biomarker, each output list has the following components:
 #' \itemize{
-#'   \item \code{power}: a numeric vector of fractions of simulated trials in which the null hypothesis \eqn{H_0} is rejected. Rows represent calculations for different values of \code{rho}, \code{sens}, or \code{nCasesTx}, depending on which is a vector. Columns represent calculations for the grid of treatment (vaccine) efficacies specified by \code{VElat0} and \code{VElat1}.
-#'   \item \code{RRt}: a numeric vector of correlate-of-risk relative-risk effect sizes. Rows represent different values of \code{rho}, \code{sens}, or \code{nCasesTx}, depending on which is a vector. Columns represent the grid of treatment (vaccine) efficacies specified by \code{VElat0} and \code{VElat1}.
-#'   \item \code{risk1_2}: a numeric vector of conditional endpoint risks given a high biomarker response in the active treatment group. Rows represent different values of \code{rho}, \code{sens}, or \code{nCasesTx}, depending on which is a vector. Columns represent the grid of treatment (vaccine) efficacies specified by \code{VElat0} and \code{VElat1}.
-#'   \item \code{risk1_0}: a numeric vector of conditional endpoint risks given a low biomarker response in the active treatment group. Rows represent different values of \code{rho}, \code{sens}, or \code{nCasesTx}, depending on which is a vector. Columns represent the grid of treatment (vaccine) efficacies specified by \code{VElat0} and \code{VElat1}.
+#'   \item \code{power}: a numeric vector of fractions of simulated trials in which the null hypothesis \eqn{H_0} is rejected. Each value of the vector corresponds to a value in the grid of treatment (vaccine) efficacies specified by \code{VElat0} and \code{VElat1}.
+#'   \item \code{RRt}: a numeric vector of correlate-of-risk relative-risk effect sizes. Each value of the vector corresponds to a value in the grid of treatment (vaccine) efficacies specified by \code{VElat0} and \code{VElat1}.
+#'   \item \code{risk1_2}: a numeric vector of conditional endpoint risks given a high biomarker response in the active treatment group. Each value of the vector corresponds to a value in the grid of treatment (vaccine) efficacies specified by \code{VElat0} and \code{VElat1}.
+#'   \item \code{risk1_0}: a numeric vector of conditional endpoint risks given a low biomarker response in the active treatment group. Each value of the vector corresponds to a value in the grid of treatment (vaccine) efficacies specified by \code{VElat0} and \code{VElat1}.
 #'   \item \code{VElat2}: a numeric vector specifying a grid of treatment (vaccine) efficacy levels in the latent higher protected subgroup for a dichotomous or trichotomous biomarker
 #'   \item \code{VElat0}: a numeric vector specifying a grid of treatment (vaccine) efficacy levels in the latent lower protected subgroup for a dichotomous or trichotomous biomarker
 #'   \item \code{Plat2}: a numeric value specifying the prevalence of the latent higher protected subgroup for a dichotomous or trichotomous biomarker
