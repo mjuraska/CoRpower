@@ -168,8 +168,10 @@ checkBiomarkerType <- function(biomType, P0, P2, VElowest, PlatVElowest) {
   #   Error if the biomarker type is dichotomous but P0 + P2 != 1,
   #   or if the biomarker type is continuous but VElowest is NULL
 
-  if((biomType=="dichotomous") & (P0+P2 != 1)){
-    stop("dichotomous biomarker was specified but P0 and P2 do not add up to 1")
+  if(biomType=="dichotomous") {
+    if (P0+P2 != 1) {
+      stop("dichotomous biomarker was specified but P0 and P2 do not add up to 1")
+    }
   }
   if((biomType=="continuous") & (is.null(VElowest) | is.null(PlatVElowest))) {
     stop("Continuous biomarker was specified but VElowest and PlatVElowest are not specified")
@@ -241,13 +243,10 @@ checkProbabilityViolation <- function(VEoverall,RRlat2,PlatVElowest,VElowest, bi
   }
   }
 
-checkSaveDataParams <- function(Approach2, biomType, corr, nCasesPla, nControlsPla, sensBIP, specBIP, FP0BIP, FN2BIP, P0BIP, P2BIP) {
+checkSaveDataParams <- function(corr, nCasesPla, nControlsPla, sensBIP, specBIP, FP0BIP, FN2BIP, P0BIP, P2BIP) {
   # Checks that sample size input parameters are valid.
   #
   # Args:
-  #   Approach2: logical value denoting whether Approach 2 for trichotomous/dichotomous biomarker is to be used
-  #   biomType: Character spring specifying type of biomarker used. Default is "continuous";
-  #             other choices are "trichotomous" and "dichotomous"
   #   corr: correlation between BIP and S
   #   nCasesPla: all cases in the placebo group at-risk at tau and a case by taumax
   #   nControlsPla: all controls in the placebo group at-risk at tau and not diseased at the end of follow-up taumax
@@ -260,38 +259,28 @@ checkSaveDataParams <- function(Approach2, biomType, corr, nCasesPla, nControlsP
   #
   # Returns:
   #   Error if nCasesPla, or nControlsPla is not specified,
-  #   or if Approach 1 is to be used and sensBIP, specBIP, etc. are not specified,
+  #   or if vector lengths do not match for {sensBIP, specBIP, FP0BIP, FN2BIP} or {P0BIP, P2BIP}
   #   or if more than one of the input parameters (excluding VElat0, VElat1, and VElowest) is vectorized,
-  #   or if Approach 2 or a continuous biomarker is to be used and corr is not specified or is not a valid correlation
+  #   or if Approach 2 or a continuous biomarker is to be used and corr is not a valid correlation
 
   if(is.null(nCasesPla) | is.null(nControlsPla)) {
     stop("If full data is to be saved, input arguments nCasesPla, and nControlsPla must be specified.")
   }
 
-  if(!Approach2) {
-    if(is.null(sensBIP) | is.null(specBIP) | is.null(FP0BIP) | is.null(FN2BIP) | is.null(P0BIP) | is.null(P2BIP)) {
-      stop("If full data is to be saved for a trichotomous/dichotomous biomarker and Approach 1 is to be used, input arguments sensBIP, specBIP, FP0BIP, FN2BIP, P0BIP, and P2BIP must be specified.")
-    }
-    sensSpecBIPlengths <- sapply(list(sensBIP, specBIP, FP0BIP, FN2BIP), length)
-    PxBIPlengths <- sapply(list(P0BIP, P2BIP), length)
-    checkVectorParamsMatch(sensSpecBIPlengths, c("sensBIP, specBIP, FP0BIP, FN2BIP"))
-    checkVectorParamsMatch(PxBIPlengths, c("P0BIP, P2BIP"))
-    if(sum(c(max(sensSpecBIPlengths), max(PxBIPlengths), length(corr)) > 1) > 1) {
-      stop("Only one out of the three groups: 1) sensBIP, specBIP, FP0BIP, FN2BIP, 2) P0BIP, P2BIP, and 3) corr may be vectorized at a time.")
-    }
-  } else {
-    if (is.null(corr)) {
-      if (biomType == "continuous") {
-        stop("If full data is to be saved for a continuous biomarker, input argument corr must be specified.")
-      } else {
-        stop("If full data is to be saved for a trichotomous/dichotomous biomarker and Approach 2 is to be used, input argument corr must be specified.")
-      }
-    }
+  if (!is.null(corr)) {
     for(i in 1:length(corr)) {
       if(corr[i] < -1 | corr[i] > 1) {
         stop("Input argument corr is not a valid correlation.")
       }
     }
+  }
+  
+  sensSpecBIPlengths <- sapply(list(sensBIP, specBIP, FP0BIP, FN2BIP), length)
+  PxBIPlengths <- sapply(list(P0BIP, P2BIP), length)
+  checkVectorParamsMatch(sensSpecBIPlengths, c("sensBIP, specBIP, FP0BIP, FN2BIP"))
+  checkVectorParamsMatch(PxBIPlengths, c("P0BIP, P2BIP"))
+  if(sum(c(max(sensSpecBIPlengths), max(PxBIPlengths), length(corr)) > 1) > 1) {
+    stop("Only one out of the three groups: 1) sensBIP, specBIP, FP0BIP, FN2BIP, 2) P0BIP, P2BIP, and 3) corr may be vectorized at a time.")
   }
 }
 
@@ -592,31 +581,38 @@ simTrich <- function(risk1lat_0, risk1lat_1, risk1lat_2, Plat0, Plat1, Plat2, se
     Ns0 <- sum(S1==0)
     Ns1 <- sum(S1==1)
     Ns2 <- sum(S1==2)
-
-    # If sensBIP, specBIP, etc. are vectors, simulate multiple BIPs,
-    # with each BIP corresponding to one round of sensitivity/specificity parameters
-    BIP <- matrix(0, nrow=NcompleteTx+NcompletePla, ncol=length(sensBIP))
-    colnames(BIP) <- paste0("BIP", 1:length(sensBIP))
-    for (m in 1:length(sensBIP)) {
-
-      # Given specifications for sensBIP, specBIP, FP0BIP, FN2BIP, FP1BIP, and FN1BIP and a logical value indicating
-      # if the biomarker is dichotomous or not. The function assignBiomarkerLevels() returns a vector composed of
-      # the levels of the BIP (BIP=0,1,2), where each subject is assigned a specific level
-      if (biomType=="dichotomous") { # dichotomous
-        BIPdata <- assignBiomarkerLevels(sensBIP[m], specBIP[m], FP0BIP[m], FN2BIP[m], FP1BIP[m], FN1BIP[m], dichotomous=TRUE, Ns0, Ns1, Ns2)
-      } else { # trichotomous
-        BIPdata <- assignBiomarkerLevels(sensBIP[m], specBIP[m], FP0BIP[m], FN2BIP[m], FP1BIP[m], FN1BIP[m], dichotomous=FALSE, Ns0, Ns1, Ns2)
-      }
-      BIP[S1==0, m] <- BIPdata[1:Ns0]
-      BIP[S1==1, m] <- BIPdata[(Ns0+1):(Ns0+Ns1)]
-      BIP[S1==2, m] <- BIPdata[-(1:(Ns0+Ns1))]
-    }
-
+    
+    
     #### Gather all data needed for full data output ####
     X <- c(Xtx, Xpla)
     Y <- c(Ytx, Ypla)
     Z <- c(rep(1, NcompleteTx), rep(0, NcompletePla))
-    simData <- data.frame(X, Y, Z, S1, BIP)
+    simData <- data.frame(X, Y, Z, S1)
+    
+    #### Add BIP extension if input arguments specified
+    if (!is.null(sensBIP)) {
+      # If sensBIP, specBIP, etc. are vectors, simulate multiple BIPs,
+      # with each BIP corresponding to one round of sensitivity/specificity parameters
+      BIP <- matrix(0, nrow=NcompleteTx+NcompletePla, ncol=length(sensBIP))
+      colnames(BIP) <- paste0("BIP", 1:length(sensBIP))
+      for (m in 1:length(sensBIP)) {
+        
+        # Given specifications for sensBIP, specBIP, FP0BIP, FN2BIP, FP1BIP, and FN1BIP and a logical value indicating
+        # if the biomarker is dichotomous or not. The function assignBiomarkerLevels() returns a vector composed of
+        # the levels of the BIP (BIP=0,1,2), where each subject is assigned a specific level
+        if (biomType=="dichotomous") { # dichotomous
+          BIPdata <- assignBiomarkerLevels(sensBIP[m], specBIP[m], FP0BIP[m], FN2BIP[m], FP1BIP[m], FN1BIP[m], dichotomous=TRUE, Ns0, Ns1, Ns2)
+        } else { # trichotomous
+          BIPdata <- assignBiomarkerLevels(sensBIP[m], specBIP[m], FP0BIP[m], FN2BIP[m], FP1BIP[m], FN1BIP[m], dichotomous=FALSE, Ns0, Ns1, Ns2)
+        }
+        BIP[S1==0, m] <- BIPdata[1:Ns0]
+        BIP[S1==1, m] <- BIPdata[(Ns0+1):(Ns0+Ns1)]
+        BIP[S1==2, m] <- BIPdata[-(1:(Ns0+Ns1))]
+      }
+      
+      simData <- cbind(simData, BIP)
+    }
+
     output$simData <- simData
   }
 
@@ -720,20 +716,26 @@ simCont <- function(nCasesTx, NcompleteTx, nCasesTxWithS, nCasesPla, NcompletePl
 
     # S1 denotes biomarker observed under assignment to treatment (either at randomization or after crossover)
     S1 <- c(Stx, Spla)
-
-    BIP <- matrix(0, nrow=NcompleteTx+NcompletePla, ncol=length(corr))
-    colnames(BIP) <- paste0("BIP", 1:length(corr))
-    for (m in 1:length(corr)) {
-      sigma2d <- (sigma2obs / corr[m]^2) - sigma2tr - sigma2e
-      BIP[,m] <- S1 + rnorm(NcompleteTx + NcompletePla, mean = 0, sd = sqrt(sigma2d))
-    }
-
+    
     ### Full data output
     X <- c(Xtx, Xpla)
     Y <- c(Ytx, Ypla)
     Z <- c(rep(1, NcompleteTx), rep(0, NcompletePla))
-    simData <- data.frame(X, Y, Z, S1, BIP)
+    simData <- data.frame(X, Y, Z, S1)
+    
+    ### Add BIP if input arguments specified
+    if (!is.null(corr)) {
+      BIP <- matrix(0, nrow=NcompleteTx+NcompletePla, ncol=length(corr))
+      colnames(BIP) <- paste0("BIP", 1:length(corr))
+      for (m in 1:length(corr)) {
+        sigma2d <- (sigma2obs / corr[m]^2) - sigma2tr - sigma2e
+        BIP[,m] <- S1 + rnorm(NcompleteTx + NcompletePla, mean = 0, sd = sqrt(sigma2d))
+      }
+      simData <- cbind(simData, BIP)
+    }
+
     output$simData <- simData
+    
   }
   return(output)
 }
@@ -1032,17 +1034,17 @@ biomSubset <- function(Y, NcompleteTx, nCasesTxWithS, controlCaseRatio, p, cohor
 #' @param nCasesTx an integer vector specifying the number of clinical endpoint cases observed (or projected) between \eqn{\tau} and \eqn{\tau_{max}} in the active treatment group. Each value represents a distinct scenario for power assessment.
 #' @param nControlsTx an integer vector specifying the number of controls observed (or projected) to complete follow-up through \eqn{\tau_{max}} endpoint-free in the active treatment group. Each value represents a distinct scenario for power assessment. The ordering in \code{nCasesTx} and \code{nControlsTx} must match.
 #' @param nCasesTxWithS an integer vector specifying the number of clinical endpoint cases observed (or projected) between \eqn{\tau} and \eqn{\tau_{max}} in the active treatment group with an available biomarker response. Each value represents a distinct scenario for power assessment. The ordering must match \code{nCasesTx} and \code{nControlsTx}.
-#' @param controlCaseRatio an integer vector specifying the number of controls sampled per case for biomarker measurement in the without replacement case-control sampling design. Each value represents a distinct scenario for power assessment.
+#' @param controlCaseRatio an integer vector specifying the number of controls sampled per case for biomarker measurement in the without replacement case-control sampling design (set to \code{NULL} by default). Each value represents a distinct scenario for power assessment.
 #' @param VEoverall a numeric value specifying the overall treatment (vaccine) efficacy between \eqn{\tau} and \eqn{\tau_{max}}
 #' @param risk0 a numeric value specifying the overall placebo-group endpoint risk between \eqn{\tau} and \eqn{\tau_{max}}
 #' @param VElat0 a numeric vector specifying a grid of treatment (vaccine) efficacy levels in the latent lower protected subgroup for a dichotomous or trichotomous biomarker. Each value of \code{VElat0} corresponds to one unique effect size (\eqn{RR_t}). Default ranges from \code{VEoverall} (\eqn{H_0}) to 0 (maximal \eqn{H_1} not allowing harm by treatment).
 #' @param VElat1 a numeric vector specifying a grid of treatment (vaccine) efficacy levels in the latent medium protected subgroup for a trichotomous biomarker. Each value corresponds to one unique effect size (\eqn{RR_t}). The ordering must match \code{VElat0}. Set to \code{VEoverall} by default, but must be set to \code{NULL} for a dichotomous biomarker.
 #' @param VElowest a numeric vector specifying a grid of treatment (vaccine) efficacy levels in the latent lowest-efficacy subgroup for a continuous biomarker. Default ranges from \code{VEoverall} (\eqn{H_0}) to 0 (maximal \eqn{H_1} not allowing harm by treatment).
-#' @param Plat0 a numeric vector specifying the prevalence of the latent lower protected subgroup for a dichotomous or trichotomous biomarker. Each value represents a distinct scenario for power assessment. The ordering in \code{Plat0}, \code{Plat2}, \code{P0}, and \code{P2} must match.
-#' @param Plat2 a numeric vector specifying the prevalence of the latent higher protected subgroup for a dichotomous or trichotomous biomarker. Each value represents a distinct scenario for power assessment. The ordering in \code{Plat0}, \code{Plat2}, \code{P0}, and \code{P2} must match.
+#' @param Plat0 a numeric vector specifying the prevalence of the latent lower protected subgroup for a dichotomous or trichotomous biomarker (set to \code{NULL} by default). Each value represents a distinct scenario for power assessment. The ordering in \code{Plat0}, \code{Plat2}, \code{P0}, and \code{P2} must match.
+#' @param Plat2 a numeric vector specifying the prevalence of the latent higher protected subgroup for a dichotomous or trichotomous biomarker (set to \code{NULL} by default). Each value represents a distinct scenario for power assessment. The ordering in \code{Plat0}, \code{Plat2}, \code{P0}, and \code{P2} must match.
 #' @param P0 a numeric vector specifying the probability of low biomarker response for a dichotomous or trichotomous biomarker (set to \code{Plat0} by default). Each value represents a distinct scenario for power assessment. The ordering in \code{Plat0}, \code{Plat2}, \code{P0}, and \code{P2} must match.
 #' @param P2 a numeric vector specifying the probability of high biomarker response for a dichotomous or trichotomous biomarker (set to \code{Plat2} by default). Each value represents a distinct scenario for power assessment. The ordering in \code{Plat0}, \code{Plat2}, \code{P0}, and \code{P2} must match.
-#' @param PlatVElowest a numeric vector specifying the prevalence of the latent lowest-efficacy subgroup for a continuous biomarker. Each value represents a distinct scenario for power assessment.
+#' @param PlatVElowest a numeric vector specifying the prevalence of the latent lowest-efficacy subgroup for a continuous biomarker (set to \code{NULL} by default). Each value represents a distinct scenario for power assessment.
 #' @param sens a numeric vector specifying the sensitivity, i.e., the probability of high biomarker response conditional on membership in the higher protected subgroup, for a dichotomous or trichotomous biomarker. Default is \code{NULL}, which indicates the use of 'approach 2'. Each value represents a distinct scenario for power assessment. The ordering in \code{sens}, \code{spec}, \code{FP0}, and \code{FN2} must match.
 #' @param spec a numeric vector specifying the specificity, i.e., the probability of low biomarker response conditional on membership in the lower protected subgroup, of a dichotomous or trichotomous biomarker. Default is \code{NULL}, which indicates the use of 'approach 2'. Each value represents a distinct scenario for power assessment. The ordering in \code{sens}, \code{spec}, \code{FP0}, and \code{FN2} must match.
 #' @param FP0 a numeric vector specifying the false positive rate, i.e., the probability of high biomarker response conditional on membership in the lower protected subgroup, for a dichotomous or trichotomous biomarker. Default is \code{NULL}, which indicates the use of 'approach 2'. Each value represents a distinct scenario for power assessment. The ordering in \code{sens}, \code{spec}, \code{FP0}, and \code{FN2} must match.
@@ -1072,7 +1074,7 @@ biomSubset <- function(Y, NcompleteTx, nCasesTxWithS, controlCaseRatio, p, cohor
 #' @details
 #' A number of calling arguments can be specified as vectors with each component specifying a distinct scenario for power assessment (saved in a separate \code{.RData} file).
 #' These are referred to as "varying arguments."
-#' Some varying arguments occur in group, where the length and order of all specified vectors in the group must match; others are the only varying argument in their group.
+#' Some varying arguments occur in a group, where the length and order of all specified vectors in the group must match; others are the only varying argument in their group.
 #' Only arguments belonging to a single group may be varied at a time; if two or more groups contain vector inputs, the function will treat such inputs as an error.
 #' The following are the groups of varying arguments that can be vectorized:
 #'   \itemize{
@@ -1104,25 +1106,28 @@ biomSubset <- function(Y, NcompleteTx, nCasesTxWithS, controlCaseRatio, p, cohor
 #' a different file name may be specified by \code{saveFile} as a single character string, to which the value of the varying argument(s) will be appended for descriptive file naming purposes,
 #' or, alternatively, a character vector may be specified with full file names (a single file will be produced for each value of the varying argument(s)).
 #'
-#' To link power calculations for detecting a correlate of risk and a correlate of treatment efficacy, simulated data sets used in the power calculations can be exported
-#' with extensions including placebo-group and BIP data for harmonized use by methods assessing biomarker-specific treatment efficacy.
+#' To link power calculations for detecting a correlate of risk and a correlate of treatment efficacy, simulated data sets used in the power calculations 
+#' can be exported with placebo-group data, with a possible extension including BIP data, for harmonized use by methods assessing biomarker-specific treatment efficacy.
 #' The vignette "Algorithms for Simulating Placebo Group and Baseline Immunogenicity Predictor Data" provides more information on the algorithms and underlying assumptions for
 #' simulating placebo-group and BIP data.
-#' The exported data sets include full rectangular data to allow the user to consider various biomarker sub-sampling designs. To generate and export such data,
-#' \code{saveDataDir}, \code{nCasesPla}, and \code{nControlsPla} must be specified. In addition, if the biomarker is trichotomous and Approach 1 is used,
-#' \code{sensBIP}, \code{specBIP}, \code{FP0BIP}, \code{FN2BIP}, \code{P0BIP}, and \code{P2BIP} must be specified;
-#' if the biomarker is trichotomous and Approach 2 is used, or if it is continuous, \code{corr} must be specified.
-#' Arguments pertaining to the simulated data export may also be vectorized in the following groups:
+#' The exported data sets include treatment and placebo group data in the form full rectangular data, which allows the user to consider various biomarker sub-sampling designs. 
+#' To generate and export such data, \code{saveDataDir}, \code{nCasesPla}, and \code{nControlsPla} must be specified. \code{nCasesPla} and \code{nControlsPla} must have 
+#' the same length and order of components as \code{nCasesTx}, \code{nControlsTx}, and \code{nCasesTxWithS}.
+#' 
+#' If a BIP is to be included in the simulated data export, additional arguments are necessary. 
+#' If the biomarker is trichotomous and Approach 1 is used, \code{sensBIP}, \code{specBIP}, \code{FP0BIP}, \code{FN2BIP}, \code{P0BIP}, and \code{P2BIP} must be specified; 
+#' if the biomarker is trichotomous and Approach 2 is used, \code{corr}, \code{P0BIP}, and \code{P2BIP} must be specified; if the biomarker is continuous, \code{corr} must be specified.
+#' 
+#' Calling arguments pertaining to the simulation of the BIP in the exported data may also be specified as vectors, independently of the above varying arguments defining the power calculation scenarios 
+#' for the active treatment group. Each component of these vectors results in the generation of a separate BIP variable, in the same order, in the output data. 
+#' Some of these arguments occur in a group, where the length and order of all specified vectors in the group must match; others are the sole argument in their group. 
+#' Only arguments belonging to a single group may be varied at a time; if two or more groups contain vector inputs, the function will treat such inputs as an error.
+#' The following are the groups of BIP arguments that can be vectorized:
 #'    \itemize{
-#'     \item \code{nCasesPla}, \code{nControlsPla}
 #'     \item \code{sensBIP}, \code{specBIP}, \code{FP0BIP}, \code{FN2BIP}
 #'     \item \code{P0BIP}, \code{P2BIP}
 #'     \item \code{corr}
 #'   }
-#' \code{nCasesPla} and \code{nControlsPla} must be vectorized together with \code{nCasesTx}, \code{nControlsTx}, and \code{nCasesTxWithS},
-#' but the other three groups can be vectorized independently of the above varying arguments defining the power calculation scenarios in the active treatment group.
-#' Only one of the four groups may be vectors at a time, otherwise an error will be generated. Each component of these vectors will result in the generation of
-#' a separate BIP variable, in the same order, in the output data.
 #'
 #' The default file name for the outputted data sets is \code{fullData.RData}. A different file name may be specified by \code{saveDataFile}
 #' as a single character string, to which the value of the "varying argument" for the power calculations will be appended for descriptive file naming purposes,
@@ -1343,11 +1348,11 @@ biomSubset <- function(Y, NcompleteTx, nCasesTxWithS, controlCaseRatio, p, cohor
 #'
 #' @export
 computePower <- function(nCasesTx, nControlsTx, nCasesTxWithS,
-                         controlCaseRatio,
+                         controlCaseRatio=NULL,
                          VEoverall, risk0,
                          VElat0=seq(0, VEoverall, len=20), VElat1=rep(VEoverall, 20),
                          VElowest=NULL,
-                         Plat0, Plat2,
+                         Plat0=NULL, Plat2=NULL,
                          P0=Plat0, P2=Plat2,
                          PlatVElowest=NULL,
                          sens=NULL, spec=NULL, FP0=NULL, FN2=NULL,
@@ -1391,7 +1396,7 @@ computePower <- function(nCasesTx, nControlsTx, nCasesTxWithS,
   # If full data (X, Y, S1, Z, and a BIP for treatment and placebo) is to be outputted, check for errors and input violations
   if(!is.null(saveDataDir)) {
     # check parameters are valid for saving full data as an output
-    checkSaveDataParams(Approach2, biomType, corr, nCasesPla, nControlsPla, sensBIP, specBIP, FP0BIP, FN2BIP, P0BIP, P2BIP)
+    checkSaveDataParams(corr, nCasesPla, nControlsPla, sensBIP, specBIP, FP0BIP, FN2BIP, P0BIP, P2BIP)
   }
 
   # Check file name parameters
@@ -1455,7 +1460,7 @@ computePower <- function(nCasesTx, nControlsTx, nCasesTxWithS,
     RRlat1 <- 1 - VElat1
     Plat1 <- 1 - Plat0 - Plat2
     P1 <- 1 - P0 - P2
-    VElat2 <- (VEoverall - (Plat0*VElat0 + Plat1*VElat1))/Plat2  # This formula assumes VElat1 = VEoverall
+    VElat2 <- (VEoverall - (Plat0*VElat0 + Plat1*VElat1))/Plat2
     RRlat2 <-round(1-VElat2, 10)   # rounded to avoid problems when 0 is treated as a small negative number
 
     # check VElat0 and VElat1 are valid and specifications for biomType and VElat1 match
@@ -1493,14 +1498,17 @@ computePower <- function(nCasesTx, nControlsTx, nCasesTxWithS,
         # used to create Table 1: mapping of sigma2obs and rho to the sens, spec, etc. parameters
         table1 <- as.data.frame(round(cbind(rho, Plat0, P0, Plat2, P2, sens, spec, FP0, FN2, FP1, FN1),3))
 
-        if (!is.null(saveDataDir) & varyFullData) {
+        if (!is.null(saveDataDir) & varyFullData & !is.null(corr)) {
           sigma2d <- (sigma2obs / corr^2) - sigma2obs
 
           sigma2BIP <- sigma2obs + sigma2d
           rhoBIP <- sigma2obs / (sigma2obs + sigma2d)
-
-          # Compute sens, spec, FP0, FP1, FN2, FN1 for the BIP
-          ansBIP <- computeSensSpecFPFN(sigma2BIP, rhoBIP, P0, P2, P0BIP, P2BIP)
+          
+          ansBIP <- list()
+          for (j in 1:length(P0BIP)) {
+            # Compute sens, spec, FP0, FP1, FN2, FN1 for the BIP
+            ansBIP[j] <- computeSensSpecFPFN(sigma2BIP, rhoBIP, P0, P2, P0BIP[j], P2BIP[j])
+          }
 
           # extract values for sens, spec, FP0, FP1, FN2, FN1
           sensBIP <- sapply(ansBIP, function(x) x[[1,10]])
@@ -1536,7 +1544,7 @@ computePower <- function(nCasesTx, nControlsTx, nCasesTxWithS,
 
         # If treatment and placebo data is to be saved and Approach 1 is used, calculate sigma2tr and sigma2e
         # to be used to generate a BIP
-        if(!is.null(saveDataDir) & varyFullData) {
+        if(!is.null(saveDataDir) & varyFullData & !is.null(sensBIP)) {
 
           # check lengths of sensBIP, specBIP, FP0BIP, and FN2BIP vectors are equal
           checkParamLengthsMatch(sensBIP, specBIP, FP0BIP, FN2BIP)
@@ -1730,7 +1738,7 @@ computePower <- function(nCasesTx, nControlsTx, nCasesTxWithS,
     # If saveDataDir is specified, save output list to .RData file with given file location
     # If saveDataFile is specified, use given file name; otherwise, file name will be "fullData"
     if(!is.null(saveDataDir) & varyFullData) {
-      if (varyingParamName == "controlCaseRatio" | varyingParamName == "p") {
+      if ("controlCaseRatio" %in% varyingParamName | "p" %in% varyingParamName) {
         fileName <- ""
       }
       if (saveDataFile[[1]] != "fullData.RData") {
@@ -1745,7 +1753,7 @@ computePower <- function(nCasesTx, nControlsTx, nCasesTxWithS,
       rm(fullData)
     }
 
-    if (varyingParamName == "controlCaseRatio" | varyingParamName == "p") {
+    if ("controlCaseRatio" %in% varyingParamName | "p" %in% varyingParamName) {
       varyFullData <- FALSE
     }
   }

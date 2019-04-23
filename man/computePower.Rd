@@ -4,18 +4,18 @@
 \alias{computePower}
 \title{Power Calculations for Assessing Intermediate Biomarkers as Correlates of Risk in the Active Treatment Group in Clinical Efficacy Trials, Accounting for Biomarker's Measurement Error and Treatment Efficacy}
 \usage{
-computePower(nCasesTx, nControlsTx, nCasesTxWithS, controlCaseRatio,
-  VEoverall, risk0, VElat0 = seq(0, VEoverall, len = 20),
-  VElat1 = rep(VEoverall, 20), VElowest = NULL, Plat0, Plat2,
-  P0 = Plat0, P2 = Plat2, PlatVElowest = NULL, sens = NULL,
-  spec = NULL, FP0 = NULL, FN2 = NULL, M = 100, alpha = 0.05,
-  sigma2obs = 1, rho = 1, biomType = c("continuous", "trichotomous",
-  "dichotomous"), cohort = FALSE, p = NULL, tpsMethod = c("PL", "ML",
-  "WL"), saveDir = NULL, saveFile = "CoRpower.RData",
-  saveDataDir = NULL, saveDataFile = "fullData.RData", corr = NULL,
-  nCasesPla = NULL, nControlsPla = NULL, sensBIP = NULL,
-  specBIP = NULL, FP0BIP = NULL, FN2BIP = NULL, P0BIP = P0,
-  P2BIP = P2)
+computePower(nCasesTx, nControlsTx, nCasesTxWithS,
+  controlCaseRatio = NULL, VEoverall, risk0, VElat0 = seq(0, VEoverall,
+  len = 20), VElat1 = rep(VEoverall, 20), VElowest = NULL,
+  Plat0 = NULL, Plat2 = NULL, P0 = Plat0, P2 = Plat2,
+  PlatVElowest = NULL, sens = NULL, spec = NULL, FP0 = NULL,
+  FN2 = NULL, M = 100, alpha = 0.05, sigma2obs = 1, rho = 1,
+  biomType = c("continuous", "trichotomous", "dichotomous"),
+  cohort = FALSE, p = NULL, tpsMethod = c("PL", "ML", "WL"),
+  saveDir = NULL, saveFile = "CoRpower.RData", saveDataDir = NULL,
+  saveDataFile = "fullData.RData", corr = NULL, nCasesPla = NULL,
+  nControlsPla = NULL, sensBIP = NULL, specBIP = NULL,
+  FP0BIP = NULL, FN2BIP = NULL, P0BIP = P0, P2BIP = P2)
 }
 \arguments{
 \item{nCasesTx}{an integer vector specifying the number of clinical endpoint cases observed (or projected) between \eqn{\tau} and \eqn{\tau_{max}} in the active treatment group. Each value represents a distinct scenario for power assessment.}
@@ -24,7 +24,7 @@ computePower(nCasesTx, nControlsTx, nCasesTxWithS, controlCaseRatio,
 
 \item{nCasesTxWithS}{an integer vector specifying the number of clinical endpoint cases observed (or projected) between \eqn{\tau} and \eqn{\tau_{max}} in the active treatment group with an available biomarker response. Each value represents a distinct scenario for power assessment. The ordering must match \code{nCasesTx} and \code{nControlsTx}.}
 
-\item{controlCaseRatio}{an integer vector specifying the number of controls sampled per case for biomarker measurement in the without replacement case-control sampling design. Each value represents a distinct scenario for power assessment.}
+\item{controlCaseRatio}{an integer vector specifying the number of controls sampled per case for biomarker measurement in the without replacement case-control sampling design (set to \code{NULL} by default). Each value represents a distinct scenario for power assessment.}
 
 \item{VEoverall}{a numeric value specifying the overall treatment (vaccine) efficacy between \eqn{\tau} and \eqn{\tau_{max}}}
 
@@ -36,15 +36,15 @@ computePower(nCasesTx, nControlsTx, nCasesTxWithS, controlCaseRatio,
 
 \item{VElowest}{a numeric vector specifying a grid of treatment (vaccine) efficacy levels in the latent lowest-efficacy subgroup for a continuous biomarker. Default ranges from \code{VEoverall} (\eqn{H_0}) to 0 (maximal \eqn{H_1} not allowing harm by treatment).}
 
-\item{Plat0}{a numeric vector specifying the prevalence of the latent lower protected subgroup for a dichotomous or trichotomous biomarker. Each value represents a distinct scenario for power assessment. The ordering in \code{Plat0}, \code{Plat2}, \code{P0}, and \code{P2} must match.}
+\item{Plat0}{a numeric vector specifying the prevalence of the latent lower protected subgroup for a dichotomous or trichotomous biomarker (set to \code{NULL} by default). Each value represents a distinct scenario for power assessment. The ordering in \code{Plat0}, \code{Plat2}, \code{P0}, and \code{P2} must match.}
 
-\item{Plat2}{a numeric vector specifying the prevalence of the latent higher protected subgroup for a dichotomous or trichotomous biomarker. Each value represents a distinct scenario for power assessment. The ordering in \code{Plat0}, \code{Plat2}, \code{P0}, and \code{P2} must match.}
+\item{Plat2}{a numeric vector specifying the prevalence of the latent higher protected subgroup for a dichotomous or trichotomous biomarker (set to \code{NULL} by default). Each value represents a distinct scenario for power assessment. The ordering in \code{Plat0}, \code{Plat2}, \code{P0}, and \code{P2} must match.}
 
 \item{P0}{a numeric vector specifying the probability of low biomarker response for a dichotomous or trichotomous biomarker (set to \code{Plat0} by default). Each value represents a distinct scenario for power assessment. The ordering in \code{Plat0}, \code{Plat2}, \code{P0}, and \code{P2} must match.}
 
 \item{P2}{a numeric vector specifying the probability of high biomarker response for a dichotomous or trichotomous biomarker (set to \code{Plat2} by default). Each value represents a distinct scenario for power assessment. The ordering in \code{Plat0}, \code{Plat2}, \code{P0}, and \code{P2} must match.}
 
-\item{PlatVElowest}{a numeric vector specifying the prevalence of the latent lowest-efficacy subgroup for a continuous biomarker. Each value represents a distinct scenario for power assessment.}
+\item{PlatVElowest}{a numeric vector specifying the prevalence of the latent lowest-efficacy subgroup for a continuous biomarker (set to \code{NULL} by default). Each value represents a distinct scenario for power assessment.}
 
 \item{sens}{a numeric vector specifying the sensitivity, i.e., the probability of high biomarker response conditional on membership in the higher protected subgroup, for a dichotomous or trichotomous biomarker. Default is \code{NULL}, which indicates the use of 'approach 2'. Each value represents a distinct scenario for power assessment. The ordering in \code{sens}, \code{spec}, \code{FP0}, and \code{FN2} must match.}
 
@@ -161,7 +161,7 @@ harmonized assessment of biomarker-specific treatment efficacy.
 \details{
 A number of calling arguments can be specified as vectors with each component specifying a distinct scenario for power assessment (saved in a separate \code{.RData} file).
 These are referred to as "varying arguments."
-Some varying arguments occur in group, where the length and order of all specified vectors in the group must match; others are the only varying argument in their group.
+Some varying arguments occur in a group, where the length and order of all specified vectors in the group must match; others are the only varying argument in their group.
 Only arguments belonging to a single group may be varied at a time; if two or more groups contain vector inputs, the function will treat such inputs as an error.
 The following are the groups of varying arguments that can be vectorized:
   \itemize{
@@ -193,25 +193,28 @@ To save output from the power calculations in an \code{.RData} file, \code{saveD
 a different file name may be specified by \code{saveFile} as a single character string, to which the value of the varying argument(s) will be appended for descriptive file naming purposes,
 or, alternatively, a character vector may be specified with full file names (a single file will be produced for each value of the varying argument(s)).
 
-To link power calculations for detecting a correlate of risk and a correlate of treatment efficacy, simulated data sets used in the power calculations can be exported
-with extensions including placebo-group and BIP data for harmonized use by methods assessing biomarker-specific treatment efficacy.
+To link power calculations for detecting a correlate of risk and a correlate of treatment efficacy, simulated data sets used in the power calculations 
+can be exported with placebo-group data, with a possible extension including BIP data, for harmonized use by methods assessing biomarker-specific treatment efficacy.
 The vignette "Algorithms for Simulating Placebo Group and Baseline Immunogenicity Predictor Data" provides more information on the algorithms and underlying assumptions for
 simulating placebo-group and BIP data.
-The exported data sets include full rectangular data to allow the user to consider various biomarker sub-sampling designs. To generate and export such data,
-\code{saveDataDir}, \code{nCasesPla}, and \code{nControlsPla} must be specified. In addition, if the biomarker is trichotomous and Approach 1 is used,
-\code{sensBIP}, \code{specBIP}, \code{FP0BIP}, \code{FN2BIP}, \code{P0BIP}, and \code{P2BIP} must be specified;
-if the biomarker is trichotomous and Approach 2 is used, or if it is continuous, \code{corr} must be specified.
-Arguments pertaining to the simulated data export may also be vectorized in the following groups:
+The exported data sets include treatment and placebo group data in the form full rectangular data, which allows the user to consider various biomarker sub-sampling designs. 
+To generate and export such data, \code{saveDataDir}, \code{nCasesPla}, and \code{nControlsPla} must be specified. \code{nCasesPla} and \code{nControlsPla} must have 
+the same length and order of components as \code{nCasesTx}, \code{nControlsTx}, and \code{nCasesTxWithS}.
+
+If a BIP is to be included in the simulated data export, additional arguments are necessary. 
+If the biomarker is trichotomous and Approach 1 is used, \code{sensBIP}, \code{specBIP}, \code{FP0BIP}, \code{FN2BIP}, \code{P0BIP}, and \code{P2BIP} must be specified; 
+if the biomarker is trichotomous and Approach 2 is used, \code{corr}, \code{P0BIP}, and \code{P2BIP} must be specified; if the biomarker is continuous, \code{corr} must be specified.
+
+Calling arguments pertaining to the simulation of the BIP in the exported data may also be specified as vectors, independently of the above varying arguments defining the power calculation scenarios 
+for the active treatment group. Each component of these vectors results in the generation of a separate BIP variable, in the same order, in the output data. 
+Some of these arguments occur in a group, where the length and order of all specified vectors in the group must match; others are the sole argument in their group. 
+Only arguments belonging to a single group may be varied at a time; if two or more groups contain vector inputs, the function will treat such inputs as an error.
+The following are the groups of BIP arguments that can be vectorized:
    \itemize{
-    \item \code{nCasesPla}, \code{nControlsPla}
     \item \code{sensBIP}, \code{specBIP}, \code{FP0BIP}, \code{FN2BIP}
     \item \code{P0BIP}, \code{P2BIP}
     \item \code{corr}
   }
-\code{nCasesPla} and \code{nControlsPla} must be vectorized together with \code{nCasesTx}, \code{nControlsTx}, and \code{nCasesTxWithS},
-but the other three groups can be vectorized independently of the above varying arguments defining the power calculation scenarios in the active treatment group.
-Only one of the four groups may be vectors at a time, otherwise an error will be generated. Each component of these vectors will result in the generation of
-a separate BIP variable, in the same order, in the output data.
 
 The default file name for the outputted data sets is \code{fullData.RData}. A different file name may be specified by \code{saveDataFile}
 as a single character string, to which the value of the "varying argument" for the power calculations will be appended for descriptive file naming purposes,
