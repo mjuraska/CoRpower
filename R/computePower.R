@@ -274,7 +274,7 @@ checkSaveDataParams <- function(corr, nCasesPla, nControlsPla, sensBIP, specBIP,
       }
     }
   }
-  
+
   sensSpecBIPlengths <- sapply(list(sensBIP, specBIP, FP0BIP, FN2BIP), length)
   PxBIPlengths <- sapply(list(P0BIP, P2BIP), length)
   checkVectorParamsMatch(sensSpecBIPlengths, c("sensBIP, specBIP, FP0BIP, FN2BIP"))
@@ -581,14 +581,14 @@ simTrich <- function(risk1lat_0, risk1lat_1, risk1lat_2, Plat0, Plat1, Plat2, se
     Ns0 <- sum(S1==0)
     Ns1 <- sum(S1==1)
     Ns2 <- sum(S1==2)
-    
-    
+
+
     #### Gather all data needed for full data output ####
     X <- c(Xtx, Xpla)
     Y <- c(Ytx, Ypla)
     Z <- c(rep(1, NcompleteTx), rep(0, NcompletePla))
     simData <- data.frame(X, Y, Z, S1)
-    
+
     #### Add BIP extension if input arguments specified
     if (!is.null(sensBIP)) {
       # If sensBIP, specBIP, etc. are vectors, simulate multiple BIPs,
@@ -596,7 +596,7 @@ simTrich <- function(risk1lat_0, risk1lat_1, risk1lat_2, Plat0, Plat1, Plat2, se
       BIP <- matrix(0, nrow=NcompleteTx+NcompletePla, ncol=length(sensBIP))
       colnames(BIP) <- paste0("BIP", 1:length(sensBIP))
       for (m in 1:length(sensBIP)) {
-        
+
         # Given specifications for sensBIP, specBIP, FP0BIP, FN2BIP, FP1BIP, and FN1BIP and a logical value indicating
         # if the biomarker is dichotomous or not. The function assignBiomarkerLevels() returns a vector composed of
         # the levels of the BIP (BIP=0,1,2), where each subject is assigned a specific level
@@ -609,7 +609,7 @@ simTrich <- function(risk1lat_0, risk1lat_1, risk1lat_2, Plat0, Plat1, Plat2, se
         BIP[S1==1, m] <- BIPdata[(Ns0+1):(Ns0+Ns1)]
         BIP[S1==2, m] <- BIPdata[-(1:(Ns0+Ns1))]
       }
-      
+
       simData <- cbind(simData, BIP)
     }
 
@@ -716,13 +716,13 @@ simCont <- function(nCasesTx, NcompleteTx, nCasesTxWithS, nCasesPla, NcompletePl
 
     # S1 denotes biomarker observed under assignment to treatment (either at randomization or after crossover)
     S1 <- c(Stx, Spla)
-    
+
     ### Full data output
     X <- c(Xtx, Xpla)
     Y <- c(Ytx, Ypla)
     Z <- c(rep(1, NcompleteTx), rep(0, NcompletePla))
     simData <- data.frame(X, Y, Z, S1)
-    
+
     ### Add BIP if input arguments specified
     if (!is.null(corr)) {
       BIP <- matrix(0, nrow=NcompleteTx+NcompletePla, ncol=length(corr))
@@ -735,7 +735,7 @@ simCont <- function(nCasesTx, NcompleteTx, nCasesTxWithS, nCasesPla, NcompletePl
     }
 
     output$simData <- simData
-    
+
   }
   return(output)
 }
@@ -1106,21 +1106,21 @@ biomSubset <- function(Y, NcompleteTx, nCasesTxWithS, controlCaseRatio, p, cohor
 #' a different file name may be specified by \code{saveFile} as a single character string, to which the value of the varying argument(s) will be appended for descriptive file naming purposes,
 #' or, alternatively, a character vector may be specified with full file names (a single file will be produced for each value of the varying argument(s)).
 #'
-#' To link power calculations for detecting a correlate of risk and a correlate of treatment efficacy, simulated data sets used in the power calculations 
+#' To link power calculations for detecting a correlate of risk and a correlate of treatment efficacy, simulated data sets used in the power calculations
 #' can be exported with placebo-group data, with a possible extension including BIP data, for harmonized use by methods assessing biomarker-specific treatment efficacy.
 #' The vignette "Algorithms for Simulating Placebo Group and Baseline Immunogenicity Predictor Data" provides more information on the algorithms and underlying assumptions for
 #' simulating placebo-group and BIP data.
-#' The exported data sets include treatment and placebo group data in the form full rectangular data, which allows the user to consider various biomarker sub-sampling designs. 
-#' To generate and export such data, \code{saveDataDir}, \code{nCasesPla}, and \code{nControlsPla} must be specified. \code{nCasesPla} and \code{nControlsPla} must have 
+#' The exported data sets include treatment and placebo group data in the form of full rectangular data (i.e., disregarding biomarker sub-sampling), which enables the user to employ any preferred biomarker sub-sampling design.
+#' To generate and export such data, \code{saveDataDir}, \code{nCasesPla}, and \code{nControlsPla} must be specified. \code{nCasesPla} and \code{nControlsPla} must have
 #' the same length and order of components as \code{nCasesTx}, \code{nControlsTx}, and \code{nCasesTxWithS}.
-#' 
-#' If a BIP is to be included in the simulated data export, additional arguments are necessary. 
-#' If the biomarker is trichotomous and Approach 1 is used, \code{sensBIP}, \code{specBIP}, \code{FP0BIP}, \code{FN2BIP}, \code{P0BIP}, and \code{P2BIP} must be specified; 
+#'
+#' If a BIP is to be included in the simulated data export, additional arguments are necessary.
+#' If the biomarker is trichotomous and Approach 1 is used, \code{sensBIP}, \code{specBIP}, \code{FP0BIP}, \code{FN2BIP}, \code{P0BIP}, and \code{P2BIP} must be specified;
 #' if the biomarker is trichotomous and Approach 2 is used, \code{corr}, \code{P0BIP}, and \code{P2BIP} must be specified; if the biomarker is continuous, \code{corr} must be specified.
-#' 
-#' Calling arguments pertaining to the simulation of the BIP in the exported data may also be specified as vectors, independently of the above varying arguments defining the power calculation scenarios 
-#' for the active treatment group. Each component of these vectors results in the generation of a separate BIP variable, in the same order, in the output data. 
-#' Some of these arguments occur in a group, where the length and order of all specified vectors in the group must match; others are the sole argument in their group. 
+#'
+#' Calling arguments pertaining to the simulation of the BIP in the exported data may also be specified as vectors, independently of the above varying arguments defining the power calculation scenarios
+#' for the active treatment group. Each component of these vectors results in the generation of a separate BIP variable, in the same order, in the output data.
+#' Some of these arguments occur in a group, where the length and order of all specified vectors in the group must match; others are the sole argument in their group.
 #' Only arguments belonging to a single group may be varied at a time; if two or more groups contain vector inputs, the function will treat such inputs as an error.
 #' The following are the groups of BIP arguments that can be vectorized:
 #'    \itemize{
@@ -1503,7 +1503,7 @@ computePower <- function(nCasesTx, nControlsTx, nCasesTxWithS,
 
           sigma2BIP <- sigma2obs + sigma2d
           rhoBIP <- sigma2obs / (sigma2obs + sigma2d)
-          
+
           ansBIP <- list()
           for (j in 1:length(P0BIP)) {
             # Compute sens, spec, FP0, FP1, FN2, FN1 for the BIP
