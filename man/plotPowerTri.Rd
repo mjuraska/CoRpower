@@ -4,15 +4,26 @@
 \alias{plotPowerTri}
 \title{Plotting of Power versus Correlate of Risk Effect Size for Dichotomous and Trichotomous Biomarkers}
 \usage{
-plotPowerTri(outComputePower, outDir = NULL, legendText)
+plotPowerTri(outComputePower, outDir = NULL, legendText,
+  extendedLeg = TRUE, xLegPos = 0.5, yLegPos = 0.5, ySep = 0.07,
+  margin = c(7, 4, 3, 1))
 }
 \arguments{
 \item{outComputePower}{either a list of lists containing output from \code{\link{computePower}} or a character vector specifying the \code{.RData} file(s) containing \code{\link{computePower}} output}
 
-\item{outDir}{a character vector specifying path(s) to output \code{.RData} file(s), necessary if \cr
-\code{outComputePower} is a character vector. Default is \code{NULL}.}
+\item{outDir}{a character vector specifying path(s) to output \code{.RData} file(s), necessary if \code{outComputePower} is a character vector. Default is \code{NULL}.}
 
 \item{legendText}{a character vector specifying the entirety of the legend text. The order of the elements (i.e., parameter values) must match that of the \code{\link{computePower}} input parameters in order for legend labels to be accurate.}
+
+\item{extendedLeg}{a logical value specifying if the extended legend with additional information about the control-to-case ratio, overall vaccine efficacy, number of cases, etc., is to be included. Default is \code{TRUE}.}
+
+\item{xLegPos}{a number from \code{0} to \code{1} specifying the horizontal position of the extended legend, if applicable. A value of \code{0} produces text on the left side of the plot, \code{0.5} (default) produces text in the center, and \code{1} produces text on the right side.}
+
+\item{yLegPos}{a number from \code{0} to \code{1} specifying the vertical position of the extended legend, if applicable. A value of \code{0} produces text at the bottom of the plot, \code{0.5} (default) produces text in the center, and \code{1} produces text at the top.}
+
+\item{ySep}{a numeric value that specifies the spacing distance between lines in the extended legend, if applicable. Default is \code{0.7}.}
+
+\item{margin}{a numeric vector of the form \code{c(bottom, left, top, right)}, which specifies the margins of the plot. Default is \code{c(7, 4, 3, 1)}.}
 }
 \value{
 None. The function is called solely for plot generation.

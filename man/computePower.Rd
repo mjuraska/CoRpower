@@ -32,7 +32,7 @@ computePower(nCasesTx, nControlsTx, nCasesTxWithS,
 
 \item{VElat0}{a numeric vector specifying a grid of treatment (vaccine) efficacy levels in the latent lower protected subgroup for a dichotomous or trichotomous biomarker. Each value of \code{VElat0} corresponds to one unique effect size (\eqn{RR_t}). Default ranges from \code{VEoverall} (\eqn{H_0}) to 0 (maximal \eqn{H_1} not allowing harm by treatment).}
 
-\item{VElat1}{a numeric vector specifying a grid of treatment (vaccine) efficacy levels in the latent medium protected subgroup for a trichotomous biomarker. Each value corresponds to one unique effect size (\eqn{RR_t}). The ordering must match \code{VElat0}. Set to \code{VEoverall} by default, but must be set to \code{NULL} for a dichotomous biomarker.}
+\item{VElat1}{a numeric vector specifying a grid of treatment (vaccine) efficacy levels in the latent medium protected subgroup for a trichotomous biomarker. Each value corresponds to one unique effect size (\eqn{RR_t}). The ordering must match \code{VElat0}. Set to \code{VEoverall} by default.}
 
 \item{VElowest}{a numeric vector specifying a grid of treatment (vaccine) efficacy levels in the latent lowest-efficacy subgroup for a continuous biomarker. Default ranges from \code{VEoverall} (\eqn{H_0}) to 0 (maximal \eqn{H_1} not allowing harm by treatment).}
 
@@ -126,6 +126,8 @@ For a dichotomous or trichotomous biomarker, each output list has the following 
   \item \code{risk0}: a numeric value specifying the overall placebo-group endpoint risk between \eqn{\tau} and \eqn{\tau_{max}}
   \item \code{alpha}: a numeric value specifying the two-sided Wald test type-I error rate
   \item \code{rho}: a numeric vector specifying distinct protection-relevant fractions of the variance of the observed biomarker
+  \item \code{approach}: a number denoting whether Approach 1 or Approach 2 was used (1 if sens, spec, FP0, FN2 were specified in the input; 2 if rho and sigma2obs were specified in the input)
+  \item \code{varyingArg}: a character string containing the name(s) and value(s) of the varying argument
 }
 
 For a continuous biomarker, each output list has the following components:
@@ -145,6 +147,7 @@ For a continuous biomarker, each output list has the following components:
   \item \code{risk0}: a numeric value specifying the overall placebo-group endpoint risk between \eqn{\tau} and \eqn{\tau_{max}}
   \item \code{alpha}: a numeric value specifying the two-sided Wald test type-I error rate
   \item \code{rho}: a numeric vector specifying distinct protection-relevant fractions of the variance of the observed biomarker
+  \item \code{varyingArg}: a character string containing the name(s) and value(s) of the varying argument
 }
 
 If \code{saveDataDir} is specified, the simulated data, including placebo group and BIP data, are saved in one or more \code{.RData} file(s)
@@ -292,7 +295,7 @@ VEoverall <- 0.75
 risk0 <- 0.034
 VElat0 <- seq(0, VEoverall, len=20)  # 20 data points for the power curve
 VElat1 <- rep(0, 20)  # will not be used by function
-Plat0 <- 0.2
+Plat0 <- 0.25
 Plat2 <- 1 - Plat0
 P0 <- Plat0
 P2 <- Plat2

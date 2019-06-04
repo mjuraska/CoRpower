@@ -114,7 +114,7 @@ computesensspecFPFN <- function(sigma2obs,rho,Plat0,Plat2,P0,P2) {
 #' Plots the receiver operating characteristic (ROC) curve displaying sensitivity and specificity for a range of \code{P2} and \code{P0} values,
 #' four values of \code{rho}, and four values of \code{Plat2}. Illustrates how different levels of measurement error \code{rho} map to sensitivity
 #' and specificity, depending on the value of \code{Plat2}. This funciton is used to create Figure 1 in the Supplementary Material of
-#' [Gilbert, Janes, and Huang (2016). “Power/Sample Size Calculations for Assessing Correlates of Risk in Clinical Efficacy Trials.”]
+#' [Gilbert, Janes, and Huang (2016). "Power/Sample Size Calculations for Assessing Correlates of Risk in Clinical Efficacy Trials."]
 #'
 #' @param Plat0 a numeric value specifying the prevalence of the latent lower protected subgroup for a dichotomous or trichotomous biomarker
 #' @param Plat2 a numeric vector of length four specifying the prevalences of the latent higher protected subgroup for a dichotomous or trichotomous biomarker

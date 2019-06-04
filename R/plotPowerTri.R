@@ -4,9 +4,13 @@
 #' the relative risk ratio of the clinical endpoint comparing subgroups of active treatment recipients with high and low biomarker response.
 #'
 #' @param outComputePower either a list of lists containing output from \code{\link{computePower}} or a character vector specifying the \code{.RData} file(s) containing \code{\link{computePower}} output
-#' @param outDir a character vector specifying path(s) to output \code{.RData} file(s), necessary if \cr
-#' \code{outComputePower} is a character vector. Default is \code{NULL}.
+#' @param outDir a character vector specifying path(s) to output \code{.RData} file(s), necessary if \code{outComputePower} is a character vector. Default is \code{NULL}.
 #' @param legendText a character vector specifying the entirety of the legend text. The order of the elements (i.e., parameter values) must match that of the \code{\link{computePower}} input parameters in order for legend labels to be accurate.
+#' @param extendedLeg a logical value specifying if the extended legend with additional information about the control-to-case ratio, overall vaccine efficacy, number of cases, etc., is to be included. Default is \code{TRUE}.
+#' @param xLegPos a number from \code{0} to \code{1} specifying the horizontal position of the extended legend, if applicable. A value of \code{0} produces text on the left side of the plot, \code{0.5} (default) produces text in the center, and \code{1} produces text on the right side.
+#' @param yLegPos a number from \code{0} to \code{1} specifying the vertical position of the extended legend, if applicable. A value of \code{0} produces text at the bottom of the plot, \code{0.5} (default) produces text in the center, and \code{1} produces text at the top.
+#' @param ySep a numeric value that specifies the spacing distance between lines in the extended legend, if applicable. Default is \code{0.7}.
+#' @param margin a numeric vector of the form \code{c(bottom, left, top, right)}, which specifies the margins of the plot. Default is \code{c(7, 4, 3, 1)}. 
 #'
 #' @details If multiple levels are specified for the biomarker measurement error input parameters (i.e., for \code{sens}/\code{spec} or \code{rho}) in \code{\link{computePower}}, only the first level is used to determine
 #' the \eqn{RR_t} values that are plotted on the x-axis.
@@ -63,7 +67,9 @@
 #' @importFrom graphics abline axis box legend lines mtext par plot text title
 #'
 #' @export
-plotPowerTri <- function(outComputePower, outDir=NULL, legendText) {
+plotPowerTri <- function(outComputePower, outDir=NULL, legendText, 
+                         extendedLeg=TRUE, xLegPos=0.5, yLegPos=0.5,
+                         ySep=0.07, margin=c(7, 4, 3, 1)) {
 
   if(any(sapply(outComputePower, is.list))) {  # check if list of lists
     pwr <- outComputePower[[1]]  # load first output list
@@ -81,6 +87,9 @@ plotPowerTri <- function(outComputePower, outDir=NULL, legendText) {
 
   power <- pwr$power
   RRt <- pwr$RRt
+  if (is.null(RRt)) {
+    stop("Biomarker does not appear to be trichotomous. Consider using plotPowerCont() function for continuous biomarkers.")
+  }
   VEoverall <- pwr$VEoverall
   VElat0 <- pwr$VElat0
   VElat2 <- pwr$VElat2
@@ -96,7 +105,10 @@ plotPowerTri <- function(outComputePower, outDir=NULL, legendText) {
       if(is.list(outComputePower)) {
         pwr <- outComputePower[[i]]
       } else {
-        load(paste0(file.path(outDir[i], outComputePower[i]),".RData"))
+        if (length(outDir) != length(outComputePower)) {
+          stop("outComputePower and outDir must have the same length")
+        }
+        load(paste0(file.path(outDir[i], outComputePower[i])))
       }
       addPower <- pwr$power
       power <- cbind(power, addPower)
@@ -104,8 +116,7 @@ plotPowerTri <- function(outComputePower, outDir=NULL, legendText) {
   }
 
   power <- as.matrix(power)
-
-  par(cex.axis=1.2,cex.lab=1.2,cex.main=1.2,las=1,oma=c(4,3,3,4))
+  par(cex.axis=1.2,cex.lab=1.2,cex.main=1.2,las=1,mar=margin)
   plot(RRt,power[,1],ylim=c(0,1),type='n',xlab="",ylab="Power",axes=FALSE, cex.axis=1.2)
   box()
 
@@ -144,5 +155,36 @@ plotPowerTri <- function(outComputePower, outDir=NULL, legendText) {
   legend(x="topright",legend=legendText, lty=1:ncol(power),col=colors[1:ncol(power)],lwd=2,cex=1.2)
 
   title(main=bquote(paste("Power to Detect a "~.(biomType)~" CoR in Vaccine Recipients [2-sided ", alpha, "=", .(alpha), "]")))
-
+  
+  if (extendedLeg) {
+    
+    ### Add extra legend elements 
+    label <- list()
+    varyingArg <- pwr$varyingArg
+    if (!(grepl("nCasesTx", varyingArg, fixed=TRUE))) {
+      label$nCases <- bquote(n[cases]^S==~.(round(pwr$nCasesTxWithS)))
+    }
+    if (!(grepl("controlCaseRatio", varyingArg, fixed=TRUE))) {
+      label$controlCaseRatio <- bquote("controls:cases"==.(pwr$controlCaseRatio)~":1")
+    }
+    label$VEoverall <- bquote(VE[overall]==~.(round(pwr$VEoverall,2)))
+    if (!(grepl("Plat0", varyingArg, fixed=TRUE))) {
+      label$Plat0 <- bquote({P[0]^{lat}==P[0]}==.(pwr$Plat0))
+      label$Plat2 <- bquote({P[2]^{lat}==P[2]}==.(pwr$Plat2))
+    }
+    if (pwr$approach == 2) {
+      if (!(grepl("rho", varyingArg, fixed=TRUE))) {
+        label$rho <- bquote(rho==.(pwr$rho))
+      }
+    } else {
+      if (!(grepl("sens", varyingArg, fixed=TRUE))) {
+        label$sens <- bquote("Sens"==.(pwr$sens)~", "~"Spec"==.(pwr$spec))
+        label$FP0 <- bquote({FP^0==FN^2}==0)
+      }
+    }
+    text(min(RRtgrid) + xLegPos * (max(RRtgrid) - min(RRtgrid)), yLegPos, labels=paste0("Approach ", pwr$approach), pos=4)
+    for (i in 1:length(label)) {
+      text(min(RRtgrid) + xLegPos * (max(RRtgrid) - min(RRtgrid)), yLegPos - i * ySep, labels=label[[i]], pos=4)
+    }
+  }
 }

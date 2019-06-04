@@ -92,6 +92,9 @@ plotVElatCont <- function(outComputePower, outDir=NULL) {
   }
 
   RRc <- pwr$RRc
+  if (is.null(RRc)) {
+    stop("Biomarker does not appear to be continuous. Consider using plotPowerTri() function for trichotomous biomarkers.")
+  }
   alpha <- pwr$alpha
   sigma2obs <- pwr$sigma2obs
   PlatVElowest <- pwr$PlatVElowest
@@ -103,29 +106,16 @@ plotVElatCont <- function(outComputePower, outDir=NULL) {
   nu <- sqrt(rho*sigma2obs)*qnorm(PlatVElowest)
   o <- length(VElowest)
 
-  betaLat <- rep(NA,o)
-  alphaLat <- rep(NA,o)
-  for (l in 1:o) {
-    # find solutions alphalat and betalat by solving eqn (4) in Appendix B
-    risk1latnu <- (1-VElowest[l])*risk0
-
-    alphaLat[l] <- uniroot(alphaLatEqn, lower=-10, upper=10, nu=nu, risk1latnu=risk1latnu, sigma2obs=sigma2obs, VEoverall=VEoverall, PlatVElowest=PlatVElowest, risk0=risk0)$root
-
-    # Second solve for betalat:
-    D <- risk1latnu
-    betaLat[l] <- (log(D/(1-D)) - alphaLat[l])/nu[1]
-  }
-
   svect <- seq(-3,3,len=300)
 
   # Compute VE(s_1) vs s_1 for each fixed RRc value:
   inds <- round(seq(1,o,len=8))
-  fixedBetaLat <- betaLat[inds]
-  fixedRRc <- RRc[inds]
+  fixedBetaLat <- pwr$betaLat[inds]
+  fixedRRc <- pwr$RRc[inds]
 
   VEcurverr <- list()
   for(i in 1:8) {
-    linpart <- alphaLat[inds[9-i]] + fixedBetaLat[9-i]*svect
+    linpart <- pwr$alphaLat[inds[9-i]] + fixedBetaLat[9-i]*svect
     VEcurverrTemp <- 1-(exp(linpart)/(1+exp(linpart)))/risk0
     VEcurverrTemp[svect <= nu] <- VElowest[inds[9-i]]
     VEcurverr[[i]] <- VEcurverrTemp

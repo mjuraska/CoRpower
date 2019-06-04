@@ -24,7 +24,7 @@ None. The function is called solely for plot generation.
 Plots the receiver operating characteristic (ROC) curve displaying sensitivity and specificity for a range of \code{P2} and \code{P0} values,
 four values of \code{rho}, and four values of \code{Plat2}. Illustrates how different levels of measurement error \code{rho} map to sensitivity
 and specificity, depending on the value of \code{Plat2}. This funciton is used to create Figure 1 in the Supplementary Material of
-[Gilbert, Janes, and Huang (2016). “Power/Sample Size Calculations for Assessing Correlates of Risk in Clinical Efficacy Trials.”]
+[Gilbert, Janes, and Huang (2016). "Power/Sample Size Calculations for Assessing Correlates of Risk in Clinical Efficacy Trials."]
 }
 \examples{
 Plat0 <- 0.2

@@ -153,7 +153,7 @@ checkFileSavingParams <- function(saveFile, saveDataFile, varyingParam, varyingP
   }
 }
 
-checkBiomarkerType <- function(biomType, P0, P2, VElowest, PlatVElowest) {
+checkBiomarkerType <- function(biomType, P0, P2, Plat0, Plat2, VElowest, PlatVElowest) {
   # Checks that biomarker type and input parameters match.
   #
   # Args:
@@ -161,6 +161,8 @@ checkBiomarkerType <- function(biomType, P0, P2, VElowest, PlatVElowest) {
   #             other choices are "trichotomous" and "dichotomous"
   #   P0: Probability of low biomarker response
   #   P2: Probability of high biomarker response
+  #   Plat0: Prevalence of low latent protected group
+  #   Plat2: Prevalence of high latent protected group
   #   VElowest: Lowest VE level for true biomarker X*
   #   PlatVElowest: Prevalence of VElowest
   #
@@ -171,6 +173,9 @@ checkBiomarkerType <- function(biomType, P0, P2, VElowest, PlatVElowest) {
   if(biomType=="dichotomous") {
     if (P0+P2 != 1) {
       stop("dichotomous biomarker was specified but P0 and P2 do not add up to 1")
+    }
+    if (Plat0+Plat2 != 1) {
+      stop("dichotomous biomarker was specified but Plat0 and Plat2 do not add up to 1")
     }
   }
   if((biomType=="continuous") & (is.null(VElowest) | is.null(PlatVElowest))) {
@@ -195,53 +200,55 @@ checkVectorParamsMatch <- function(vectorParamLength, varyingParamName) {
   }
 }
 
-checkVElat1violation <- function(VElat0, VElat1, biomType) {
-  # Checks that 'VElat0' and 'VElat1' are valid and that specifications for 'biomType' and 'VElat1' match.
+checkVElat1violation <- function(VElat0, VElat1) {
+  # Checks that 'VElat0' and 'VElat1' are valid
   #
   # Args:
   #   VElat0: a numeric vector specifying a grid of treatment efficacy levels in the latent lower protected
   #           subgroup for a dichotomous or trichotomous biomarker
   #   VElat1: a numeric vector specifying a grid of treatment efficacy levels in the latent medium protected
   #           subgroup for a trichotomous biomarker (NULL by default for a dichotomous biomarker)
-  #   biomType: a character string specifying the biomarker type
   #
   # Returns:
-  #   Error if there is a discrepancy between 'VElat1' and 'biomType' or if an element in 'VElat1' is less
-  #   than its corresponding element in 'VElat0'
-  if(biomType == "dichotomous" & !(is.null(VElat1))) {
-    stop("There is a discrepancy between 'VElat1' and 'biomType'")
-  } else if(any(VElat1 < VElat0) == "TRUE") {
+  #   Error if an element in 'VElat1' is less than its corresponding element in 'VElat0'
+  if(any(VElat1 < VElat0) == "TRUE") {
     stop("An element in 'VElat1' is less than its corresponding element in 'VElat0'")
   }
 }
 
-checkProbabilityViolation <- function(VEoverall,RRlat2,PlatVElowest,VElowest, biomType) {
-  # Checks that all values of RRlat2 are between 0 and 1 and that PlatVElowest and VElowest meet bounds.
+checkProbViolationTri <- function(RRlat2) {
+  # Checks that all values of RRlat2 are between 0 and 1.
   #
   # Args:
-  #   VEoverall: overall vaccine efficacy
-  #   RRlat2: grid of relative rsisk (vaccine/placebo) among higher protected latent subgroup
-  #   PlatVElowest: Prevalence of VElowest
-  #   VElowest: Lowest VE level for true biomarker X*
-  #   biomType: Character string specifying type of biomarker used. Default is "continuous";
-  #             other choices are "trichotomous" and "dichotomous"
+  #   RRlat2: grid of relative risk (vaccine/placebo) among higher protected latent subgroup
   #
   # Returns:
-  #   Error if there are incompatible values of RRlat2, or if values of PlatVElowest and
-  #   VElowest violate probabiliy constraints for normal marker caclualtions
+  #   Error if there are incompatible values of RRlat2
 
-  if(biomType=="continuous") {
-    if (min(VElowest)==0 & PlatVElowest > 1 - VEoverall) {
-      stop("Input arguments PlatVElowest and VElowest violate probability constraints for normal biomarker calculations")
-    }
-  } else if (any(RRlat2 < 0)) {
+  if (any(RRlat2 < 0)) {
     cat(paste("RRlat2="),"\n")
     cat(paste(round(RRlat2,3)))
     cat("\n")
     stop("Input arguments violate probability constraints for trichotomous biomarker calculations.
          Consider making Plat0 smaller and/or VElat0 larger.")
   }
+}
+
+checkProbViolationCont <- function(VEoverall, PlatVElowest, VElowest) {
+  # Checks that PlatVElowest and VElowest meet bounds.
+  #
+  # Args:
+  #   VEoverall: overall vaccine efficacy
+  #   PlatVElowest: Prevalence of VElowest
+  #   VElowest: Lowest VE level for true biomarker X*
+  #
+  # Returns:
+  #   Error if values of PlatVElowest and VElowest violate probabiliy constraints for normal biomarker caclualtions
+  
+  if (min(VElowest)==0 & PlatVElowest > 1 - VEoverall) {
+    stop("Input arguments PlatVElowest and VElowest violate probability constraints for normal biomarker calculations")
   }
+}
 
 checkSaveDataParams <- function(corr, nCasesPla, nControlsPla, sensBIP, specBIP, FP0BIP, FN2BIP, P0BIP, P2BIP) {
   # Checks that sample size input parameters are valid.
@@ -825,8 +832,8 @@ computeSensSpecFPFN <- function(sigma2obs,rho,Plat0,Plat2,P0,P2) {
           ((sum(S<=taulo & X > thetaloVE[i] & X <= thetahiVE[i])/length(S))/Pmed)*Plat1 +
           ((sum(S<=taulo & X > thetahiVE[i])/length(S))/Phi)*Plat2 - P0
       }
-      tauhisolution <- uniroot(f2, interval=c(-2.5,2.5))$root
-      taulosolution <- uniroot(f0, interval=c(-2.5,2.5))$root
+      tauhisolution <- uniroot(f2, interval=c(-2.5,2.5), extendInt="yes")$root
+      taulosolution <- uniroot(f0, interval=c(-2.5,2.5), extendInt="yes")$root
 
       sens <- sum(S>tauhisolution & X > thetahiVE[i])/sum(X>thetahiVE[i])
       spec <- sum(S<=taulosolution & X <= thetaloVE[i])/sum(X<=thetaloVE[i])
@@ -1038,7 +1045,7 @@ biomSubset <- function(Y, NcompleteTx, nCasesTxWithS, controlCaseRatio, p, cohor
 #' @param VEoverall a numeric value specifying the overall treatment (vaccine) efficacy between \eqn{\tau} and \eqn{\tau_{max}}
 #' @param risk0 a numeric value specifying the overall placebo-group endpoint risk between \eqn{\tau} and \eqn{\tau_{max}}
 #' @param VElat0 a numeric vector specifying a grid of treatment (vaccine) efficacy levels in the latent lower protected subgroup for a dichotomous or trichotomous biomarker. Each value of \code{VElat0} corresponds to one unique effect size (\eqn{RR_t}). Default ranges from \code{VEoverall} (\eqn{H_0}) to 0 (maximal \eqn{H_1} not allowing harm by treatment).
-#' @param VElat1 a numeric vector specifying a grid of treatment (vaccine) efficacy levels in the latent medium protected subgroup for a trichotomous biomarker. Each value corresponds to one unique effect size (\eqn{RR_t}). The ordering must match \code{VElat0}. Set to \code{VEoverall} by default, but must be set to \code{NULL} for a dichotomous biomarker.
+#' @param VElat1 a numeric vector specifying a grid of treatment (vaccine) efficacy levels in the latent medium protected subgroup for a trichotomous biomarker. Each value corresponds to one unique effect size (\eqn{RR_t}). The ordering must match \code{VElat0}. Set to \code{VEoverall} by default.
 #' @param VElowest a numeric vector specifying a grid of treatment (vaccine) efficacy levels in the latent lowest-efficacy subgroup for a continuous biomarker. Default ranges from \code{VEoverall} (\eqn{H_0}) to 0 (maximal \eqn{H_1} not allowing harm by treatment).
 #' @param Plat0 a numeric vector specifying the prevalence of the latent lower protected subgroup for a dichotomous or trichotomous biomarker (set to \code{NULL} by default). Each value represents a distinct scenario for power assessment. The ordering in \code{Plat0}, \code{Plat2}, \code{P0}, and \code{P2} must match.
 #' @param Plat2 a numeric vector specifying the prevalence of the latent higher protected subgroup for a dichotomous or trichotomous biomarker (set to \code{NULL} by default). Each value represents a distinct scenario for power assessment. The ordering in \code{Plat0}, \code{Plat2}, \code{P0}, and \code{P2} must match.
@@ -1164,6 +1171,8 @@ biomSubset <- function(Y, NcompleteTx, nCasesTxWithS, controlCaseRatio, p, cohor
 #'   \item \code{risk0}: a numeric value specifying the overall placebo-group endpoint risk between \eqn{\tau} and \eqn{\tau_{max}}
 #'   \item \code{alpha}: a numeric value specifying the two-sided Wald test type-I error rate
 #'   \item \code{rho}: a numeric vector specifying distinct protection-relevant fractions of the variance of the observed biomarker
+#'   \item \code{approach}: a number denoting whether Approach 1 or Approach 2 was used (1 if sens, spec, FP0, FN2 were specified in the input; 2 if rho and sigma2obs were specified in the input)
+#'   \item \code{varyingArg}: a character string containing the name(s) and value(s) of the varying argument
 #' }
 #'
 #' For a continuous biomarker, each output list has the following components:
@@ -1183,6 +1192,7 @@ biomSubset <- function(Y, NcompleteTx, nCasesTxWithS, controlCaseRatio, p, cohor
 #'   \item \code{risk0}: a numeric value specifying the overall placebo-group endpoint risk between \eqn{\tau} and \eqn{\tau_{max}}
 #'   \item \code{alpha}: a numeric value specifying the two-sided Wald test type-I error rate
 #'   \item \code{rho}: a numeric vector specifying distinct protection-relevant fractions of the variance of the observed biomarker
+#'   \item \code{varyingArg}: a character string containing the name(s) and value(s) of the varying argument
 #' }
 #'
 #' If \code{saveDataDir} is specified, the simulated data, including placebo group and BIP data, are saved in one or more \code{.RData} file(s)
@@ -1260,7 +1270,7 @@ biomSubset <- function(Y, NcompleteTx, nCasesTxWithS, controlCaseRatio, p, cohor
 #' risk0 <- 0.034
 #' VElat0 <- seq(0, VEoverall, len=20)  # 20 data points for the power curve
 #' VElat1 <- rep(0, 20)  # will not be used by function
-#' Plat0 <- 0.2
+#' Plat0 <- 0.25
 #' Plat2 <- 1 - Plat0
 #' P0 <- Plat0
 #' P2 <- Plat2
@@ -1444,7 +1454,7 @@ computePower <- function(nCasesTx, nControlsTx, nCasesTxWithS,
     # check sampling design input parameters are specified and valid
     checkSamplingDesign(cohort, p, controlCaseRatio)
     # check biomarker type and input parameters match
-    checkBiomarkerType(biomType, P0, P2, VElowest, PlatVElowest)
+    checkBiomarkerType(biomType, P0, P2, Plat0, Plat2, VElowest, PlatVElowest)
 
     # Overall number in the treatment group observed to be at risk when the immune response is measured and that do not drop out (smaller than N):
     NcompleteTx <- nCasesTx + nControlsTx
@@ -1453,22 +1463,7 @@ computePower <- function(nCasesTx, nControlsTx, nCasesTxWithS,
     if(!is.null(saveDataDir)) {
       NcompletePla <- nCasesPla + nControlsPla
     }
-
-    # Compute VElat2:
-    RRoverall <- 1 - VEoverall
-    RRlat0 <- 1 - VElat0
-    RRlat1 <- 1 - VElat1
-    Plat1 <- 1 - Plat0 - Plat2
-    P1 <- 1 - P0 - P2
-    VElat2 <- (VEoverall - (Plat0*VElat0 + Plat1*VElat1))/Plat2
-    RRlat2 <-round(1-VElat2, 10)   # rounded to avoid problems when 0 is treated as a small negative number
-
-    # check VElat0 and VElat1 are valid and specifications for biomType and VElat1 match
-    checkVElat1violation(VElat0, VElat1, biomType)
-
-    # check all values of RRlat2 are between 0 and 1 and that PlatVElowest meets bounds
-    checkProbabilityViolation(VEoverall,RRlat2,PlatVElowest,VElowest, biomType)
-
+    
     sigma2e <- (1-rho)*sigma2obs
     sigma2tr <- rho*sigma2obs  # variance of true biomarker X
 
@@ -1476,7 +1471,32 @@ computePower <- function(nCasesTx, nControlsTx, nCasesTxWithS,
     #################################################
     # Computations for a trinary biomarker
     if(biomType=="trichotomous" | biomType=="dichotomous") {
-
+      
+      # Compute VElat2:
+      RRoverall <- 1 - VEoverall
+      RRlat0 <- 1 - VElat0
+      if (biomType == "trichotomous") {
+        RRlat1 <- 1 - VElat1
+        Plat1 <- 1 - Plat0 - Plat2
+        P1 <- 1 - P0 - P2
+      } else if (biomType == "dichotomous") {
+        P1 <- Plat1 <- 0
+        VElat1 <- rep(0, length(VElat0))
+        RRlat1 <- rep(0, length(VElat0))
+      }
+      VElat2 <- (VEoverall - (Plat0*VElat0 + Plat1*VElat1))/Plat2
+      RRlat2 <-round(1-VElat2, 10)   # rounded to avoid problems when 0 is treated as a small negative number
+      
+      if (biomType == "trichotomous") {
+        # check VElat0 and VElat1 are valid
+        checkVElat1violation(VElat0, VElat1)
+      }
+      
+      # check all values of RRlat2 are between 0 and 1 and that PlatVElowest meets bounds
+      checkProbViolationTri(RRlat2)
+      
+      
+      
       # initialize power calculation vector
       powerstrinary <- numeric(length(VElat0))
 
@@ -1505,10 +1525,17 @@ computePower <- function(nCasesTx, nControlsTx, nCasesTxWithS,
           rhoBIP <- sigma2obs / (sigma2obs + sigma2d)
 
           ansBIP <- list()
-          for (j in 1:length(P0BIP)) {
-            # Compute sens, spec, FP0, FP1, FN2, FN1 for the BIP
-            ansBIP[j] <- computeSensSpecFPFN(sigma2BIP, rhoBIP, P0, P2, P0BIP[j], P2BIP[j])
+          if (length(P0BIP) > 1) {
+            for (j in 1:length(P0BIP)) {
+              # Compute sens, spec, FP0, FP1, FN2, FN1 for the BIP
+              ansBIP[j] <- computeSensSpecFPFN(sigma2BIP, rhoBIP, P0, P2, P0BIP[j], P2BIP[j])
+            }
+          } else {
+            for (j in 1:length(sigma2BIP)) {  # length(sigma2BIP) = length(corr)
+              ansBIP[j] <- computeSensSpecFPFN(sigma2BIP[j], rhoBIP[j], P0, P2, P0BIP, P2BIP)
+            }
           }
+
 
           # extract values for sens, spec, FP0, FP1, FN2, FN1
           sensBIP <- sapply(ansBIP, function(x) x[[1,10]])
@@ -1619,13 +1646,13 @@ computePower <- function(nCasesTx, nControlsTx, nCasesTxWithS,
                   "Plat2"=Plat2, "Plat0"=Plat0, "P2"=P2, "P0"=P0, "alphaLat"=alphaLat, "betaLat"=betaLat,
                   "sens"=sens, "spec"=spec, "FP0"=FP0, "FN2"=FN2, "NcompleteTx"=NcompleteTx, "nCasesTx"=nCasesTx,
                   "nCasesTxWithS"=nCasesTxWithS, "controlCaseRatio"=controlCaseRatio, "VEoverall"=VEoverall,
-                  "risk0"=risk0, "alpha"=alpha, "rho"=rho)
-
-      pwrAll[[i]] <- pwr
+                  "risk0"=risk0, "alpha"=alpha, "rho"=rho, "approach"=ifelse(Approach2, 2, 1))
 
     } else if (biomType=="continuous") {
-
-
+      
+      # check probability violations
+      checkProbViolationCont(VEoverall, PlatVElowest, VElowest)
+      
       # initialize power calculation vector
       powerscont <- numeric(length(VElowest))
 
@@ -1697,12 +1724,7 @@ computePower <- function(nCasesTx, nControlsTx, nCasesTxWithS,
                   "VElowest"=VElowest, "sigma2obs"=sigma2obs, "NcompleteTx"=NcompleteTx, "nCasesTx"=nCasesTx,
                   "nCasesTxWithS"=nCasesTxWithS, "controlCaseRatio"=controlCaseRatio, "VEoverall"=VEoverall,
                   "risk0"=risk0, "alpha"=alpha, "rho"=rho)
-
-      pwrAll[[i]] <- pwr
-
     }
-
-
 
     fileName <- ""
     if ("nCasesTx" %in% varyingParamName) {
@@ -1720,7 +1742,10 @@ computePower <- function(nCasesTx, nControlsTx, nCasesTxWithS,
       }
       fileName <- paste0("_", paste0(varyingParamName,"_",paramValues, collapse="_"))
     }
-
+    
+    pwr$varyingArg <- substr(fileName, 2, nchar(fileName))
+    pwrAll[[i]] <- pwr
+    
     # If saveDir is specified, save output list to .RData file with given location.
     # If saveFile is specified, use given file name; otherwise, file name will be "CoRpower"
     if(!is.null(saveDir)) {

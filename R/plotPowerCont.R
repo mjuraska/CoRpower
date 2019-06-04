@@ -8,6 +8,11 @@
 #' @param outDir a character vector specifying path(s) to output \code{.RData} file(s), necessary if \cr
 #' \code{outComputePower} is a character vector. Default is \code{NULL}.
 #' @param legendText a character vector specifying the entirety of the legend text. The order of the elements (i.e., parameter values) must match that of the \code{\link{computePower}} input parameters in order for legend labels to be accurate.
+#' @param extendedLeg a logical value specifying if the extended legend with additional information about the control-to-case ratio, overall vaccine efficacy, number of cases, etc., is to be included. Default is \code{TRUE}.
+#' @param xLegPos a number from \code{0} to \code{1} specifying the horizontal position of the extended legend, if applicable. A value of \code{0} produces text on the left side of the plot, \code{0.5} (default) produces text in the center, and \code{1} produces text on the right side.
+#' @param yLegPos a number from \code{0} to \code{1} specifying the vertical position of the extended legend, if applicable. A value of \code{0} produces text at the bottom of the plot, \code{0.5} (default) produces text in the center, and \code{1} produces text at the top.
+#' @param ySep a numeric value that specifies the spacing distance between lines in the extended legend, if applicable. Default is \code{0.7}.
+#' @param margin a numeric vector of the form \code{c(bottom, left, top, right)}, which specifies the margins of the plot. Default is \code{c(7, 4, 3, 1)}. 
 #'
 #' @details The function's plot can be interpreted in conjunction with the output of \code{\link{plotVElatCont}} by
 #' matching the CoR relative risk in the two plots and examining power compared to treatment (vaccine) efficacy.
@@ -67,7 +72,9 @@
 #' @importFrom graphics abline axis box legend lines mtext par plot text title
 #'
 #' @export
-plotPowerCont <- function(outComputePower, outDir=NULL, legendText) {
+plotPowerCont <- function(outComputePower, outDir=NULL, legendText,
+                          extendedLeg=TRUE, xLegPos=0.5, yLegPos=0.5,
+                          ySep=0.07, margin=c(7, 4, 3, 1)) {
 
   if(any(sapply(outComputePower, is.list))) {  # check if list of lists
     pwr <- outComputePower[[1]]  # load first output list
@@ -85,6 +92,9 @@ plotPowerCont <- function(outComputePower, outDir=NULL, legendText) {
 
   power <- pwr$power
   RRc <- pwr$RRc
+  if (is.null(RRc)) {
+    stop("Biomarker does not appear to be continuous. Consider using plotPowerTri() function for trichotomous biomarkers.")
+  }
   rho <- pwr$rho
   alpha <- pwr$alpha
 
@@ -93,7 +103,10 @@ plotPowerCont <- function(outComputePower, outDir=NULL, legendText) {
       if(is.list(outComputePower)) {
         pwr <- outComputePower[[i]]
       } else {
-        load(paste0(file.path(outDir[i], outComputePower[i]),".RData"))
+        if (length(outDir) != length(outComputePower)) {
+          stop("outComputePower and outDir must have the same length")
+        }
+        load(paste0(file.path(outDir[i], outComputePower[i])))
       }
       addPower <- pwr$power
       power <- cbind(power, addPower)
@@ -102,7 +115,7 @@ plotPowerCont <- function(outComputePower, outDir=NULL, legendText) {
 
   power <- as.matrix(power)
 
-  par(cex.axis=1.2,cex.lab=1.2,cex.main=1.2,las=1,oma=c(3,3,4,4))
+  par(cex.axis=1.2,cex.lab=1.2,cex.main=1.2,las=1,mar=margin)
   plot(RRc,power[,1],ylim=c(0,1),type='n',xlab=expression("Vaccine Group CoR Relative Risk "~RR[c]~" per 1 SD Increase in S* with "~rho==1),ylab="Power",axes=FALSE)
   box()
 
@@ -122,4 +135,29 @@ plotPowerCont <- function(outComputePower, outDir=NULL, legendText) {
 
   title(bquote(paste("Power to Detect a Normally Distributed CoR in Vaccine Recipients [2-sided ", alpha, "=", .(alpha), "]")))
 
+  if (extendedLeg) {
+    
+    ### Add extra legend elements 
+    label <- list()
+    varyingArg <- pwr$varyingArg
+    if (!(grepl("nCasesTx", varyingArg, fixed=TRUE))) {
+      label$nCases <- bquote(n[cases]^S==~.(pwr$nCasesTxWithS))
+    }
+    if (!(grepl("controlCaseRatio", varyingArg, fixed=TRUE))) {
+      label$controlCaseRatio <- bquote("controls:cases"==.(pwr$controlCaseRatio))
+    }
+    label$VEoverall <- bquote(VE[overall]==~.(round(pwr$VEoverall,2)))
+    label$VElowest <- bquote(VE[lowest]==~.(round(max(pwr$VElowest), 2))~" to "~.(round(min(pwr$VElowest), 2)))
+    if (!(grepl("PlatVElowest", varyingArg, fixed=TRUE))) {
+      label$PlatVElowest <- bquote(P[lowestVE]^{lat}==~.(round(pwr$PlatVElowest, 2)))
+    }
+    if (!(grepl("rho", varyingArg, fixed=TRUE))) {
+      label$rho <- bquote(rho==.(pwr$rho))
+    }
+
+    for (i in 1:length(label)) {
+      text(min(RRcgrid) + xLegPos * (max(RRcgrid) - min(RRcgrid)), yLegPos - (i-1) * ySep, labels=label[[i]], pos=4)
+    }
+  }
+  
 }
