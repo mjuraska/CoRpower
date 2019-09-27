@@ -5,8 +5,8 @@
 \title{Plotting of Power versus Correlate of Risk Effect Size for Dichotomous and Trichotomous Biomarkers}
 \usage{
 plotPowerTri(outComputePower, outDir = NULL, legendText,
-  extendedLeg = TRUE, xLegPos = 0.5, yLegPos = 0.5, ySep = 0.07,
-  margin = c(7, 4, 3, 1))
+  legendTitle = NULL, extendedLeg = TRUE, verboseLeg = TRUE,
+  margin = c(11, 7, 3, 1))
 }
 \arguments{
 \item{outComputePower}{either a list of lists containing output from \code{\link{computePower}} or a character vector specifying the \code{.RData} file(s) containing \code{\link{computePower}} output}
@@ -15,26 +15,24 @@ plotPowerTri(outComputePower, outDir = NULL, legendText,
 
 \item{legendText}{a character vector specifying the entirety of the legend text. The order of the elements (i.e., parameter values) must match that of the \code{\link{computePower}} input parameters in order for legend labels to be accurate.}
 
-\item{extendedLeg}{a logical value specifying if the extended legend with additional information about the control-to-case ratio, overall vaccine efficacy, number of cases, etc., is to be included. Default is \code{TRUE}.}
+\item{legendTitle}{a character vector specifying the legend title if applicable (\code{NULL} by default)}
 
-\item{xLegPos}{a number from \code{0} to \code{1} specifying the horizontal position of the extended legend, if applicable. A value of \code{0} produces text on the left side of the plot, \code{0.5} (default) produces text in the center, and \code{1} produces text on the right side.}
+\item{extendedLeg}{a logical value specifying if the extended footnote legend with additional information about the control-to-case ratio, overall vaccine efficacy, number of cases, etc., is to be included. Default is \code{TRUE}.}
 
-\item{yLegPos}{a number from \code{0} to \code{1} specifying the vertical position of the extended legend, if applicable. A value of \code{0} produces text at the bottom of the plot, \code{0.5} (default) produces text in the center, and \code{1} produces text at the top.}
+\item{verboseLeg}{a logical value specifying if the extended footnote legend shall use English words (\code{TRUE} by default) or mathematical notation used in Gilbert, Janes, and Huang (2016)}
 
-\item{ySep}{a numeric value that specifies the spacing distance between lines in the extended legend, if applicable. Default is \code{0.7}.}
-
-\item{margin}{a numeric vector of the form \code{c(bottom, left, top, right)}, which specifies the margins of the plot. Default is \code{c(7, 4, 3, 1)}.}
+\item{margin}{a numeric vector of the form \code{c(bottom, left, top, right)}, which specifies the margins of the plot. Default is \code{c(11, 7, 3, 1)}.}
 }
 \value{
 None. The function is called solely for plot generation.
 }
 \description{
 Plots power (on the y-axis) to detect a correlate of risk effect size (on the x-axis) in the active treatment group for a dichotomous or trichotomous biomarker. The correlate of risk effect size is quantified as
-the relative risk ratio of the clinical endpoint comparing subgroups of active treatment recipients with high and low biomarker response.
+the relative risk of the clinical endpoint comparing subgroups of active treatment recipients with high and low biomarker response.
 }
 \details{
 If multiple levels are specified for the biomarker measurement error input parameters (i.e., for \code{sens}/\code{spec} or \code{rho}) in \code{\link{computePower}}, only the first level is used to determine
-the \eqn{RR_t} values that are plotted on the x-axis.
+the \eqn{RR_t} values shown as x-axis tickmark labels.
 }
 \examples{
 # Example scenario with trichotomous biomarker, where values of controlCaseRatio are varied
@@ -78,6 +76,9 @@ legendText <- paste0("controls:cases = ", c("5:1","3:1"))
 plotPowerTri(outComputePower, outDir=outDir, legendText = legendText)
 }
 
+}
+\references{
+Gilbert P. B., Janes H., and Huang Y. (2016), Power/Sample Size Calculations for Assessing Correlates of Risk in Clinical Efficacy Trials. \emph{Stat Med} 35(21):3745-59.
 }
 \seealso{
 \code{\link{computePower}}, \code{\link{plotPowerCont}}

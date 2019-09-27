@@ -1,25 +1,29 @@
 #' Plotting of Power Curve versus Correlate of Risk Effect Size for Continuous Biomarkers
 #'
 #' Plots power (on the y-axis) to detect a correlate of risk effect size (on the x-axis) in the active treatment group for a continuous biomarker.
-#' The correlate of risk effect size is quantified as the relative risk ratio of the clinical endpoint per standard deviation increase for a
-#' noise-free biomarker.
+#' The correlate of risk effect size is quantified as the odds ratio of the clinical endpoint comparing subgroups of active treatment recipients with a 1 standard deviation difference in a
+#' noise-free biomarker response.
 #'
 #' @param outComputePower either a list of lists containing output from \code{\link{computePower}} or a character vector specifying the \code{.RData} file(s) containing \code{\link{computePower}} output
 #' @param outDir a character vector specifying path(s) to output \code{.RData} file(s), necessary if \cr
 #' \code{outComputePower} is a character vector. Default is \code{NULL}.
 #' @param legendText a character vector specifying the entirety of the legend text. The order of the elements (i.e., parameter values) must match that of the \code{\link{computePower}} input parameters in order for legend labels to be accurate.
-#' @param extendedLeg a logical value specifying if the extended legend with additional information about the control-to-case ratio, overall vaccine efficacy, number of cases, etc., is to be included. Default is \code{TRUE}.
-#' @param xLegPos a number from \code{0} to \code{1} specifying the horizontal position of the extended legend, if applicable. A value of \code{0} produces text on the left side of the plot, \code{0.5} (default) produces text in the center, and \code{1} produces text on the right side.
-#' @param yLegPos a number from \code{0} to \code{1} specifying the vertical position of the extended legend, if applicable. A value of \code{0} produces text at the bottom of the plot, \code{0.5} (default) produces text in the center, and \code{1} produces text at the top.
-#' @param ySep a numeric value that specifies the spacing distance between lines in the extended legend, if applicable. Default is \code{0.7}.
-#' @param margin a numeric vector of the form \code{c(bottom, left, top, right)}, which specifies the margins of the plot. Default is \code{c(7, 4, 3, 1)}. 
+#' @param legendTitle a character vector specifying the legend title if applicable (\code{NULL} by default)
+#' @param extendedLeg a logical value specifying if the extended footnote legend with additional information about the control-to-case ratio, overall vaccine efficacy, number of cases, etc., is to be included. Default is \code{TRUE}.
+#' @param verboseLeg a logical value specifying if the extended footnote legend shall use English words (\code{TRUE} by default) or mathematical notation used in Gilbert, Janes, and Huang (2016)
+#' @param margin a numeric vector of the form \code{c(bottom, left, top, right)}, which specifies the margins of the plot. Default is \code{c(11, 7, 3, 1)}.
 #'
-#' @details The function's plot can be interpreted in conjunction with the output of \code{\link{plotVElatCont}} by
+#' @details If multiple levels are specified for the biomarker measurement error input argument \code{rho}, only the first level is used to determine
+#' the \eqn{RR_c} values shown as x-axis tickmark labels.
+#'
+#' The function's plot can be interpreted in conjunction with the output of \code{\link{plotVElatCont}} by
 #' matching the CoR relative risk in the two plots and examining power compared to treatment (vaccine) efficacy.
 #' This sheds light on the importance of overall vaccine efficacy on power and allows correlates of risk results
 #' to be interpreted in terms of potential correlates of efficacy/protection.
 #'
 #' @return None. The function is called solely for plot generation.
+#'
+#' @references Gilbert P. B., Janes H., and Huang Y. (2016), Power/Sample Size Calculations for Assessing Correlates of Risk in Clinical Efficacy Trials. \emph{Stat Med} 35(21):3745-59.
 #'
 #' @examples
 #' # Example scenario with continuous biomarker, where values of rho are varied
@@ -72,9 +76,8 @@
 #' @importFrom graphics abline axis box legend lines mtext par plot text title
 #'
 #' @export
-plotPowerCont <- function(outComputePower, outDir=NULL, legendText,
-                          extendedLeg=TRUE, xLegPos=0.5, yLegPos=0.5,
-                          ySep=0.07, margin=c(7, 4, 3, 1)) {
+plotPowerCont <- function(outComputePower, outDir=NULL, legendText, legendTitle=NULL,
+                          extendedLeg=TRUE, verboseLeg=TRUE, margin=c(11, 7, 3, 1)){
 
   if(any(sapply(outComputePower, is.list))) {  # check if list of lists
     pwr <- outComputePower[[1]]  # load first output list
@@ -116,7 +119,9 @@ plotPowerCont <- function(outComputePower, outDir=NULL, legendText,
   power <- as.matrix(power)
 
   par(cex.axis=1.2,cex.lab=1.2,cex.main=1.2,las=1,mar=margin)
-  plot(RRc,power[,1],ylim=c(0,1),type='n',xlab=expression("Vaccine Group CoR Relative Risk "~RR[c]~" per 1 SD Increase in S* with "~rho==1),ylab="Power",axes=FALSE)
+  plot(RRc,power[,1],ylim=c(0,1),type='n',xlab="",ylab="Power",axes=FALSE,cex.axis=1.3)
+  xLabel <- ifelse(verboseLeg, "CoR Effect Size per 1 SD Increase in Noise-Free Biomarker", expression("CoR Effect Size"~RR[c]~"per 1 SD Increase in S* with"~rho==1))
+  mtext(xLabel, side=1, line=2.5, cex=1.3)
   box()
 
   m <-length(RRc)
@@ -126,38 +131,68 @@ plotPowerCont <- function(outComputePower, outDir=NULL, legendText,
 
   colors <- c("blue","orange","forest green","black","red","purple","yellow", "pink")
   for(i in 1:ncol(power)){
-    lines(RRc, power[,i], lty=i, col=colors[i], lwd=3)
+    lines(RRc, power[,i], lty=i, col=colors[i], lwd=3.5)
   }
 
   abline(h=alpha/2,lty=3)
 
-  legend(x="topright", legend=legendText, lty=1:ncol(power), col=colors[1:ncol(power)], lwd=2, cex=1.2)
+  legend(x="topright", legend=legendText, lty=1:ncol(power), col=colors[1:ncol(power)], lwd=3.5, cex=1.2, title=legendTitle)
 
-  title(bquote(paste("Power to Detect a Normally Distributed CoR in Vaccine Recipients [2-sided ", alpha, "=", .(alpha), "]")))
+  title(bquote(paste("Power to Detect a Continuous CoR in Vaccine Recipients [1-sided ", alpha, "=", .(alpha/2), "]")))
 
   if (extendedLeg) {
-    
-    ### Add extra legend elements 
+
+    ### Add extra legend elements
     label <- list()
     varyingArg <- pwr$varyingArg
-    if (!(grepl("nCasesTx", varyingArg, fixed=TRUE))) {
-      label$nCases <- bquote(n[cases]^S==~.(pwr$nCasesTxWithS))
-    }
-    if (!(grepl("controlCaseRatio", varyingArg, fixed=TRUE))) {
-      label$controlCaseRatio <- bquote("controls:cases"==.(pwr$controlCaseRatio))
-    }
-    label$VEoverall <- bquote(VE[overall]==~.(round(pwr$VEoverall,2)))
-    label$VElowest <- bquote(VE[lowest]==~.(round(max(pwr$VElowest), 2))~" to "~.(round(min(pwr$VElowest), 2)))
-    if (!(grepl("PlatVElowest", varyingArg, fixed=TRUE))) {
-      label$PlatVElowest <- bquote(P[lowestVE]^{lat}==~.(round(pwr$PlatVElowest, 2)))
-    }
-    if (!(grepl("rho", varyingArg, fixed=TRUE))) {
-      label$rho <- bquote(rho==.(pwr$rho))
+
+    if (verboseLeg){
+
+      idx <- 1
+      label[[idx]] <- quote("Overall VE"==.(VEoverall)); idx <- idx + 1
+      if (!(grepl("nCasesTx", varyingArg, fixed=TRUE))){
+        if (!(grepl("controlCaseRatio", varyingArg, fixed=TRUE))) {
+          label[[idx]] <- quote("Number controls"==.(pwr$controlCaseRatio * round(pwr$nCasesTxWithS))); idx <- idx + 1
+        }
+        label[[idx]] <- quote("Number cases"==.(round(pwr$nCasesTxWithS))); idx <- idx + 1
+      }
+      if (!(grepl("controlCaseRatio", varyingArg, fixed=TRUE))) {
+        label[[idx]] <- quote("Controls:cases"==.(pwr$controlCaseRatio)*":1"); idx <- idx + 1
+      }
+      if (!(grepl("PlatVElowest", varyingArg, fixed=TRUE))){
+        label[[idx]] <- quote("% lowest VE"==.(round(pwr$PlatVElowest * 100, 0))*"%"); idx <- idx + 1
+      }
+      if (!(grepl("rho", varyingArg, fixed=TRUE))) {
+        label[[idx]] <- quote("Precision rho"==.(pwr$rho)); idx <- idx + 1
+      }
+      label[[idx]] <- quote("Observed var"==1); idx <- idx + 1
+
+    } else {
+
+      idx <- 1
+      label[[idx]] <- quote("Overall VE"==.(VEoverall)); idx <- idx + 1
+      if (!(grepl("nCasesTx", varyingArg, fixed=TRUE))){
+        if (!(grepl("controlCaseRatio", varyingArg, fixed=TRUE))) {
+          label[[idx]] <- quote(n[controls]^S==.(pwr$controlCaseRatio * round(pwr$nCasesTxWithS))); idx <- idx + 1
+        }
+        label[[idx]] <- quote(n[cases]^S==.(round(pwr$nCasesTxWithS))); idx <- idx + 1
+      }
+      if (!(grepl("controlCaseRatio", varyingArg, fixed=TRUE))) {
+        label[[idx]] <- quote("Controls:cases"==.(pwr$controlCaseRatio)*":1"); idx <- idx + 1
+      }
+      if (!(grepl("PlatVElowest", varyingArg, fixed=TRUE))){
+        label[[idx]] <- quote(P[lowestVE]^{lat}==.(round(pwr$PlatVElowest, 2))); idx <- idx + 1
+      }
+      if (!(grepl("rho", varyingArg, fixed=TRUE))) {
+        label[[idx]] <- quote(rho==.(pwr$rho)); idx <- idx + 1
+      }
+      label[[idx]] <- quote(sigma[obs]^2==1); idx <- idx + 1
     }
 
-    for (i in 1:length(label)) {
-      text(min(RRcgrid) + xLegPos * (max(RRcgrid) - min(RRcgrid)), yLegPos - (i-1) * ySep, labels=label[[i]], pos=4)
-    }
+    nLabels <- length(label)
+    mtext(eval(substitute(bquote(lb1*";"~lb2*";"~lb3*";"~lb4), list(lb1=label[[1]], lb2=label[[2]], lb3=label[[3]], lb4=label[[4]]))), side=1, line=4.5, cex=1.1)
+    if (nLabels==5){ mtext(eval(substitute(bquote(lb5), list(lb5=label[[5]]))), side=1, line=ifelse(verboseLeg, 5.5, 5.8), cex=1.1) }
+    if (nLabels==6){ mtext(eval(substitute(bquote(lb5*";"~lb6), list(lb5=label[[5]], lb6=label[[6]]))), side=1, line=ifelse(verboseLeg, 5.5, 5.8), cex=1.1) }
+    if (nLabels==7){ mtext(eval(substitute(bquote(lb5*";"~lb6*";"~lb7), list(lb5=label[[5]], lb6=label[[6]], lb7=label[[7]]))), side=1, line=ifelse(verboseLeg, 5.5, 5.8), cex=1.1) }
   }
-  
 }

@@ -1,13 +1,13 @@
 ---
-title: "Introduction to `CoRpower`"
+title: "Introduction to R Package `CoRpower`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Introduction to CoRpower}
+  %\VignetteIndexEntry{Introduction to R Package CoRpower}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
-The `CoRpower` package performs power calculations for correlates of risk, as described in [Gilbert, Janes, and Huang (2016). Power/Sample Size Calculations for Assessing Correlates of Risk in Clinical Efficacy Trials] The power calculations accommodate three types of biomarkers: 
+The `CoRpower` package performs power calculations for correlates of risk, as described in Gilbert, Janes, and Huang (2016). Power/Sample Size Calculations for Assessing Correlates of Risk in Clinical Efficacy Trials. The power calculations accommodate three types of biomarkers: 
 
 - trichotomous
 - dichotomous
@@ -32,18 +32,23 @@ The functions included in this package are:
 ## Set-up and notation | Without replacement sampling 
 
 - Assume a randomized vaccine vs. placebo/control vaccine efficacy trial
-- $N_1=$ number of vaccine recipients observed to be at risk at $\tau$
-- $n_{cases,1}$ ($n_{controls,1}$) $=$ number of observed cases (controls) in vaccine recipients between $\tau$ and $\tau_{\mathrm{max}}$, where cases have $\Delta Y = 1$ and controls have $\Delta (1-Y) = 1$
+- Participants are followed for the first occurrence of the primary clinical study endpoint, with follow-up through time $\tau_{\mathrm{max}}$
+- $T$ is the time from randomization (or enrollment) to the primary endpoint
+- $Y = I(T \leq \tau_{\mathrm{max}})$ is the binary outcome of interest
+- $\Delta$ is the indicator that $Y$ is observed; i.e., $\Delta = 0$ if the participants drops out before $\tau_{\mathrm{max}}$ and before experiencing the primary endpoint and $\Delta = 1$ otherwise
+- $N_1$ is the number of vaccine recipients observed or expected to be at risk at $\tau$ (typically, $\tau$ is the biomarker sampling timepoint)
+- $n_{cases,1}$ ($n_{controls,1}$) is the number of observed or expected cases (controls) in vaccine recipients between $\tau$ and $\tau_{\mathrm{max}}$, where cases have $\Delta Y = 1$ and controls have $\Delta (1-Y) = 1$
+    - Note that both cases and controls have $\Delta = 1$
     - $n_{cases,1} + n_{controls,1} \leq N_1$
-- $n^S_{cases,1}$ ($n^S_{controls,1}$) $=$ number of observed cases (controls) in vaccine recipients between $\tau$ and $\tau_{\mathrm{max}}$ with measured $S(1)$ (or $S^{\ast}(1)$)
+- $n^S_{cases,1}$ ($n^S_{controls,1}$) is the number of observed cases (controls) in vaccine recipients between $\tau$ and $\tau_{\mathrm{max}}$ with measured biomarker response $S(1)$ (or $S^{\ast}(1)$)
 
-- If calculations done at design stage, then $N_1$, $n_{cases,1}$, $n_{controls,1}$, $n^S_{cases,1}$, and $n^S_{controls,1}$ projected numbers
+- If calculations done at design stage, then $N_1$, $n_{cases,1}$, $n_{controls,1}$, $n^S_{cases,1}$, and $n^S_{controls,1}$ are expected counts
 
 ## Algorithm for trichotomous biomarker $S(1)$ | Without replacement sampling 
 
-1. Specify overall $VE$ between $\tau$ and $\tau_{\mathrm{max}}$
+1. Specify true overall $VE$ between $\tau$ and $\tau_{\mathrm{max}}$
     + Protocol-specified design alternative or $\widehat{VE}$
-2. Specify $risk_0$
+2. Specify $risk_0 = P(Y=1 \mid Z=0, Y^{\tau}=0)$ where $Y^{\tau}=I(T \leq \tau)$
     + Protocol-specified placebo-group endpoint rate or $\widehat{risk}_0$
 3. Select a grid of $VE^{lat}_0$ values
     + E.g., ranging from $VE$ ($H_0$) to 0 (maximal $H_1$ not allowing harm by vaccination)
@@ -68,8 +73,10 @@ The functions included in this package are:
         for $\theta_0$ and $\theta_2$
         <li> Generate $B$ realizations of $X^{\ast}$ and $S^{\ast} = X^{\ast} + e$, where $e \sim \mathsf{N}(0,(1-\rho)\sigma^2_{obs})$, and
         $X^{\ast}$ independent of $e$
-            + $B = 20,000$ by default
-        <li> Using $\theta_0$ and $\theta_2$ from Step i., define
+          <ul>
+          <li> $B = 20,000$ by default
+          </ul>
+        <li> Using $\theta_0$ and $\theta_2$ from the first step, define
         \[
         \begin{align}
         Spec(\phi_0) &= P(S^{\ast} \leq \phi_0 \mid X^{\ast} \leq \theta_0)\\
@@ -99,12 +106,15 @@ The functions included in this package are:
             \[
             RR_t \quad \textrm{vs.} \quad \frac{RR^{lat}_2}{RR^{lat}_0},
             \]
-      where
+      where $RR_t$ is the CoR effect size defined as
       \[
       RR_t := \frac{risk_1(2)}{risk_1(0)} = \frac{\sum_{x=0}^2 RR^{lat}_x P(X=x|S(1)=2)}{\sum_{x=0}^2 RR^{lat}_x P(X=x|S(1)=0)}
       \]
-    + For $\rho < 1$, $RR_t$ closer to 1 than $RR^{lat}_2\big/ RR^{lat}_0$
-
+    + If $\rho < 1$, then $RR_t$ is closer to 1 than $RR^{lat}_2\big/ RR^{lat}_0$
+      <ul>
+      <li> Note that, under the assumption of homogeneous risk in the placebo group, i.e., $risk_0^{lat}(x) = risk_0$, $x=0,1,2$, the relative risk ratio $RR^{lat}_2\big/ RR^{lat}_0 = risk_1^{lat}(2) \big/ risk_1^{lat}(0)$
+      <li> Consequently, $risk_1(2) \big/ risk_1(0) > risk_1^{lat}(2) \big/ risk_1^{lat}(0)$ because, if $\rho < 1$, then $risk_1(2) > risk_1^{lat}(2)$ and $risk_1(0) < risk_1^{lat}(0)$
+      </ul>
 8. Simulate $M$ data sets under the true parameter values:
     <ol type="a">
     *Full data*

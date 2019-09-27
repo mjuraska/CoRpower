@@ -18,15 +18,15 @@ computePower(nCasesTx, nControlsTx, nCasesTxWithS,
   FP0BIP = NULL, FN2BIP = NULL, P0BIP = P0, P2BIP = P2)
 }
 \arguments{
-\item{nCasesTx}{an integer vector specifying the number of clinical endpoint cases observed (or projected) between \eqn{\tau} and \eqn{\tau_{max}} in the active treatment group. Each value represents a distinct scenario for power assessment.}
+\item{nCasesTx}{an integer vector specifying the observed (for a finished trial) or expected (for a trial in design stage) number of clinical endpoint cases between \eqn{\tau} and \eqn{\tau_{max}} in the active treatment group. Each value represents a distinct scenario for power assessment.}
 
-\item{nControlsTx}{an integer vector specifying the number of controls observed (or projected) to complete follow-up through \eqn{\tau_{max}} endpoint-free in the active treatment group. Each value represents a distinct scenario for power assessment. The ordering in \code{nCasesTx} and \code{nControlsTx} must match.}
+\item{nControlsTx}{an integer vector specifying the observed (for a finished trial) or expected (for a trial in design stage) number of controls with completed follow-up through \eqn{\tau_{max}} and endpoint-free at \eqn{\tau_{max}} in the active treatment group. Each value represents a distinct scenario for power assessment. The ordering in \code{nCasesTx} and \code{nControlsTx} must match.}
 
-\item{nCasesTxWithS}{an integer vector specifying the number of clinical endpoint cases observed (or projected) between \eqn{\tau} and \eqn{\tau_{max}} in the active treatment group with an available biomarker response. Each value represents a distinct scenario for power assessment. The ordering must match \code{nCasesTx} and \code{nControlsTx}.}
+\item{nCasesTxWithS}{an integer vector specifying the observed (for a finished trial) or expected (for a trial in design stage) number of clinical endpoint cases between \eqn{\tau} and \eqn{\tau_{max}} in the active treatment group with an available biomarker response. Each value represents a distinct scenario for power assessment. The ordering must match \code{nCasesTx} and \code{nControlsTx}.}
 
-\item{controlCaseRatio}{an integer vector specifying the number of controls sampled per case for biomarker measurement in the without replacement case-control sampling design (set to \code{NULL} by default). Each value represents a distinct scenario for power assessment.}
+\item{controlCaseRatio}{an integer vector specifying the number of closeout controls sampled per case for biomarker measurement in the without replacement case-control sampling design (set to \code{NULL} by default). Each value represents a distinct scenario for power assessment.}
 
-\item{VEoverall}{a numeric value specifying the overall treatment (vaccine) efficacy between \eqn{\tau} and \eqn{\tau_{max}}}
+\item{VEoverall}{a numeric value specifying the true overall treatment (vaccine) efficacy between \eqn{\tau} and \eqn{\tau_{max}}}
 
 \item{risk0}{a numeric value specifying the overall placebo-group endpoint risk between \eqn{\tau} and \eqn{\tau_{max}}}
 
@@ -80,9 +80,9 @@ computePower(nCasesTx, nControlsTx, nCasesTxWithS,
 
 \item{corr}{a numeric vector in \eqn{[-1,1]} specifying the correlation between a continuous baseline immunogenicity predictor (BIP) and the (underlying) continuous intermediate biomarker response (\code{NULL} by default). Each value represents a distinct scenario for power assessment. A useful BIP is highly correlated with the biomarker response at \eqn{\tau}. It must be provided if \code{saveDataDir} is specified and a trichotomous biomarker under 'approach 2' or a continuous biomarker is considered.}
 
-\item{nCasesPla}{an integer vector specifying the number of clinical endpoint cases observed (or projected) between \eqn{\tau} and \eqn{\tau_{max}} in the placebo group. Each value represents a distinct scenario matching \code{nCasesTx}. Default is \code{NULL}. It must be provided if \code{saveDataDir} is specified.}
+\item{nCasesPla}{an integer vector specifying the observed (for a finished trial) or expected (for a trial in design stage) number of clinical endpoint cases between \eqn{\tau} and \eqn{\tau_{max}} in the placebo group. Each value represents a distinct scenario matching \code{nCasesTx}. Default is \code{NULL}. It must be provided if \code{saveDataDir} is specified.}
 
-\item{nControlsPla}{an integer vector specifying the number of controls observed (or projected) to complete follow-up through \eqn{\tau_{max}} endpoint-free in the placebo group. Each value represents a distinct scenario matching \code{nControlsTx}. Default is \code{NULL}. It must be provided if \code{saveDataDir} is specified.}
+\item{nControlsPla}{an integer vector specifying the observed (for a finished trial) or expected (for a trial in design stage) number of controls with completed follow-up through \eqn{\tau_{max}} and endpoint-free at \eqn{\tau_{max}} in the placebo group. Each value represents a distinct scenario matching \code{nControlsTx}. Default is \code{NULL}. It must be provided if \code{saveDataDir} is specified.}
 
 \item{sensBIP}{a numeric vector specifying "the sensitivity" of a dichotomous or trichotomous BIP, i.e., the probability of a high value of the BIP conditional on high biomarker response. Default is \code{NULL}, which indicates the use of 'approach 2'. It must be provided if \code{saveDataDir} is specified and 'approach 1' is to be used. Each value results in generating a separate BIP variable in the output data.}
 
@@ -133,7 +133,7 @@ For a dichotomous or trichotomous biomarker, each output list has the following 
 For a continuous biomarker, each output list has the following components:
 \itemize{
   \item \code{power}: a numeric vector of fractions of simulated trials in which the null hypothesis \eqn{H_0} is rejected. Rows represent calculations for different values of \code{rho} or \code{nCasesTx}, depending on which is a vector. Columns represent calculations for the grid of treatment (vaccine) efficacy levels in the latent lowest-efficacy subgroup, specified by \code{VElowest}.
-  \item \code{RRc}: a numeric vector of correlate-or-risk relative-risk effect sizes as a function of the grid of treatment (vaccine) efficacy levels in the latent lowest-efficacy subgroup, specified by \code{VElowest}
+  \item \code{RRc}: a numeric vector of correlate-of-risk relative-risk effect sizes as a function of the grid of treatment (vaccine) efficacy levels in the latent lowest-efficacy subgroup, specified by \code{VElowest}
   \item \code{betaLat}: a numeric vector specifying the log odds ratio of the clinical endpoint comparing two subgroups of active treatment recipients differing in the latent \eqn{x^{\ast}} by 1 (this coefficient estimate applies to a continuous biomarker)
   \item \code{alphaLat}: a numeric vector specifying the the log odds of the clinical endpoint in the subgroup of active treatment recipients with the latent \eqn{x^{\ast}=0} (this coefficient estimate applies to a continuous biomarker)
   \item \code{PlatVElowest}: a numeric value specifying the prevalence of the latent lowest-efficacy subgroup for a continuous biomarker
