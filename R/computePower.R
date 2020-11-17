@@ -95,6 +95,10 @@
 
 # Internal Functions
 
+logit <- function(p){
+  return(log(p/(1-p)))
+}
+
 checkSamplingDesign <- function(cohort, p, controlCaseRatio) {
   # Checks that sampling design input parameters are specified and valid.
   #
@@ -1353,7 +1357,7 @@ biomSubset <- function(Y, NcompleteTx, nCasesTxWithS, controlCaseRatio, p, cohor
 #' @seealso \code{\link{computeN}}, \code{\link{plotPowerTri}}, \code{\link{plotPowerCont}}
 #'
 #' @import survival
-#' @import osDesign
+#' @importFrom osDesign tps
 #' @importFrom stats dnorm fisher.test integrate pexp pnorm qnorm rbinom rmultinom rnorm uniroot
 #'
 #' @export

@@ -4,9 +4,15 @@
 \alias{plotPowerTri}
 \title{Plotting of Power versus Correlate of Risk Effect Size for Dichotomous and Trichotomous Biomarkers}
 \usage{
-plotPowerTri(outComputePower, outDir = NULL, legendText,
-  legendTitle = NULL, extendedLeg = TRUE, verboseLeg = TRUE,
-  margin = c(11, 7, 3, 1))
+plotPowerTri(
+  outComputePower,
+  outDir = NULL,
+  legendText,
+  legendTitle = NULL,
+  extendedLeg = TRUE,
+  verboseLeg = TRUE,
+  margin = c(11, 7, 3, 1)
+)
 }
 \arguments{
 \item{outComputePower}{either a list of lists containing output from \code{\link{computePower}} or a character vector specifying the \code{.RData} file(s) containing \code{\link{computePower}} output}

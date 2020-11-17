@@ -4,9 +4,16 @@
 \alias{plotRRgradVE}
 \title{Plotting of the Ratio of Relative Risks for Higher/Lower Latent Subgroups against Correlate of Risk Effect Size for Trichotomous Biomarkers}
 \usage{
-plotRRgradVE(outComputePower, outDir = NULL, legendText,
-  extendedLeg = TRUE, xLegPos = 0.5, yLegPos = 0.5, ySep = 0.07,
-  margin = c(7, 4, 3, 1))
+plotRRgradVE(
+  outComputePower,
+  outDir = NULL,
+  legendText,
+  extendedLeg = TRUE,
+  xLegPos = 0.5,
+  yLegPos = 0.5,
+  ySep = 0.07,
+  margin = c(7, 4, 3, 1)
+)
 }
 \arguments{
 \item{outComputePower}{either a list of lists containing output from \code{\link{computePower}} or a character vector specifying the \code{.RData} file(s) containing \code{\link{computePower}} output}

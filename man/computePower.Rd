@@ -4,18 +4,47 @@
 \alias{computePower}
 \title{Power Calculations for Assessing Intermediate Biomarkers as Correlates of Risk in the Active Treatment Group in Clinical Efficacy Trials, Accounting for Biomarker's Measurement Error and Treatment Efficacy}
 \usage{
-computePower(nCasesTx, nControlsTx, nCasesTxWithS,
-  controlCaseRatio = NULL, VEoverall, risk0, VElat0 = seq(0, VEoverall,
-  len = 20), VElat1 = rep(VEoverall, 20), VElowest = NULL,
-  Plat0 = NULL, Plat2 = NULL, P0 = Plat0, P2 = Plat2,
-  PlatVElowest = NULL, sens = NULL, spec = NULL, FP0 = NULL,
-  FN2 = NULL, M = 100, alpha = 0.05, sigma2obs = 1, rho = 1,
+computePower(
+  nCasesTx,
+  nControlsTx,
+  nCasesTxWithS,
+  controlCaseRatio = NULL,
+  VEoverall,
+  risk0,
+  VElat0 = seq(0, VEoverall, len = 20),
+  VElat1 = rep(VEoverall, 20),
+  VElowest = NULL,
+  Plat0 = NULL,
+  Plat2 = NULL,
+  P0 = Plat0,
+  P2 = Plat2,
+  PlatVElowest = NULL,
+  sens = NULL,
+  spec = NULL,
+  FP0 = NULL,
+  FN2 = NULL,
+  M = 100,
+  alpha = 0.05,
+  sigma2obs = 1,
+  rho = 1,
   biomType = c("continuous", "trichotomous", "dichotomous"),
-  cohort = FALSE, p = NULL, tpsMethod = c("PL", "ML", "WL"),
-  saveDir = NULL, saveFile = "CoRpower.RData", saveDataDir = NULL,
-  saveDataFile = "fullData.RData", corr = NULL, nCasesPla = NULL,
-  nControlsPla = NULL, sensBIP = NULL, specBIP = NULL,
-  FP0BIP = NULL, FN2BIP = NULL, P0BIP = P0, P2BIP = P2)
+  cohort = FALSE,
+  p = NULL,
+  tpsMethod = c("PL", "ML", "WL"),
+  saveDir = NULL,
+  saveFile = "CoRpower.RData",
+  saveDataDir = NULL,
+  saveDataFile = "fullData.RData",
+  corr = NULL,
+  nCasesPla = NULL,
+  nControlsPla = NULL,
+  sensBIP = NULL,
+  specBIP = NULL,
+  FP0BIP = NULL,
+  FN2BIP = NULL,
+  P0BIP = P0,
+  P2BIP = P2
+)
 }
 \arguments{
 \item{nCasesTx}{an integer vector specifying the observed (for a finished trial) or expected (for a trial in design stage) number of clinical endpoint cases between \eqn{\tau} and \eqn{\tau_{max}} in the active treatment group. Each value represents a distinct scenario for power assessment.}

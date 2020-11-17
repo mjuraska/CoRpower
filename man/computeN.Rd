@@ -4,8 +4,16 @@
 \alias{computeN}
 \title{Estimation of Size and Numbers of Cases and Controls in the Target Population of Active Treatment Recipients At Risk at the Biomarker Sampling Timepoint}
 \usage{
-computeN(Nrand, tau, taumax, VEtauToTaumax, VE0toTau, risk0, dropoutRisk,
-  propCasesWithS)
+computeN(
+  Nrand,
+  tau,
+  taumax,
+  VEtauToTaumax,
+  VE0toTau,
+  risk0,
+  dropoutRisk,
+  propCasesWithS
+)
 }
 \arguments{
 \item{Nrand}{the number of participants randomized to the active treatment group}
