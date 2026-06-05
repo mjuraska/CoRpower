@@ -444,7 +444,13 @@ simTrich <- function(risk1lat_0, risk1lat_1, risk1lat_2, Plat0, Plat1, Plat2, se
   # Draw from trinomial random variable with success probabilities defined above.
   # adjustProb() function deals with rare crashes of rmultinom due to numerical problems
   # where the program treats probability 0 as a small negative number
-  indsTx <- rmultinom(nCasesTx,1,adjustProb(c(P0case,P1case,P2case)))
+  if (biomType == "dichotomous") {
+    probTx <- c(P0case, 0, P2case)
+    probTx <- probTx / sum(probTx)
+    indsTx <- rmultinom(nCasesTx, 1, probTx)
+  } else {
+    indsTx <- rmultinom(nCasesTx, 1, adjustProb(c(P0case, P1case, P2case)))
+  }
 
   # Number of cases in the 0, 1, 2 latent groups
   nCasesTx0 <- length(indsTx[1,][indsTx[1,]==1])
@@ -465,8 +471,8 @@ simTrich <- function(risk1lat_0, risk1lat_1, risk1lat_2, Plat0, Plat1, Plat2, se
     nCasesTx0 <- nCasesTx0 - 1
     nCasesTx1 <- 0
   }
-  if (nCasesTx1==1 & Ntx1==0) {
-    nCasesTx0 <- nCasesTx0 + 1
+  if (Ntx1 == 0 && nCasesTx1 > 0) {
+    nCasesTx0 <- nCasesTx0 + nCasesTx1
     nCasesTx1 <- 0
   }
 
