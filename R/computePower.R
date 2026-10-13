@@ -99,6 +99,13 @@ logit <- function(p){
   return(log(p/(1-p)))
 }
 
+# 'tpsVarS' returns the estimated variance of the biomarker coefficient from a 'tps' fit
+# the model-based variance is used for PL and ML; WL provides only the empirical variance
+tpsVarS <- function(fit){
+  vcovMat <- if (is.null(fit$covm)) fit$cove else fit$covm
+  return(vcovMat[2,2])
+}
+
 checkSamplingDesign <- function(cohort, p, controlCaseRatio) {
   # Checks that sampling design input parameters are specified and valid.
   #
@@ -582,7 +589,7 @@ simTrich <- function(risk1lat_0, risk1lat_1, risk1lat_2, Plat0, Plat1, Plat2, se
 
   if (!zerosflag) {
     fit <- tps(Ycc~Scc,nn0=length(Ytx[Ytx==0]),nn1=length(Ytx[Ytx==1]),group=rep(1,length(Ycc)), method=tpsMethod, cohort=cohort)
-    pval <- round(min(2*(1-pnorm(abs(fit$coef[2]/sqrt(fit$covm[2,2])))),1.0),4)
+    pval <- round(min(2*(1-pnorm(abs(fit$coef[2]/sqrt(tpsVarS(fit))))),1.0),4)
     if (pval <= alpha & fit$coef[2] < 0) {
       addPower <- 1
       # powerstrinary <- powerstrinary + 1
@@ -772,7 +779,7 @@ simCont <- function(nCasesTx, NcompleteTx, nCasesTxWithS, nCasesPla, NcompletePl
   addPower <- 0
   # osDesign logistic regression
   fit <- tps(Ycc~Scc,nn0=length(Ytx[Ytx==0]),nn1=length(Ytx[Ytx==1]),group=rep(1,length(Ycc)), method=tpsMethod, cohort=cohort)
-  pval <- round(min(2*(1-pnorm(abs(fit$coef[2]/sqrt(fit$covm[2,2])))),1.0),4)
+  pval <- round(min(2*(1-pnorm(abs(fit$coef[2]/sqrt(tpsVarS(fit))))),1.0),4)
   if (pval <= alpha & fit$coef[2] < 0) {
     addPower <- 1
     # powerscont[k,j] <- powerscont[k,j] + 1
@@ -1139,7 +1146,7 @@ biomSubset <- function(Y, NcompleteTx, nCasesTxWithS, controlCaseRatio, p, cohor
 #' @param biomType a character string specifying the biomarker type. Default is \code{continuous}; other choices are \code{dichotomous} and \code{trichotomous}.
 #' @param cohort a logical value for whether a case-cohort Bernoulli sampling design is to be used. If \code{FALSE} (default), the case-control without replacement sampling is used.
 #' @param p a numeric vector specifying the probability of sampling into the subcohort in the case-cohort design (\code{NULL} by default). Each value represents a distinct scenario for power assessment.
-#' @param tpsMethod a character string specifying the estimation method in the inverse probability weighted logistic regression model fit by the \code{tps} function in the \code{osDesign} package. The options are \code{PL} for pseudo-likelihood (default), \code{ML} for maximum likelihood, and \code{WL} for weighted likelihood.
+#' @param tpsMethod a character string specifying the estimation method in the inverse probability weighted logistic regression model fit by the \code{tps} function adapted from the \code{osDesign} package. The options are \code{PL} for pseudo-likelihood (default), \code{ML} for maximum likelihood, and \code{WL} for weighted likelihood.
 #' @param saveDir a character string specifying the path for a directory in which the output of the power calculation is to be saved. If \code{NULL} (default), the output is returned only.
 #' @param saveFile a character vector specifying the name(s) of the \code{.RData} file(s) storing the output of the power calculation, used only if \code{saveDir} is not \code{NULL}. All file names must include ".RData" at the end. Default is \code{CoRpower.RData}.
 #' @param saveDataDir a character string specifying the path for a directory in which the simulated data, including placebo group and baseline immunogenicity predictor (BIP) data, are to be saved. If \code{NULL} (default), the simulated data are not saved.
@@ -1429,8 +1436,7 @@ biomSubset <- function(Y, NcompleteTx, nCasesTxWithS, controlCaseRatio, p, cohor
 #' @seealso \code{\link{computeN}}, \code{\link{plotPowerTri}}, \code{\link{plotPowerCont}}
 #'
 #' @import survival
-#' @importFrom osDesign tps
-#' @importFrom stats dnorm fisher.test integrate pexp pnorm qnorm rbinom rmultinom rnorm uniroot
+#' @importFrom stats binomial dnorm fisher.test formula glm glm.control integrate model.extract model.matrix pexp pnorm qnorm rbinom rmultinom rnorm uniroot
 #'
 #' @export
 computePower <- function(nCasesTx, nControlsTx, nCasesTxWithS,

@@ -97,7 +97,7 @@ computePower(
 
 \item{p}{a numeric vector specifying the probability of sampling into the subcohort in the case-cohort design (\code{NULL} by default). Each value represents a distinct scenario for power assessment.}
 
-\item{tpsMethod}{a character string specifying the estimation method in the inverse probability weighted logistic regression model fit by the \code{tps} function in the \code{osDesign} package. The options are \code{PL} for pseudo-likelihood (default), \code{ML} for maximum likelihood, and \code{WL} for weighted likelihood.}
+\item{tpsMethod}{a character string specifying the estimation method in the inverse probability weighted logistic regression model fit by the \code{tps} function adapted from the \code{osDesign} package. The options are \code{PL} for pseudo-likelihood (default), \code{ML} for maximum likelihood, and \code{WL} for weighted likelihood.}
 
 \item{saveDir}{a character string specifying the path for a directory in which the output of the power calculation is to be saved. If \code{NULL} (default), the output is returned only.}
 

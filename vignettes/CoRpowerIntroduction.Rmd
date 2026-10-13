@@ -125,7 +125,7 @@ The functions included in this package are:
     *Observed data*
     <li> Sample without replacement $n^S_{cases,1}$ and $n^S_{controls,1} = K n^S_{cases,1}$ controls with measured $S(1)$ $(R=1)$, i.e., the control:case ratio is not fixed within subgroup $X=x$
     </ol>
-9. For each observed data set, compute the 1-sided one-degree-of-freedom Wald test statistic for $H_0 \Leftrightarrow \{\widetilde{H}_0: \beta_S(1) \geq 0\}$ from IPW logistic regression model that accounts for biomarker sampling design (function `tps` in R package `osDesign`)
+9. For each observed data set, compute the 1-sided one-degree-of-freedom Wald test statistic for $H_0 \Leftrightarrow \{\widetilde{H}_0: \beta_S(1) \geq 0\}$ from IPW logistic regression model that accounts for biomarker sampling design (function `tps` adapted from R package `osDesign`)
     + Alternatively, use the generalized two-degree-of-freedom Wald test
 10. Compute power as proportion of data sets with 1-sided Wald test $p \leq \alpha/2$ for specified $\alpha$
 11. Repeat power calculation varying control:case ratio, $n_{cases,1}$, $n^S_{cases,1}$, $(P^{lat}_0, P^{lat}_2, P_0, P_2)$, $(Sens, Spec)$, $\rho$
@@ -496,7 +496,7 @@ plotPowerTri(outComputePower = pwr,
   <li> Sample without replacement $n^S_{cases,1}$ and $n^S_{controls,1} = K n^S_{cases,1}$ controls with measured $S^{\ast}(1)$ $(R=1)$
   </ol>
 </li>
-<li> For each observed data set, compute the 1-sided one-degree-of-freedom Wald test statistic for $H_0 \Leftrightarrow \{\widetilde{H}_0: \beta_{S^{\ast}(1)} \geq 0\}$ from IPW logistic regression model that accounts for biomarker sampling design (function `tps` in R package `osDesign`)
+<li> For each observed data set, compute the 1-sided one-degree-of-freedom Wald test statistic for $H_0 \Leftrightarrow \{\widetilde{H}_0: \beta_{S^{\ast}(1)} \geq 0\}$ from IPW logistic regression model that accounts for biomarker sampling design (function `tps` adapted from R package `osDesign`)
 <li> Compute power as proportion of data sets with 1-sided Wald test $p \leq \alpha/2$ for specified $\alpha$
 <li> Repeat power calculation varying control:case ratio, $n_{cases,1}$, $n^S_{cases,1}$, $P^{lat}_{lowestVE}$, $\rho$
 </ol>
