@@ -410,8 +410,6 @@ computeRisks <- function(biomType, RRoverall, risk0, sens, spec, FP0, FN2, FP1, 
 }
 
 
-
-
 simTrich <- function(risk1lat_0, risk1lat_1, risk1lat_2, Plat0, Plat1, Plat2, sens, spec, FP0, FN2, FP1, FN1,
                      nCasesTx, nCasesTxWithS, NcompleteTx, nCasesPla, NcompletePla,
                      biomType, controlCaseRatio, p, cohort, tpsMethod, alpha, saveDataDir,
@@ -429,6 +427,52 @@ simTrich <- function(risk1lat_0, risk1lat_1, risk1lat_2, Plat0, Plat1, Plat2, se
   #   A list containing a binary integer denoting the outcome of the hypothesis test.
   #   If simulated data is to be saved, the returned list also includes a data frame containing the simulated
   #   data, including placebo group and BIP data
+
+  cap_case_counts <- function(case_counts, group_sizes, total_cases, arm_label) {
+    case_counts <- as.integer(case_counts)
+    group_sizes <- as.integer(group_sizes)
+
+    # Remove impossible allocations caused by structural-zero or boundary
+    # probabilities. Then move the excess into subgroups with capacity.
+    excess <- sum(pmax(case_counts - group_sizes, 0L))
+    case_counts <- pmin(case_counts, group_sizes)
+
+    while (excess > 0L) {
+      capacity <- group_sizes - case_counts
+      if (sum(capacity) <= 0L) {
+        stop(paste0("Cannot allocate ", total_cases,
+                    " cases within available ", arm_label,
+                    " subgroup sizes."))
+      }
+      k <- which.max(capacity)
+      add <- min(excess, capacity[k])
+      case_counts[k] <- case_counts[k] + add
+      excess <- excess - add
+    }
+
+    # Guard against any mismatch due to integer conversion or an edge case.
+    diff_cases <- total_cases - sum(case_counts)
+    while (diff_cases > 0L) {
+      capacity <- group_sizes - case_counts
+      if (sum(capacity) <= 0L) {
+        stop(paste0("Cannot allocate remaining ", diff_cases,
+                    " ", arm_label, " cases."))
+      }
+      k <- which.max(capacity)
+      add <- min(diff_cases, capacity[k])
+      case_counts[k] <- case_counts[k] + add
+      diff_cases <- diff_cases - add
+    }
+    while (diff_cases < 0L) {
+      k <- which.max(case_counts)
+      remove <- min(-diff_cases, case_counts[k])
+      case_counts[k] <- case_counts[k] - remove
+      diff_cases <- diff_cases + remove
+    }
+
+    case_counts
+  }
+
 
   # Determine success probabilities for trinomial random variable:
   # P(X=0|Y=1, Y^tau=0, Z=1), P(X=1|Y=1, Y^tau=0, Z=1), P(X=2|Y=1, Y^tau=0, Z=1),
@@ -475,6 +519,16 @@ simTrich <- function(risk1lat_0, risk1lat_1, risk1lat_2, Plat0, Plat1, Plat2, se
     nCasesTx0 <- nCasesTx0 + nCasesTx1
     nCasesTx1 <- 0
   }
+
+  tx_case_counts <- cap_case_counts(
+    case_counts = c(nCasesTx0, nCasesTx1, nCasesTx2),
+    group_sizes = c(Ntx0, Ntx1, Ntx2),
+    total_cases = nCasesTx,
+    arm_label = "active-treatment"
+  )
+  nCasesTx0 <- tx_case_counts[1]
+  nCasesTx1 <- tx_case_counts[2]
+  nCasesTx2 <- tx_case_counts[3]
 
   # Latent subgroup assignments in active treatment arm
   Xtx <- c(rep(0, Ntx0), rep(1, Ntx1), rep(2, Ntx2))
@@ -570,6 +624,16 @@ simTrich <- function(risk1lat_0, risk1lat_1, risk1lat_2, Plat0, Plat1, Plat2, se
       nCasesPla1 <- 0
     }
 
+    pla_case_counts <- cap_case_counts(
+      case_counts = c(nCasesPla0, nCasesPla1, nCasesPla2),
+      group_sizes = c(Npla0, Npla1, Npla2),
+      total_cases = nCasesPla,
+      arm_label = "placebo"
+    )
+    nCasesPla0 <- pla_case_counts[1]
+    nCasesPla1 <- pla_case_counts[2]
+    nCasesPla2 <- pla_case_counts[3]
+
     # Latent subgroup assignments in placebo arm
     Xpla <- c(rep(0, Npla0), rep(1, Npla1), rep(2, Npla2))
 
@@ -635,6 +699,8 @@ simTrich <- function(risk1lat_0, risk1lat_1, risk1lat_2, Plat0, Plat1, Plat2, se
 
   return(output)
 }
+
+
 
 simCont <- function(nCasesTx, NcompleteTx, nCasesTxWithS, nCasesPla, NcompletePla,
                     alphalat, beta, sigma2obs, sigma2tr, sigma2e, nu, PlatVElowest, VElowest,
