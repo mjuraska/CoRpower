@@ -39,7 +39,7 @@
 #' VElowest <- seq(0, VEoverall, len=5)
 #' Plat0 <- P0 <- 0.2
 #' Plat2 <- P2 <- 0.6
-#' M <- 22
+#' M <- 10
 #' alpha <- 0.05
 #' sigma2obs <- 1
 #' rho <- c(1, 0.7, 0.4)

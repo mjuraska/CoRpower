@@ -59,7 +59,7 @@ VElat0 <- seq(0, VEoverall, len=10)
 VElat1 <- rep(VEoverall, 10)
 Plat0 <- P0 <- 0.2
 Plat2 <- P2 <- 0.6
-M <- 20
+M <- 5
 alpha <- 0.05
 sigma2obs <- 1
 rho <- c(1, 0.7, 0.4)

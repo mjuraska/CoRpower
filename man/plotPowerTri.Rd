@@ -56,7 +56,7 @@ Plat0 <- P0 <- 0.2
 Plat2 <- P2 <- 0.6
 sens <- spec <- 0.8
 FP0 <- FN2 <- 0
-M <- 50
+M <- 25
 alpha <- 0.05
 biomType <- "trichotomous"
 

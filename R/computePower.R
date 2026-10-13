@@ -568,17 +568,18 @@ simTrich <- function(risk1lat_0, risk1lat_1, risk1lat_2, Plat0, Plat1, Plat2, se
   # Otherwise, osDesign logistic regression is used as an ordered score test
 
   addPower <- 0
-  lodim <- dim(table(Ycc,Scc))[2]<2 # check there are at least two biomarker categories (columns)
+  tabYS <- table(Ycc,Scc)
+  lodim <- dim(tabYS)[2]<2 # check there are at least two biomarker categories (columns)
   zerosflag <-  lodim
-  if (dim(table(Ycc,Scc))[2]==3) { # check if any categories have zero entries
-    zerosflag <- table(Ycc,Scc)[1,1]==0 | table(Ycc,Scc)[1,2]==0 | table(Ycc,Scc)[1,3]==0 |
-      table(Ycc,Scc)[2,1]==0 | table(Ycc,Scc)[2,2]==0 | table(Ycc,Scc)[2,3]==0
+  if (dim(tabYS)[2]==3) { # check if any categories have zero entries
+    zerosflag <- tabYS[1,1]==0 | tabYS[1,2]==0 | tabYS[1,3]==0 |
+      tabYS[2,1]==0 | tabYS[2,2]==0 | tabYS[2,3]==0
   }
 
   if (zerosflag) {
     if (lodim) { pval <- 1}
     if (!lodim) { # there are zeros, so Fisher's exact test is used
-      pval <- fisher.test(table(Ycc,Scc)[,c(1,dim(table(Ycc,Scc))[2])])$p.value
+      pval <- fisher.test(tabYS[,c(1,dim(tabYS)[2])])$p.value
     }
     if (pval <= alpha & length(Ycc[Scc==2&Ycc==1])/length(Scc[Scc==2]) <
         length(Ycc[Scc==0&Ycc==1])/length(Scc[Scc==0])) {
@@ -709,30 +710,20 @@ simTrich <- function(risk1lat_0, risk1lat_1, risk1lat_2, Plat0, Plat1, Plat2, se
 
 
 
-simCont <- function(nCasesTx, NcompleteTx, nCasesTxWithS, nCasesPla, NcompletePla,
-                    alphalat, beta, sigma2obs, sigma2tr, sigma2e, nu, PlatVElowest, VElowest,
-                    risk0, controlCaseRatio, p, cohort, tpsMethod, alpha, corr, saveDataDir, varyFullData) {
-  # Simulates data and conducts a hypothesis test for a continuous biomarker
+computeXprobsCont <- function(alphalat, beta, sigma2tr, nu, PlatVElowest, VElowest, risk0) {
+  # Computes the sampling probabilities of the latent biomarker X* for cases and controls in the active treatment
+  # group on a grid of x* values, which are used by simCont() to simulate X*
   #
   # Args:
   #   alphalat: parameter in logistic regression model: logit(risk1lat(x*)) = alphalat + beta x*
   #   beta: parameter in logistic regression model: logit(risk1lat(x*)) = alphalat + beta x*
-  #   sigma2obs: Variance of observed biomarker S*
   #   sigma2tr: Variance of latent response variable X*
-  #   sigma2e: Variance of the error term in the classical measurement error model: S* = X* + e
   #   nu: Value that denotes the cut-off for lowest X* values. Fraction PlatVElowest of subjects have x* value below this
   #       and therefore have VE = VElowest. nu = sqrt(rho*sigma2obs)*qnorm(PlatVElowest)
-  #   varyFullData: logical value indicating if full data is to be simulated multiple times (FALSE if varyingParam
-  #     is controlCaseRatio or p)
   #
   # Returns:
-  #   A list containing a binary integer denoting the outcome of the hypothesis test.
-  #   If simulated data is to be saved, the returned list also includes a data frame containing the simulated
-  #   data, including placebo group and BIP data
-
-  # Arbitrarily put the cases first and controls second
-  # The numbers of cases and controls are fixed, e.g., a typical retrospective design
-  Ytx <- c(rep(1,nCasesTx),rep(0,NcompleteTx-nCasesTx))
+  #   A list containing the grid of x* values (Xpoints) and the sampling probabilities for cases (probscases)
+  #   and controls (probscontrols)
 
   # Compute the denominator of the density of X|Y=1 when Y|X follows a logistic regression model
   # with the truncated part associated with VElowest and X is normal with mean zero and
@@ -761,8 +752,35 @@ simCont <- function(nCasesTx, NcompleteTx, nCasesTxWithS, nCasesPla, NcompletePl
   probscases <-    numerdensXcases(Xpoints)/denomdensityXcases
   probscontrols <- numerdensXcontrols(Xpoints)/(1-denomdensityXcases)
 
-  Xcases <-    sample(Xpoints,size=nCasesTx,prob=probscases,replace=TRUE)
-  Xcontrols <- sample(Xpoints,size=NcompleteTx-nCasesTx,prob=probscontrols,replace=TRUE)
+  return(list(Xpoints=Xpoints, probscases=probscases, probscontrols=probscontrols))
+}
+
+simCont <- function(nCasesTx, NcompleteTx, nCasesTxWithS, nCasesPla, NcompletePla,
+                    xProbs, sigma2obs, sigma2tr, sigma2e,
+                    controlCaseRatio, p, cohort, tpsMethod, alpha, corr, saveDataDir, varyFullData) {
+  # Simulates data and conducts a hypothesis test for a continuous biomarker
+  #
+  # Args:
+  #   xProbs: list returned by computeXprobsCont() containing the grid of x* values and the sampling probabilities
+  #           of X* for cases and controls
+  #   sigma2obs: Variance of observed biomarker S*
+  #   sigma2tr: Variance of latent response variable X*
+  #   sigma2e: Variance of the error term in the classical measurement error model: S* = X* + e
+  #   varyFullData: logical value indicating if full data is to be simulated multiple times (FALSE if varyingParam
+  #     is controlCaseRatio or p)
+  #
+  # Returns:
+  #   A list containing a binary integer denoting the outcome of the hypothesis test.
+  #   If simulated data is to be saved, the returned list also includes a data frame containing the simulated
+  #   data, including placebo group and BIP data
+
+  # Arbitrarily put the cases first and controls second
+  # The numbers of cases and controls are fixed, e.g., a typical retrospective design
+  Ytx <- c(rep(1,nCasesTx),rep(0,NcompleteTx-nCasesTx))
+
+  Xpoints <- xProbs$Xpoints
+  Xcases <-    sample(Xpoints,size=nCasesTx,prob=xProbs$probscases,replace=TRUE)
+  Xcontrols <- sample(Xpoints,size=NcompleteTx-nCasesTx,prob=xProbs$probscontrols,replace=TRUE)
   Xtx <- c(Xcases,Xcontrols)
 
   # Create the immune response variables for the different degrees of measurement error
@@ -1293,8 +1311,8 @@ biomSubset <- function(Y, NcompleteTx, nCasesTxWithS, controlCaseRatio, p, cohor
 #' controlCaseRatio <- 5
 #' VEoverall <- 0.75
 #' risk0 <- 0.034
-#' VElat0 <- seq(0, VEoverall, len=20)  # 20 data points for the power curve
-#' VElat1 <- rep(VEoverall, 20)
+#' VElat0 <- seq(0, VEoverall, len=10)  # 10 data points for the power curve
+#' VElat1 <- rep(VEoverall, 10)
 #' Plat0 <- 0.2
 #' Plat2 <- 0.6
 #' P0 <- Plat0  # different values of P0 can be set
@@ -1749,6 +1767,26 @@ computePower <- function(nCasesTx, nControlsTx, nCasesTxWithS,
       nu <- sqrt(rho*sigma2obs)*qnorm(PlatVElowest)
       truebetas <- rep(NA,o)
       alphalatvect <- rep(NA,o)
+      xProbs <- vector("list", o)
+
+      # alphalat, betalat, and the sampling probabilities of X* for cases and controls depend only on VElowest,
+      # so they are computed once for each value of VElowest rather than in each of the M simulations
+      for (k in 1:o) {  # loop through each value of VElowest
+
+        # find solutions alphalat and betalat by solving eqn (4) in Appendix B using functions kernel() and alphaLatEqn()
+        risk1latnu <- (1-VElowest[k])*risk0
+
+        alphalat <- uniroot(alphaLatEqn, lower=-10, upper=10, nu=nu, risk1latnu=risk1latnu, sigma2obs=sigma2obs,
+                            VEoverall=VEoverall, PlatVElowest=PlatVElowest, risk0=risk0)$root
+        alphalatvect[k] <- alphalat
+
+        # Second solve for betalat:
+        D <- risk1latnu
+        beta <- (log(D/(1-D)) - alphalat)/nu
+        truebetas[k] <- beta
+
+        xProbs[[k]] <- computeXprobsCont(alphalat, beta, sigma2tr, nu, PlatVElowest, VElowest[k], risk0)
+      }
 
       ###################################################
       # Power calculations repeated for M simulations
@@ -1766,24 +1804,12 @@ computePower <- function(nCasesTx, nControlsTx, nCasesTxWithS,
 
         for (k in 1:o) {  # loop through each value of VElowest
 
-          # find solutions alphalat and betalat by solving eqn (4) in Appendix B using functions kernel() and alphaLatEqn()
-          risk1latnu <- (1-VElowest[k])*risk0
-
-          alphalat <- uniroot(alphaLatEqn, lower=-10, upper=10, nu=nu, risk1latnu=risk1latnu, sigma2obs=sigma2obs,
-                              VEoverall=VEoverall, PlatVElowest=PlatVElowest, risk0=risk0)$root
-          alphalatvect[k] <- alphalat
-
-          # Second solve for betalat:
-          D <- risk1latnu
-          beta <- (log(D/(1-D)) - alphalat)/nu
-          truebetas[k] <- beta
-
           # These simulations condition on nCasesTx (i.e., number of infections in vaccine arm) and
           # also on the number of controls fixed at controlCaseRatio*nCasesTx
 
           data <- simCont(nCasesTx, NcompleteTx, nCasesTxWithS, nCasesPla, NcompletePla,
-                          alphalat, beta, sigma2obs, sigma2tr, sigma2e, nu, PlatVElowest, VElowest[k],
-                          risk0, controlCaseRatio, p, cohort, tpsMethod, alpha, corr, saveDataDir, varyFullData)
+                          xProbs[[k]], sigma2obs, sigma2tr, sigma2e,
+                          controlCaseRatio, p, cohort, tpsMethod, alpha, corr, saveDataDir, varyFullData)
           powerscont[k] <- powerscont[k] + data$addPower
 
           if(!is.null(saveDataDir) & varyFullData) {

@@ -264,8 +264,8 @@ nCasesTxWithS <- 32
 controlCaseRatio <- 5
 VEoverall <- 0.75
 risk0 <- 0.034
-VElat0 <- seq(0, VEoverall, len=20)  # 20 data points for the power curve
-VElat1 <- rep(VEoverall, 20)
+VElat0 <- seq(0, VEoverall, len=10)  # 10 data points for the power curve
+VElat1 <- rep(VEoverall, 10)
 Plat0 <- 0.2
 Plat2 <- 0.6
 P0 <- Plat0  # different values of P0 can be set
